@@ -2,15 +2,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Absensi Karyawan</title>
-    
+
     <!-- Font Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <style>
         :root {
             --sidebar-bg: #ffffff;
@@ -30,7 +30,7 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: #f8fafc;
@@ -38,7 +38,7 @@
             line-height: 1.5;
             font-weight: 400;
         }
-        
+
         /* ===== SIDEBAR STYLES ===== */
         #sidebar {
             width: var(--sidebar-width);
@@ -53,11 +53,11 @@
             border-right: 1px solid var(--sidebar-border);
             box-shadow: var(--sidebar-shadow);
         }
-        
+
         #sidebar.collapsed {
             width: var(--sidebar-collapsed);
         }
-        
+
         .sidebar-header {
             height: var(--header-height);
             padding: 0 24px;
@@ -67,7 +67,7 @@
             gap: 12px;
             background-color: white;
         }
-        
+
         .logo {
             width: 36px;
             height: 36px;
@@ -80,31 +80,31 @@
             font-weight: 600;
             font-size: 18px;
         }
-        
+
         .brand-text {
             font-size: 18px;
             font-weight: 600;
             color: #1e293b;
             transition: opacity 0.2s;
         }
-        
+
         #sidebar.collapsed .brand-text {
             opacity: 0;
             width: 0;
             overflow: hidden;
         }
-        
+
         .sidebar-menu {
             padding: 20px 0;
             height: calc(100vh - var(--header-height));
             overflow-y: auto;
         }
-        
+
         .menu-section {
             padding: 0 16px;
             margin-bottom: 24px;
         }
-        
+
         .section-label {
             font-size: 11px;
             font-weight: 600;
@@ -115,7 +115,7 @@
             padding-left: 12px;
             transition: opacity 0.2s;
         }
-        
+
         #sidebar.collapsed .section-label {
             opacity: 0;
             height: 0;
@@ -123,7 +123,7 @@
             padding: 0;
             overflow: hidden;
         }
-        
+
         .menu-item {
             display: flex;
             align-items: center;
@@ -137,13 +137,13 @@
             border-left: 3px solid transparent;
             background-color: white;
         }
-        
+
         .menu-item:hover {
             background-color: var(--sidebar-hover);
             color: #1e293b;
             transform: translateX(2px);
         }
-        
+
         .menu-item.active {
             background-color: #eff6ff;
             color: #1e293b;
@@ -151,7 +151,7 @@
             font-weight: 500;
             box-shadow: 0 2px 4px rgba(59, 130, 246, 0.1);
         }
-        
+
         .menu-icon {
             width: 20px;
             height: 20px;
@@ -162,22 +162,22 @@
             color: #64748b;
             transition: var(--transition);
         }
-        
+
         .menu-item.active .menu-icon {
             color: var(--sidebar-active);
         }
-        
+
         .menu-item:hover .menu-icon {
             color: #1e293b;
         }
-        
+
         .menu-text {
             font-size: 14px;
             font-weight: 500;
             transition: opacity 0.2s;
             white-space: nowrap;
         }
-        
+
         #sidebar.collapsed .menu-text {
             opacity: 0;
             width: 0;
@@ -192,11 +192,12 @@
             <div class="logo">AK</div>
             <div class="brand-text">Absensi Karyawan</div>
         </div>
-        
+
         <div class="sidebar-menu">
             <!-- DASHBOARD SECTION -->
             <div class="menu-section">
                 <div class="section-label">DASHBOARD</div>
+
                 
                 <div class="menu-item active" data-page="dashboard-home">
                     <div class="menu-icon">
@@ -210,21 +211,23 @@
                     <div class="menu-text">Dashboard</div>
                 </div>
             </div>
-            
+
             <!-- ABSENSI SECTION -->
             <div class="menu-section">
                 <div class="section-label">ABSENSI</div>
-                
-                <div class="menu-item" data-page="absensi-masuk">
-                    <div class="menu-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <polyline points="12 6 12 12 16 14"></polyline>
-                        </svg>
+
+                <a href="{{ route('dashboard.absensi') }}" style="text-decoration: none; color: inherit;">
+                    <div class="menu-item" data-page="absensi-masuk">
+                        <div class="menu-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                        </div>
+                        <div class="menu-text">Absensi Masuk</div>
                     </div>
-                    <div class="menu-text">Absensi Masuk</div>
-                </div>
-                
+                </a>
+
                 <div class="menu-item" data-page="absensi-pulang">
                     <div class="menu-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -234,7 +237,7 @@
                     </div>
                     <div class="menu-text">Absensi Pulang</div>
                 </div>
-                
+
                 <div class="menu-item" data-page="absensi-izin">
                     <div class="menu-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -246,7 +249,7 @@
                     </div>
                     <div class="menu-text">Pengajuan Izin</div>
                 </div>
-                
+
                 <div class="menu-item" data-page="absensi-cuti">
                     <div class="menu-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -257,11 +260,11 @@
                     <div class="menu-text">Pengajuan Cuti</div>
                 </div>
             </div>
-            
+
             <!-- MONITORING SECTION -->
             <div class="menu-section">
                 <div class="section-label">MONITORING</div>
-                
+
                 <div class="menu-item" data-page="rekap-harian">
                     <div class="menu-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -273,7 +276,7 @@
                     </div>
                     <div class="menu-text">Rekap Harian</div>
                 </div>
-                
+
                 <div class="menu-item" data-page="rekap-bulanan">
                     <div class="menu-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -285,14 +288,14 @@
                     </div>
                     <div class="menu-text">Rekap Bulanan</div>
                 </div>
-                
-                
+
+
             </div>
-            
+
             <!-- LAPORAN SECTION -->
             <div class="menu-section">
                 <div class="section-label">LAPORAN</div>
-                
+
                 <div class="menu-item" data-page="laporan-absensi">
                     <div class="menu-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -305,7 +308,7 @@
                     </div>
                     <div class="menu-text">Laporan Absensi</div>
                 </div>
-                
+
                 <div class="menu-item" data-page="laporan-keterlambatan">
                     <div class="menu-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -315,7 +318,7 @@
                     </div>
                     <div class="menu-text">Laporan Keterlambatan</div>
                 </div>
-                
+
                 <div class="menu-item" data-page="laporan-cuti">
                     <div class="menu-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -326,11 +329,11 @@
                     <div class="menu-text">Laporan Cuti & Izin</div>
                 </div>
             </div>
-            
+
             <!-- SETTINGS SECTION -->
             <div class="menu-section">
                 <div class="section-label">PENGATURAN</div>
-                
+
                 <div class="menu-item" data-page="lokasi-kantor">
                     <div class="menu-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -340,7 +343,7 @@
                     </div>
                     <div class="menu-text">Lokasi Kantor</div>
                 </div>
-                
+
                 <div class="menu-item" data-page="jam-kerja">
                     <div class="menu-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -350,7 +353,7 @@
                     </div>
                     <div class="menu-text">Jam Kerja</div>
                 </div>
-                
+
                 <div class="menu-item" data-page="profile">
                     <div class="menu-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -361,7 +364,7 @@
                     <div class="menu-text">Profile</div>
                 </div>
             </div>
-            
+
             <!-- LOGOUT -->
             <div class="menu-section">
                 <div class="menu-item" data-page="logout">

@@ -21,7 +21,7 @@ class DashboardController extends Controller
     // Dashboard Absensi
     public function absensi()
     {
-        return view('dashboard.dashboard-absensi');
+        return view('absensi.absensi.absen-masuk');
     }
 
     // Dashboard Selection
@@ -58,4 +58,5 @@ class DashboardController extends Controller
     {
         return view('reports.inventory');
     }
+
 }
