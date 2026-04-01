@@ -9,11 +9,32 @@ class DashboardController extends Controller
     /**
      * Display dashboard
      */
-    public function index()
+
+        // Dashboard PIC - Inventory
+    public function pic()
     {
-        return view('dashboard-absen.index');
+        $aktivitasList = []; // sementara (atau ambil dari DB nanti)
+
+        return view('dashboard.dashboard-pic', compact('aktivitasList'));
     }
-    
+
+    // Dashboard Absensi
+    public function absensi()
+    {
+        return view('dashboard.dashboard-absensi');
+    }
+
+    // Dashboard Selection
+    public function selection()
+    {
+        return view('dashboard.dashboard-selection');
+    }
+
+    public function superadmin()
+    {
+        return view('dashboard.dashboard-superadmin');
+    }
+
     /**
      * Attendance Report
      */
@@ -21,7 +42,7 @@ class DashboardController extends Controller
     {
         return view('reports.attendance');
     }
-    
+
     /**
      * Salary Report
      */
@@ -29,7 +50,7 @@ class DashboardController extends Controller
     {
         return view('reports.salary');
     }
-    
+
     /**
      * Inventory Report
      */
