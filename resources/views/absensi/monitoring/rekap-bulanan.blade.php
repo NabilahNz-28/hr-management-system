@@ -27,7 +27,6 @@
                                 <th>Izin</th>
                                 <th>Cuti</th>
                                 <th>Alpha</th>
-                                <th>Persentase</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -38,7 +37,6 @@
                                 <td>1</td>
                                 <td>0</td>
                                 <td>0</td>
-                                <td>95%</td>
                             </tr>
                             <tr>
                                 <td>Siti Rahma</td>
@@ -47,7 +45,6 @@
                                 <td>2</td>
                                 <td>0</td>
                                 <td>1</td>
-                                <td>90%</td>
                             </tr>
                             <tr>
                                 <td>Budi Santoso</td>
@@ -56,7 +53,6 @@
                                 <td>1</td>
                                 <td>1</td>
                                 <td>0</td>
-                                <td>85%</td>
                             </tr>
                             <tr>
                                 <td>Dewi Anggraini</td>
@@ -65,7 +61,6 @@
                                 <td>0</td>
                                 <td>0</td>
                                 <td>0</td>
-                                <td>100%</td>
                             </tr>
                             <tr>
                                 <td>Rudi Hartono</td>
@@ -74,7 +69,6 @@
                                 <td>2</td>
                                 <td>0</td>
                                 <td>1</td>
-                                <td>80%</td>
                             </tr>
                         </tbody>
                     </table>

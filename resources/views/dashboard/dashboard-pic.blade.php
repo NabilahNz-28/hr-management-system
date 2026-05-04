@@ -512,13 +512,34 @@
             color: #475569;
         }
 
-        /* Stock Opname Table */
+        /* Stock Opname Table - PERBAIKAN */
         .category-filter {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 20px;
+        flex-wrap: nowrap; /* ← GANTI DARI wrap KE nowrap */
+    }
+
+        .category-buttons {
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
             flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
         }
+
+        .action-buttons {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-shrink: 0;      /* ← TAMBAHIN INI */
+        white-space: nowrap; /* ← TAMBAHIN INI */
+    }
+
+    .btn-black {
+        white-space: nowrap; /* ← TAMBAHIN INI */
+    }
 
         .category-btn {
             padding: 8px 16px;
@@ -540,10 +561,6 @@
             background-color: #3b82f6;
             color: white;
             border-color: #3b82f6;
-        }
-
-        .opname-button-wrapper {
-    margin-left: auto; /* mendorong ke kanan */
         }
 
 
@@ -860,22 +877,36 @@
         <button class="category-btn" data-category="carton">Carton</button>
     </div>
 
-    <!-- Tombol Input Opname di kanan -->
-    <div class="opname-button-wrapper">
-        <button class="btn btn-black" id="show-opname-form">
-            <i class="bi bi-plus-circle me-2"></i> Input Opname
-        </button>
-    </div>
-</div>
+                    <div class="category-filter">
+
+                    <!-- Tombol kategori (kiri) -->
+                    <div class="category-buttons">
+                        <button class="category-btn active" data-category="all">Semua Kategori</button>
+                        <button class="category-btn" data-category="eco">Eco</button>
+                        <button class="category-btn" data-category="fragile">Fragile</button>
+                        <button class="category-btn" data-category="plastic">Plastic</button>
+                        <button class="category-btn" data-category="thermal">Thermal</button>
+                        <button class="category-btn" data-category="carton">Carton</button>
+                    </div>
+
+                    <!-- Tombol aksi di kanan: Tambahkan Barang + Input Opname -->
+                    <div class="action-buttons">
+                        <button class="btn btn-black" id="add-item-btn">
+                            <i class="bi bi-plus-circle me-2"></i> Tambahkan Barang
+                        </button>
+                        <button class="btn btn-black" id="show-opname-form">
+                            <i class="bi bi-plus-circle me-2"></i> Input Opname
+                        </button>
+                    </div>
+                </div>
+
                 <div class="stock-table">
                     <table class="data-table">
                         <thead>
                             <tr>
                                 <th>Nama Barang</th>
                                 <th>Kategori</th>
-                                <th>Stok Sistem</th>
-                                <th>Stok Fisik</th>
-                                <th>Selisih</th>
+                                <th>Stok </th>
                             </tr>
                         </thead>
                         <tbody id="stock-table-body">
@@ -884,61 +915,6 @@
                     </table>
                 </div>
 
-                <div style="margin-top: 30px; text-align: center;">
-                    <button class="btn btn-black" id="add-item-btn">
-                        <i class="bi bi-plus-circle me-2"></i> Tambahkan Barang
-                    </button>
-                </div>
-
-                <!-- Form Tambah Barang  -->
-                <div id="add-item-form" style="display: none; margin-top: 30px; padding: 25px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #f8fafc;">
-                    <h3 class="content-title">Form Tambah Barang Stock Opname</h3>
-
-                    <form id="item-form">
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label" for="item-name">Nama Barang</label>
-                                <input type="text" class="form-control" id="item-name" placeholder="Contoh: Box Eco 250ml" required>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label" for="item-category">Kategori</label>
-                                <select class="form-select" id="item-category" required>
-                                    <option value="">Pilih Kategori</option>
-                                    <option value="eco">Eco</option>
-                                    <option value="fragile">Fragile</option>
-                                    <option value="plastic">Plastic</option>
-                                    <option value="thermal">Thermal</option>
-                                    <option value="carton">Carton</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label" for="item-pcs">Jumlah (Pcs)</label>
-                                <input type="number" class="form-control" id="item-pcs" placeholder="0" min="0" required>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label" for="item-carton">Jumlah (Carton)</label>
-                                <input type="number" class="form-control" id="item-carton" placeholder="0" min="0">
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label" for="item-notes">Catatan (Opsional)</label>
-                            <textarea class="form-control" id="item-notes" rows="3" placeholder="Tambahkan catatan jika diperlukan..."></textarea>
-                        </div>
-
-                        <div style="display: flex; gap: 15px; margin-top: 25px;">
-                            <button type="submit" class="btn btn-black">Submit</button>
-                            <button type="button" class="btn btn-secondary" id="cancel-form">Batal</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
 
             <!-- Transfer Stock -->
             <div id="transfer-stock" class="page-content">
@@ -1020,9 +996,7 @@
                             <th>Tanggal</th>
                             <th>Nama Barang</th>
                             <th>Kategori</th>
-                            <th>Stok Awal</th>
-                            <th>Stok Akhir</th>
-                            <th>Selisih</th>
+                            <th>Stok </th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1033,32 +1007,27 @@
                             <td>Box Eco 250ml</td>
                             <td><span class="category-btn" style="padding: 4px 8px; font-size: 12px;">Eco</span></td>
                             <td>500 pcs</td>
-                            <td>620 pcs</td>
-                            <td class="text-success">+120 pcs</td>
                         </tr>
                         <tr>
                             <td>13 Nov 2023</td>
                             <td>Lid Cup Thermal</td>
                             <td><span class="category-btn" style="padding: 4px 8px; font-size: 12px;">Thermal</span></td>
                             <td>800 pcs</td>
-                            <td>850 pcs</td>
-                            <td class="text-success">+50 pcs</td>
+
                         </tr>
                         <tr>
                             <td>10 Nov 2023</td>
                             <td>Paper Bowl 500ml</td>
                             <td><span class="category-btn" style="padding: 4px 8px; font-size: 12px;">Eco</span></td>
                             <td>300 pcs</td>
-                            <td>320 pcs</td>
-                            <td class="text-success">+20 pcs</td>
+
                         </tr>
                         <tr>
                             <td>08 Nov 2023</td>
                             <td>Gelas Plastik 12oz</td>
                             <td><span class="category-btn" style="padding: 4px 8px; font-size: 12px;">Plastic</span></td>
                             <td>1000 pcs</td>
-                            <td>980 pcs</td>
-                            <td class="text-danger">-20 pcs</td>
+
                         </tr>
                     </tbody>
                 </table>
@@ -1129,16 +1098,16 @@
     <script>
         // Data barang inventory (simulasi)
         const inventoryItems = [
-            { id: 1, name: "Box Eco 250ml", category: "eco", currentStock: 620, physicalStock: 620, difference: 0 },
-            { id: 2, name: "Paper Bowl 500ml", category: "eco", currentStock: 320, physicalStock: 320, difference: 0 },
-            { id: 3, name: "Gelas Plastik 12oz", category: "plastic", currentStock: 980, physicalStock: 980, difference: 0 },
-            { id: 4, name: "Gelas Plastik 16oz", category: "plastic", currentStock: 750, physicalStock: 750, difference: 0 },
-            { id: 5, name: "Lid Cup Thermal", category: "thermal", currentStock: 850, physicalStock: 850, difference: 0 },
-            { id: 6, name: "Cup Thermal 8oz", category: "thermal", currentStock: 600, physicalStock: 600, difference: 0 },
-            { id: 7, name: "Mug Keramik", category: "fragile", currentStock: 120, physicalStock: 120, difference: 0 },
-            { id: 8, name: "Gelas Kaca 350ml", category: "fragile", currentStock: 90, physicalStock: 90, difference: 0 },
-            { id: 9, name: "Box Carton Besar", category: "carton", currentStock: 200, physicalStock: 200, difference: 0 },
-            { id: 10, name: "Box Carton Kecil", category: "carton", currentStock: 350, physicalStock: 350, difference: 0 }
+            { id: 1, name: "Box Eco 250ml", category: "eco", currentStock: 620 },
+            { id: 2, name: "Paper Bowl 500ml", category: "eco", currentStock: 320  },
+            { id: 3, name: "Gelas Plastik 12oz", category: "plastic", currentStock: 99},
+            { id: 4, name: "Gelas Plastik 16oz", category: "plastic", currentStock: 79},
+            { id: 5, name: "Lid Cup Thermal", category: "thermal", currentStock: 850},
+            { id: 6, name: "Cup Thermal 8oz", category: "thermal", currentStock: 600},
+            { id: 7, name: "Mug Keramik", category: "fragile", currentStock: 120},
+            { id: 8, name: "Gelas Kaca 350ml", category: "fragile", currentStock: 90},
+            { id: 9, name: "Box Carton Besar", category: "carton", currentStock: 200},
+            { id: 10, name: "Box Carton Kecil", category: "carton", currentStock: 350}
         ];
 
         // DOM Elements
@@ -1268,16 +1237,14 @@
             });
         }
 
-        // Show/Hide Add Item Form
+        // Show/Hide Add Item Form - PERBAIKAN
         addItemBtn.addEventListener('click', function() {
             addItemForm.style.display = 'block';
-            addItemBtn.style.display = 'none';
             window.scrollTo({ top: addItemForm.offsetTop - 100, behavior: 'smooth' });
         });
 
         cancelFormBtn.addEventListener('click', function() {
             addItemForm.style.display = 'none';
-            addItemBtn.style.display = 'block';
             itemForm.reset();
         });
 
@@ -1300,8 +1267,7 @@
                 name: itemName,
                 category: itemCategory,
                 currentStock: totalPcs,
-                physicalStock: totalPcs,
-                difference: 0
+
             };
 
             // Add to inventory array
@@ -1380,9 +1346,7 @@
                 qtyInPcs = transferQty * 6; // Assuming 6 pcs per pack
             }
 
-            // Simulate transfer
-            selectedItem.currentStock -= qtyInPcs;
-            selectedItem.physicalStock = selectedItem.currentStock;
+
 
             // Update transfer count
             const transferCountElement = document.querySelectorAll('.stat-value')[1];

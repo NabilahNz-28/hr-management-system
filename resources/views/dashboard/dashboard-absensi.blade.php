@@ -847,69 +847,33 @@ window.onload = function() {
                     </div>
                     <div class="menu-text">Laporan Keterlambatan</div>
                 </div>
-                
-                <div class="menu-item" data-page="laporan-cuti">
-                    <div class="menu-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-                        </svg>
-                    </div>
-                    <div class="menu-text">Laporan Cuti & Izin</div>
-                </div>
-            </div>
             
-            <!-- SETTINGS SECTION -->
-            <div class="menu-section">
-                <div class="section-label">PENGATURAN</div>
-                
-                <div class="menu-item" data-page="lokasi-kantor">
-                    <div class="menu-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                            <circle cx="12" cy="10" r="3"></circle>
-                        </svg>
-                    </div>
-                    <div class="menu-text">Lokasi Kantor</div>
-                </div>
-                
-                <div class="menu-item" data-page="jam-kerja">
-                    <div class="menu-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <polyline points="12 6 12 12 16 14"></polyline>
-                        </svg>
-                    </div>
-                    <div class="menu-text">Jam Kerja</div>
-                </div>
-                
-                <div class="menu-item" data-page="profile">
-                    <div class="menu-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
-                    </div>
-                    <div class="menu-text">Profile</div>
-                </div>
-            </div>
-            
-            <!-- LOGOUT -->
-            <div class="menu-section">
-                <div class="menu-item" data-page="logout">
-                    <div class="menu-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                            <polyline points="16 17 21 12 16 7"></polyline>
-                            <line x1="21" y1="12" x2="9" y2="12"></line>
-                        </svg>
-                    </div>
-                    <div class="menu-text">Logout</div>
-                </div>
-            </div>
+              <!-- SETTINGS SECTION -->
+    <div class="menu-section">
+    <div class="section-label">PENGATURAN</div>
+    
+    <div class="menu-item" data-page="profile">
+        <div class="menu-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+            </svg>
         </div>
+        <div class="menu-text">Profile</div>
     </div>
     
+    <div class="menu-item" data-page="logout">
+        <div class="menu-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+        </div>
+        <div class="menu-text">Logout</div>
+    </div>
+</div>
+
     <!-- Main Content -->
     <div id="main-content">
         <!-- Topbar -->
