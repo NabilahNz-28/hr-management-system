@@ -62,8 +62,8 @@ Route::middleware('auth')->group(function () {
     // --- MODUL ABSENSI & CUTI ---
     Route::prefix('absensi')->group(function () {
         // Asumsi file ini ada di folder "absensi/", kalau ada di folder lain tolong disesuaikan juga
-        Route::get('/masuk', function () { return view('absensi.absen-masuk'); })->name('absensi.masuk');
-        Route::get('/pulang', function () { return view('absensi.absen-pulang'); })->name('absensi.pulang');
+        Route::get('/masuk', function () { return view('absensi.absensi.absen-masuk'); })->name('absensi.masuk');
+        Route::get('/pulang', function () { return view('absensi.absensi.absen-pulang'); })->name('absensi.pulang');
         Route::get('/pengajuan-izin', function () { return view('absensi.pengajuan-izin'); })->name('absensi.pengajuan-izin');
 
         Route::get('/cuti', [LeaveController::class, 'create'])->name('absensi.cuti');

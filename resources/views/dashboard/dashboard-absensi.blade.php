@@ -862,17 +862,19 @@ window.onload = function() {
         <div class="menu-text">Profile</div>
     </div>
     
-    <div class="menu-item" data-page="logout">
+    <form action="{{ route('logout') }}" method="POST" id="logout-form">
+    @csrf
+    <button type="submit" class="menu-item" style="background:none; border:none; width:100%; text-align:left;">
         <div class="menu-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                 <polyline points="16 17 21 12 16 7"></polyline>
                 <line x1="21" y1="12" x2="9" y2="12"></line>
             </svg>
         </div>
         <div class="menu-text">Logout</div>
-    </div>
-</div>
+    </button>
+</form>
 
     <!-- Main Content -->
     <div id="main-content">

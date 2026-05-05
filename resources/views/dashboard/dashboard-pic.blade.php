@@ -512,7 +512,7 @@
             color: #475569;
         }
         
-        /* Stock Opname Table */
+        /* Stock Opname Table - PERBAIKAN */
         .category-filter {
         display: flex;
         justify-content: space-between;
@@ -553,18 +553,16 @@
             text-decoration: none;
         }
 
+
         .category-btn:hover {
             background-color: #e2e8f0;
         }
+
 
         .category-btn.active {
             background-color: #3b82f6;
             color: white;
             border-color: #3b82f6;
-        }
-        
-        .opname-button-wrapper {
-    margin-left: auto; /* mendorong ke kanan */
         }
         
         
@@ -870,16 +868,17 @@
                     <p>Pilih kategori untuk melihat barang yang tersedia:</p>
                 </div>
                 
-                <div class="category-filter">
-    <!-- Tombol kategori -->
-    <div class="category-buttons">
-        <button class="category-btn active" data-category="all">Semua Kategori</button>
-        <button class="category-btn" data-category="eco">Eco</button>
-        <button class="category-btn" data-category="fragile">Fragile</button>
-        <button class="category-btn" data-category="plastic">Plastic</button>
-        <button class="category-btn" data-category="thermal">Thermal</button>
-        <button class="category-btn" data-category="carton">Carton</button>
-    </div>
+                    <div class="category-filter">
+
+                    <!-- Tombol kategori (kiri) -->
+                    <div class="category-buttons">
+                        <button class="category-btn active" data-category="all">Semua Kategori</button>
+                        <button class="category-btn" data-category="eco">Eco</button>
+                        <button class="category-btn" data-category="fragile">Fragile</button>
+                        <button class="category-btn" data-category="plastic">Plastic</button>
+                        <button class="category-btn" data-category="thermal">Thermal</button>
+                        <button class="category-btn" data-category="carton">Carton</button>
+                    </div>
 
                     <!-- Tombol aksi di kanan: Tambahkan Barang + Input Opname -->
                     <div class="action-buttons">
@@ -906,63 +905,8 @@
                         </tbody>
                     </table>
                 </div>
-                
-                <div style="margin-top: 30px; text-align: center;">
-                    <button class="btn btn-black" id="add-item-btn">
-                        <i class="bi bi-plus-circle me-2"></i> Tambahkan Barang
-                    </button>
-                </div>
-                
-                <!-- Form Tambah Barang  -->
-                <div id="add-item-form" style="display: none; margin-top: 30px; padding: 25px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #f8fafc;">
-                    <h3 class="content-title">Form Tambah Barang Stock Opname</h3>
-                    
-                    <form id="item-form">
-                    
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label" for="item-name">Nama Barang</label>
-                                <input type="text" class="form-control" id="item-name" placeholder="Contoh: Box Eco 250ml" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label class="form-label" for="item-category">Kategori</label>
-                                <select class="form-select" id="item-category" required>
-                                    <option value="">Pilih Kategori</option>
-                                    <option value="eco">Eco</option>
-                                    <option value="fragile">Fragile</option>
-                                    <option value="plastic">Plastic</option>
-                                    <option value="thermal">Thermal</option>
-                                    <option value="carton">Carton</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label" for="item-pcs">Jumlah (Pcs)</label>
-                                <input type="number" class="form-control" id="item-pcs" placeholder="0" min="0" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label class="form-label" for="item-carton">Jumlah (Carton)</label>
-                                <input type="number" class="form-control" id="item-carton" placeholder="0" min="0">
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label" for="item-notes">Catatan (Opsional)</label>
-                            <textarea class="form-control" id="item-notes" rows="3" placeholder="Tambahkan catatan jika diperlukan..."></textarea>
-                        </div>
-                        
-                        <div style="display: flex; gap: 15px; margin-top: 25px;">
-                            <button type="submit" class="btn btn-black">Submit</button>
-                            <button type="button" class="btn btn-secondary" id="cancel-form">Batal</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            
+        
+
             <!-- Transfer Stock -->
             <div id="transfer-stock" class="page-content">
                 <h1 class="page-title">Transfer Stock</h1>
@@ -1284,11 +1228,12 @@
             });
         }
         
-        // Show/Hide Add Item Form
+        // Show/Hide Add Item Form - PERBAIKAN
         addItemBtn.addEventListener('click', function() {
             addItemForm.style.display = 'block';
             window.scrollTo({ top: addItemForm.offsetTop - 100, behavior: 'smooth' });
         });
+
 
         cancelFormBtn.addEventListener('click', function() {
             addItemForm.style.display = 'none';
@@ -1393,9 +1338,7 @@
                 qtyInPcs = transferQty * 6; // Assuming 6 pcs per pack
             }
             
-            // Simulate transfer
-            selectedItem.currentStock -= qtyInPcs;
-            selectedItem.physicalStock = selectedItem.currentStock;
+           
             
             // Update transfer count
             const transferCountElement = document.querySelectorAll('.stat-value')[1];
