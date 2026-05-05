@@ -30,16 +30,11 @@ class AuthController extends Controller
 
             // REDIRECT BERDASARKAN ROLE
             if ($userRole === 'superadmin') {
-                // Arahkan Superadmin ke halaman Superadmin Dashboard
-                return redirect()->intended('/superadmin/dashboard');
-            } 
-            elseif ($userRole === 'pic') {
-                // Arahkan PIC ke halaman Dashboard Selection
-                return redirect()->intended('/selection');
-            } 
-            elseif ($userRole === 'karyawan') {
-                // Arahkan Karyawan ke halaman Dashboard Absensi
-                return redirect()->intended('/dashboard');
+                return redirect()->intended(route('superadmin.dashboard'));
+            } elseif ($userRole === 'pic') {
+                return redirect()->intended(route('dashboard.selection'));
+            } elseif ($userRole === 'karyawan') {
+                return redirect()->intended(route('dashboard.absensi'));
             }
 
             // Fallback (jika role kosong atau tidak dikenali)
@@ -56,10 +51,10 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         Auth::logout();
-        
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        
+
         return redirect('/login')->with('success', 'Anda telah berhasil logout.');
     }
 }
