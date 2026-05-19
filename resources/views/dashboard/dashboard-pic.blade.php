@@ -511,7 +511,7 @@
             font-size: 14px;
             color: #475569;
         }
-        
+
         /* Stock Opname Table - PERBAIKAN */
         .category-filter {
         display: flex;
@@ -540,7 +540,7 @@
     .btn-black {
         white-space: nowrap; /* ← TAMBAHIN INI */
     }
-        
+
         .category-btn {
             padding: 8px 16px;
             background-color: #f1f5f9;
@@ -564,8 +564,8 @@
             color: white;
             border-color: #3b82f6;
         }
-        
-        
+
+
         /* Form Row */
         .form-row {
             display: flex;
@@ -876,7 +876,18 @@
                 <div class="content-description">
                     <p>Pilih kategori untuk melihat barang yang tersedia:</p>
                 </div>
-                
+
+                <div class="category-filter">
+    <!-- Tombol kategori -->
+    <div class="category-buttons">
+        <button class="category-btn active" data-category="all">Semua Kategori</button>
+        <button class="category-btn" data-category="eco">Eco</button>
+        <button class="category-btn" data-category="fragile">Fragile</button>
+        <button class="category-btn" data-category="plastic">Plastic</button>
+        <button class="category-btn" data-category="thermal">Thermal</button>
+        <button class="category-btn" data-category="carton">Carton</button>
+    </div>
+
                     <div class="category-filter">
 
                     <!-- Tombol kategori (kiri) -->
@@ -914,7 +925,7 @@
                         </tbody>
                     </table>
                 </div>
-        
+
 
             <!-- Transfer Stock -->
             <div id="transfer-stock" class="page-content">
@@ -1013,21 +1024,21 @@
                             <td>Lid Cup Thermal</td>
                             <td><span class="category-btn" style="padding: 4px 8px; font-size: 12px;">Thermal</span></td>
                             <td>800 pcs</td>
-                            
+
                         </tr>
                         <tr>
                             <td>10 Nov 2023</td>
                             <td>Paper Bowl 500ml</td>
                             <td><span class="category-btn" style="padding: 4px 8px; font-size: 12px;">Eco</span></td>
                             <td>300 pcs</td>
-                            
+
                         </tr>
                         <tr>
                             <td>08 Nov 2023</td>
                             <td>Gelas Plastik 12oz</td>
                             <td><span class="category-btn" style="padding: 4px 8px; font-size: 12px;">Plastic</span></td>
                             <td>1000 pcs</td>
-                           
+
                         </tr>
                     </tbody>
                 </table>
@@ -1237,7 +1248,7 @@
                 stockTableBody.appendChild(row);
             });
         }
-        
+
         // Show/Hide Add Item Form - PERBAIKAN
         addItemBtn.addEventListener('click', function() {
             addItemForm.style.display = 'block';
@@ -1269,7 +1280,7 @@
                 name: itemName,
                 category: itemCategory,
                 currentStock: totalPcs,
-                
+
             };
 
             // Add to inventory array
@@ -1347,9 +1358,9 @@
             } else if (transferUnit === 'pack') {
                 qtyInPcs = transferQty * 6; // Assuming 6 pcs per pack
             }
-            
-           
-            
+
+
+
             // Update transfer count
             const transferCountElement = document.querySelectorAll('.stat-value')[1];
             let transferCount = parseInt(transferCountElement.textContent);

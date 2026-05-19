@@ -33,42 +33,42 @@ class AttendanceController extends Controller
 
             // Generate nama file unik
             $fileName = 'attendance_' . time() . '_' . rand(1000, 9999) . '.jpg';
-            
+
             // Path untuk menyimpan
             $folderPath = public_path('photos');
-            
+
             // Buat folder jika belum ada
             if (!file_exists($folderPath)) {
                 mkdir($folderPath, 0777, true);
             }
-            
+
             $filePath = $folderPath . '/' . $fileName;
-            
+
             // Process base64 image
             $imageData = $request->photo;
-            
+
             // Cek format base64
             if (strpos($imageData, 'data:image/jpeg;base64,') === 0) {
                 $imageData = str_replace('data:image/jpeg;base64,', '', $imageData);
             } elseif (strpos($imageData, 'data:image/png;base64,') === 0) {
                 $imageData = str_replace('data:image/png;base64,', '', $imageData);
             }
-            
+
             $imageData = str_replace(' ', '+', $imageData);
-            
+
             // Decode dan simpan
             $imageBinary = base64_decode($imageData);
-            
+
             if ($imageBinary === false) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Invalid image data'
                 ], 400);
             }
-            
+
             // Simpan file
             file_put_contents($filePath, $imageBinary);
-            
+
             // Simpan ke database
             $attendance = Attendance::create([
                 'employee_name' => $request->employee_name,
@@ -100,18 +100,18 @@ class AttendanceController extends Controller
     {
         try {
             $attendance = Attendance::findOrFail($id);
-            
+
             // Hapus file foto
             $filePath = public_path('photos/' . $attendance->photo);
             if (file_exists($filePath)) {
                 unlink($filePath);
             }
-            
+
             $attendance->delete();
-            
+
             return redirect()->route('attendance.list')
                 ->with('success', 'Attendance record deleted successfully.');
-                
+
         } catch (\Exception $e) {
             return redirect()->route('attendance.list')
                 ->with('error', 'Error deleting record: ' . $e->getMessage());
@@ -123,14 +123,29 @@ class AttendanceController extends Controller
     {
         $name = $request->input('name');
         $today = now()->format('Y-m-d');
-        
+
         $attendance = Attendance::where('employee_name', $name)
             ->where('date', $today)
             ->first();
-        
+
         return response()->json([
             'has_attended' => $attendance ? true : false,
             'time_in' => $attendance ? $attendance->time_in : null
+        ]);
+    }
+
+    public function simpanAbsensi(Request $request)
+    {
+        return $this->store($request);
+    }
+
+    public function getRiwayat()
+    {
+        $attendances = Attendance::orderBy('created_at', 'desc')->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $attendances
         ]);
     }
 }
