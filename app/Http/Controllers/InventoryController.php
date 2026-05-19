@@ -130,7 +130,7 @@ class InventoryController extends Controller
         $barang = Inventory::orderBy('nama_barang')->get();
 
         $transfer_terbaru = TransferStock::with('barang')
-            ->where('pic_id', auth()->id())
+            ->where('user_id', auth()->id())
             ->orderBy('tanggal', 'desc')
             ->take(10)
             ->get();
@@ -190,7 +190,7 @@ class InventoryController extends Controller
             ->orderBy('tanggal', 'desc')
             ->get();
 
-        return view('inventories.inventory.laporan-opname', compact('laporan'));
+        return view('inventories.laporan.laporan-opname', compact('laporan'));
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -207,6 +207,6 @@ class InventoryController extends Controller
             ->orderBy('tanggal', 'desc')
             ->get();
 
-        return view('inventories.inventory.laporan-transfer', compact('laporan'));
+        return view('inventories.laporan.laporan-transfer', compact('laporan'));
     }
 }

@@ -47,9 +47,57 @@
                             </tr>
                         </thead>
                         <tbody id="stock-table-body">
-                            <!-- Data akan diisi oleh JavaScript -->
+                            @forelse($barang ?? [] as $item)
+                            <tr class="item-row" data-category="{{ strtolower($item->kategori) }}">
+                                <td>{{ $item->nama_barang }}</td>
+                                <td>
+                                    <span style="padding: 4px 10px; font-size: 12px; border-radius: 20px; background: #e2e8f0; font-weight: 500; color: #334155;">
+                                        {{ ucfirst($item->kategori) }}
+                                    </span>
+                                </td>
+                                <td>{{ $item->stok_fisik }} pcs</td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="3" class="text-center" style="padding: 40px; color: #94a3b8;">
+                                    Belum ada barang di inventory.
+                                </td>
+                            </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const categoryBtns = document.querySelectorAll('.category-btn');
+    const itemRows = document.querySelectorAll('.item-row');
+
+    categoryBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Remove active class from all buttons
+            categoryBtns.forEach(b => b.classList.remove('active'));
+            
+            // Add active class to clicked button
+            this.classList.add('active');
+            
+            const selectedCategory = this.getAttribute('data-category');
+            
+            // Filter rows
+            itemRows.forEach(row => {
+                if (selectedCategory === 'all' || row.getAttribute('data-category') === selectedCategory) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    });
+});
+</script>
 @endsection

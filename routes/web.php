@@ -88,13 +88,19 @@ Route::middleware('auth')->group(function () {
     Route::prefix('inventory')->name('inventory.')->group(function () {
         Route::get('/', [InventoryController::class, 'index'])->name('index');
 
-        Route::get('/tambah-barang', fn () => view('inventories.inventory.tambah-barang'))->name('tambah-barang');
-        Route::get('/input-opname', fn () => view('inventories.inventory.input-opname'))->name('input-opname');
-        Route::get('/stock-opname', fn () => view('inventories.inventory.stock-opname'))->name('stock-opname');
-        Route::get('/transfer-stock', fn () => view('inventories.inventory.transfer-stock'))->name('transfer-stock');
+        Route::get('/tambah-barang', [InventoryController::class, 'create'])->name('tambah-barang');
+        Route::post('/tambah-barang', [InventoryController::class, 'store'])->name('tambah-barang.store');
+        
+        Route::get('/input-opname', [InventoryController::class, 'inputOpname'])->name('input-opname');
+        Route::post('/input-opname', [InventoryController::class, 'simpanOpname'])->name('input-opname.store');
+        
+        Route::get('/stock-opname', [InventoryController::class, 'stockOpname'])->name('stock-opname');
+        
+        Route::get('/transfer-stock', [InventoryController::class, 'transferStock'])->name('transfer-stock');
+        Route::post('/transfer-stock', [InventoryController::class, 'simpanTransfer'])->name('transfer-stock.store');
 
-        Route::get('/laporan-opname', fn () => view('inventories.laporan.laporan-opname'))->name('laporan-opname');
-        Route::get('/laporan-transfer', fn () => view('inventories.laporan.laporan-transfer'))->name('laporan-transfer');
+        Route::get('/laporan-opname', [InventoryController::class, 'laporanOpname'])->name('laporan-opname');
+        Route::get('/laporan-transfer', [InventoryController::class, 'laporanTransfer'])->name('laporan-transfer');
     });
 
     // LOGOUT
