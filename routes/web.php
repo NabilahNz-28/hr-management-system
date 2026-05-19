@@ -8,6 +8,8 @@ use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\SuperadminController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\SidebarController;
+
 
 // 1. SMART HOME REDIRECT
 Route::get('/', function () {
@@ -72,6 +74,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/simpan', [AttendanceController::class, 'simpanAbsensi'])->name('absensi.simpan');
         Route::get('/riwayat', [AttendanceController::class, 'getRiwayat'])->name('absensi.riwayat');
     });
+
+    Route::get('/sidebar-absen', [SidebarController::class, 'absen'])->name('sidebar.absen');
+    Route::get('/sidebar-pic', [SidebarController::class, 'pic'])->name('sidebar.pic');
+    Route::get('/sidebar-superadmin', [SidebarController::class, 'superadmin'])->name('sidebar.superadmin');
 
     // --- LAPORAN ---
     Route::get('/laporan/izin-cuti', [LaporanController::class, 'index'])->name('laporan.cuti');

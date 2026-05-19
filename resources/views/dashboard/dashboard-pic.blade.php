@@ -677,6 +677,12 @@
         .sidebar-overlay.active {
             display: block;
         }
+        .overlay {
+            display: none; /* ✅ default harus hidden */
+        }
+        .overlay.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -744,17 +750,20 @@
                 </div>
             </div>
 
-            <!-- LOGOUT SECTION -->
-            <div class="menu-section">
-                <div class="menu-item" data-page="logout">
-                    <div class="menu-icon">
-                        <i class="bi bi-box-arrow-right"></i>
-                    </div>
-                    <div class="menu-text">Logout</div>
-                </div>
+           <!-- LOGOUT SECTION -->
+    <div class="menu-section">
+        <div class="menu-item" data-page="logout">
+            <div class="menu-icon">
+                <i class="bi bi-box-arrow-right"></i>
             </div>
+            <div class="menu-text">Logout</div>
         </div>
     </div>
+
+    {{-- ✅ Form ini WAJIB ada di sini --}}
+    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+        @csrf
+    </form>
 
     <!-- Main Content -->
     <div id="main-content">
@@ -1087,6 +1096,7 @@
     <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+
         // Data barang inventory (simulasi)
         const inventoryItems = [
             { id: 1, name: "Box Eco 250ml", category: "eco", currentStock: 620 },
@@ -1382,6 +1392,17 @@
             }
         }
 
+    // Reset overlay setiap halaman load — mencegah overlay tertinggal dari role lain
+    document.addEventListener('DOMContentLoaded', function () {
+        const overlay = document.getElementById('sidebarOverlay');
+        const sidebar = document.getElementById('sidebar');
+
+        if (overlay) overlay.classList.remove('active');
+        if (sidebar) sidebar.classList.remove('active', 'open', 'show');
+
+        // Kembalikan scroll body kalau sempat di-lock
+        document.body.style.overflow = '';
+    });
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', init);
     </script>

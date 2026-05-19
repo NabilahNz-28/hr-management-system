@@ -1,18 +1,4 @@
-@extends('layouts.app')
-
-@section('title', 'Stock Opname')
-
-@section('content')
-<div class="container-fluid">
-    <!-- Page Heading -->
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Stock Opname</h1>
-        <button class="btn btn-dark" data-toggle="modal" data-target="#tambahBarangModal">
-            <i class="fas fa-plus mr-2"></i> Tambahkan Barang
-        </button>
-    </div>
-
-    <!-- pakai js yg atas-->
+ <!-- Stock Opname -->
             <div id="stock-opname" class="page-content">
                 <h1 class="page-title">Stock Opname</h1>
                 <p class="page-subtitle">Kelola stock opname inventory</p>
@@ -31,8 +17,6 @@
                         <button class="category-btn" data-category="plastic">Plastic</button>
                         <button class="category-btn" data-category="thermal">Thermal</button>
                         <button class="category-btn" data-category="carton">Carton</button>
-                        <button class="category-btn" data-category="other">Other</button>
-
                     </div>
 
                     <!-- Tombol aksi di kanan: Tambahkan Barang + Input Opname -->
@@ -53,7 +37,6 @@
                                 <th>Nama Barang</th>
                                 <th>Kategori</th>
                                 <th>Stok </th>
-                                <!-- tambahkan titik 3 "detail" disini-->
                             </tr>
                         </thead>
                         <tbody id="stock-table-body">
