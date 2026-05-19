@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.absen')
 
 @section('title', 'Absensi Pulang')
 
@@ -178,7 +178,7 @@
 
 @section('content')
 <div class="container">
-    <div class="page-content" id="absensi-pulang">
+    <div class="page-content active" id="absensi-pulang">
         <div class="content-title">Absensi Pulang</div>
         <p class="content-description">Lakukan absensi pulang dengan foto wajah dan verifikasi lokasi</p>
 

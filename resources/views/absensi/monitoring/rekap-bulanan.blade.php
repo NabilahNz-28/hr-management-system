@@ -1,5 +1,10 @@
+@extends('layouts.absen')
+
+@section('title', 'Rekap Bulanan')
+
+@section('content')
  <!-- Rekap Bulanan -->
-                <div class="page-content" id="rekap-bulanan">
+                <div class="page-content active" id="rekap-bulanan">
                     <div class="content-title">Rekap Absensi Bulanan</div>
                     <p class="content-description">Statistik absensi bulan Desember 2025</p>
                     
@@ -73,6 +78,4 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
-        </div>
-    </div>
+@endsection

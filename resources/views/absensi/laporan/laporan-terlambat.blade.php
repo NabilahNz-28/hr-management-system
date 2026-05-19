@@ -1,5 +1,11 @@
-<!-- Keterlambatan Bulanan -->
-<div class="page-content" id="keterlambatan-bulanan">
+@extends('layouts.absen')
+
+@section('title', 'Laporan Keterlambatan')
+
+@section('content')
+<div class="container">
+    <!-- Keterlambatan Bulanan -->
+    <div class="page-content active" id="keterlambatan-bulanan">
     <div class="content-title">Riwayat Keterlambatan</div>
     <p class="content-description">Catatan keterlambatan per bulan</p>
     
@@ -41,7 +47,10 @@
         <!-- Tabel keterlambatan atau pesan sanjungan -->
     </div>
 </div>
+</div>
+@endsection
 
+@section('scripts')
 <script>
     // Data dummy keterlambatan per bulan
 const dataKeterlambatan = {
@@ -151,4 +160,5 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('tahun-telat').value = sekarang.getFullYear();
     lihatKeterlambatan();
 });
-    </script>
+</script>
+@endsection

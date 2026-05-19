@@ -1,5 +1,11 @@
-<!-- Profile -->
-<div class="page-content" id="profile">
+@extends('layouts.absen')
+
+@section('title', 'Profile Karyawan')
+
+@section('content')
+<div class="container">
+    <!-- Profile -->
+    <div class="page-content active" id="profile">
     <div class="content-title">Profile Karyawan</div>
     <p class="content-description">Informasi data diri Anda</p>
     
@@ -106,8 +112,12 @@
             <button onclick="logout()">Keluar / Logout</button>
         </div>
     </div>
+    </div>
 </div>
+</div>
+@endsection
 
+@section('scripts')
 <script>
     // ==================== DATA PROFILE ====================
 // Data dummy (nanti diganti dari database)
@@ -423,4 +433,5 @@ document.addEventListener('DOMContentLoaded', function() {
     loadProfileFromStorage();
     initProfile();
 });
-    </script>
+</script>
+@endsection

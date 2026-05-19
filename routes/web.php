@@ -61,11 +61,17 @@ Route::middleware('auth')->group(function () {
         Route::get('/pulang', fn () => view('absensi.absensi.absen-pulang'))->name('pulang');
         Route::get('/pengajuan-izin', fn () => view('absensi.absensi.pengajuan-izin'))->name('pengajuan-izin');
 
-        Route::get('/cuti', [LeaveController::class, 'create'])->name('cuti');
+        Route::get('/cuti', fn () => view('absensi.absensi.pengajuan-cuti'))->name('cuti');
         Route::post('/cuti', [LeaveController::class, 'store'])->name('cuti.post');
 
         Route::post('/simpan', [AttendanceController::class, 'simpanAbsensi'])->name('simpan');
         Route::get('/riwayat', [AttendanceController::class, 'getRiwayat'])->name('riwayat');
+    });
+
+    // MONITORING ABSENSI
+    Route::prefix('monitoring')->name('monitoring.')->group(function () {
+        Route::get('/rekap-harian', fn () => view('absensi.monitoring.rekap-harian'))->name('harian');
+        Route::get('/rekap-bulanan', fn () => view('absensi.monitoring.rekap-bulanan'))->name('bulanan');
     });
 
     // LAPORAN ABSENSI
@@ -74,6 +80,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/terlambat', fn () => view('absensi.laporan.laporan-terlambat'))->name('terlambat');
         Route::get('/izin-cuti', [LaporanController::class, 'index'])->name('cuti');
     });
+
+    // PENGATURAN
+    Route::get('/profile', fn () => view('absensi.pengaturan.profile'))->name('profile');
 
     // INVENTORY
     Route::prefix('inventory')->name('inventory.')->group(function () {

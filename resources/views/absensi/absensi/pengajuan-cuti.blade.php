@@ -1,5 +1,10 @@
+@extends('layouts.absen')
+
+@section('title', 'Pengajuan Cuti')
+
+@section('content')
 <!-- Pengajuan Cuti -->
-                <div class="page-content" id="absensi-cuti">
+                <div class="page-content active" id="absensi-cuti">
                     <div class="content-title">Pengajuan Cuti</div>
                     <p class="content-description">Ajukan cuti tahunan, melahirkan, atau khusus</p>
                     
@@ -42,4 +47,4 @@
                         <button type="submit" class="btn btn-primary">Ajukan Cuti</button>
                     </form>
                 </div>
-                
+@endsection

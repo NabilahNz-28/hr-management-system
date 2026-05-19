@@ -21,7 +21,7 @@ class DashboardController extends Controller
     // Dashboard Absensi
     public function absensi()
     {
-        return view('layouts.sidebar-absen');
+        return view('layouts.absen');
     }
 
     // Dashboard Selection

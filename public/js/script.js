@@ -66,9 +66,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Handle menu item clicks
     function handleMenuItemClick(e) {
-        e.preventDefault();
-        
         const pageId = this.getAttribute('data-page');
+
+        if (!pageId) {
+            return;
+        }
+
+        e.preventDefault();
         
         // Logout
         if (pageId === 'logout') {

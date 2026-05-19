@@ -1,5 +1,5 @@
 <!-- resources/views/absensi/absen-masuk.blade.php -->
-@extends('layouts.app')
+@extends('layouts.absen')
 
 @section('title', 'Absensi Masuk')
 
@@ -189,7 +189,7 @@
 
 @section('content')
 <div class="container">
-    <div class="page-content" id="absensi-masuk">
+    <div class="page-content active" id="absensi-masuk">
         <div class="content-title">Absensi Masuk</div>
         <p class="content-description">Lakukan absensi masuk dengan foto wajah dan verifikasi lokasi</p>
 

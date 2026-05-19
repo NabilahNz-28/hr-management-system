@@ -239,16 +239,16 @@
     <div class="menu-section">
         <div class="section-label">INVENTORY</div>
 
-        <a href="{{ route('inventories.inventory.stock-opname') }}"
-           class="menu-item {{ request()->routeIs('stock-opname') ? 'active' : '' }}">
+        <a href="{{ route('inventory.stock-opname') }}"
+           class="menu-item {{ request()->routeIs('inventory.stock-opname') ? 'active' : '' }}">
             <div class="menu-icon">
                 <i class="bi bi-clipboard-check"></i>
             </div>
             <div class="menu-text">Stock Opname</div>
         </a>
 
-        <a href="{{ route('inventories.inventory.transfer-stock') }}"
-           class="menu-item {{ request()->routeIs('transfer-stock') ? 'active' : '' }}">
+        <a href="{{ route('inventory.transfer-stock') }}"
+           class="menu-item {{ request()->routeIs('inventory.transfer-stock') ? 'active' : '' }}">
             <div class="menu-icon">
                 <i class="bi bi-arrow-left-right"></i>
             </div>
@@ -259,16 +259,16 @@
     <div class="menu-section">
         <div class="section-label">LAPORAN</div>
 
-        <a href="{{ route('laporan.opname') }}"
-           class="menu-item {{ request()->routeIs('laporan.opname') ? 'active' : '' }}">
+        <a href="{{ route('inventory.laporan-opname') }}"
+           class="menu-item {{ request()->routeIs('inventory.laporan-opname') ? 'active' : '' }}">
             <div class="menu-icon">
                 <i class="bi bi-file-text"></i>
             </div>
             <div class="menu-text">Laporan Opname</div>
         </a>
 
-        <a href="{{ route('inventories.inventory.laporan-transfer') }}"
-           class="menu-item {{ request()->routeIs('laporan-transfer') ? 'active' : '' }}">
+        <a href="{{ route('inventory.laporan-transfer') }}"
+           class="menu-item {{ request()->routeIs('inventory.laporan-transfer') ? 'active' : '' }}">
             <div class="menu-icon">
                 <i class="bi bi-clock-history"></i>
             </div>

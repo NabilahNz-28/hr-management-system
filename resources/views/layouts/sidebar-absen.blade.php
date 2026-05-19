@@ -303,12 +303,11 @@
         </div>
 
         {{-- ===== MONITORING ===== --}}
-        {{-- Route rekap belum ada, pakai '#' dulu. Nanti ganti dengan route() setelah dibuat --}}
         <div class="menu-section">
             <div class="section-label">MONITORING</div>
 
-            <a href="#"
-               class="menu-item {{ request()->routeIs('rekap.harian') ? 'active' : '' }}">
+            <a href="{{ route('monitoring.harian') }}"
+               class="menu-item {{ request()->routeIs('monitoring.harian') ? 'active' : '' }}">
                 <div class="menu-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -321,8 +320,8 @@
                 <div class="menu-text">Rekap Harian</div>
             </a>
 
-            <a href="#"
-               class="menu-item {{ request()->routeIs('rekap.bulanan') ? 'active' : '' }}">
+            <a href="{{ route('monitoring.bulanan') }}"
+               class="menu-item {{ request()->routeIs('monitoring.bulanan') ? 'active' : '' }}">
                 <div class="menu-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -340,8 +339,8 @@
         <div class="menu-section">
             <div class="section-label">LAPORAN</div>
 
-            {{-- Route belum ada, pakai '#' dulu --}}
-            <a href="#"
+            {{-- Route Laporan Absensi --}}
+            <a href="{{ route('laporan.absensi') }}"
                class="menu-item {{ request()->routeIs('laporan.absensi') ? 'active' : '' }}">
                 <div class="menu-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
@@ -356,9 +355,9 @@
                 <div class="menu-text">Laporan Absensi</div>
             </a>
 
-            {{-- Route belum ada, pakai '#' dulu --}}
-            <a href="#"
-               class="menu-item {{ request()->routeIs('laporan.keterlambatan') ? 'active' : '' }}">
+            {{-- Route Laporan Keterlambatan --}}
+            <a href="{{ route('laporan.terlambat') }}"
+               class="menu-item {{ request()->routeIs('laporan.terlambat') ? 'active' : '' }}">
                 <div class="menu-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -366,12 +365,11 @@
                         <polyline points="12 6 12 12 16 14"></polyline>
                     </svg>
                 </div>
-                <div class="menu-text">Laporan Keterlambatan</div>
-            </a>
+	                <div class="menu-text">Laporan Keterlambatan</div>
+	            </a>
+	        </div>
 
-            
-
-        {{-- ===== PENGATURAN ===== --}}
+	        {{-- ===== PENGATURAN ===== --}}
         {{-- Route pengaturan belum ada, pakai '#' dulu --}}
         <div class="menu-section">
             <div class="section-label">PENGATURAN</div>
@@ -400,7 +398,7 @@
                 <div class="menu-text">Jam Kerja</div>
             </a>
 
-            <a href="#"
+            <a href="{{ route('profile') }}"
                class="menu-item {{ request()->routeIs('profile') ? 'active' : '' }}">
                 <div class="menu-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"

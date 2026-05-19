@@ -1,4 +1,9 @@
-<div class="page-content" id="rekap-harian">
+@extends('layouts.absen')
+
+@section('title', 'Rekap Harian')
+
+@section('content')
+<div class="page-content active" id="rekap-harian">
     <div class="content-title">Rekap Absensi Harian</div>
     <p class="content-description">Data absensi seluruh karyawan hari ini</p>
     
@@ -138,4 +143,5 @@ function showPhoto(nama) {
     alert(`Menampilkan foto ${nama}`);
     // Nanti bisa diganti dengan modal atau lightbox
 }
-    </script>
+</script>
+@endsection

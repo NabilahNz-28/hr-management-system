@@ -845,11 +845,12 @@ window.onload = function() {
                             <polyline points="12 6 12 12 16 14"></polyline>
                         </svg>
                     </div>
-                    <div class="menu-text">Laporan Keterlambatan</div>
-                </div>
-            
-              <!-- SETTINGS SECTION -->
-    <div class="menu-section">
+	                    <div class="menu-text">Laporan Keterlambatan</div>
+	                </div>
+	            </div>
+	            
+	              <!-- SETTINGS SECTION -->
+	    <div class="menu-section">
     <div class="section-label">PENGATURAN</div>
     
     <div class="menu-item" data-page="profile">
@@ -873,11 +874,15 @@ window.onload = function() {
             </svg>
         </div>
         <div class="menu-text">Logout</div>
-    </button>
-</form>
+	    </button>
+	</form>
+	</div>
 
-    <!-- Main Content -->
-    <div id="main-content">
+</div>
+</div>
+
+	    <!-- Main Content -->
+	    <div id="main-content">
         <!-- Topbar -->
         <div class="topbar">
             <button class="toggle-btn" id="sidebarToggle">

@@ -1,5 +1,11 @@
-<!-- Profile Karyawan -->
-<div class="page-content" id="profile-pribadi">
+@extends('layouts.absen')
+
+@section('title', 'Laporan Absensi')
+
+@section('content')
+<div class="container">
+    <!-- Profile Karyawan -->
+    <div class="page-content active" id="profile-pribadi">
     <div class="content-title">Profile Karyawan</div>
     <p class="content-description">Informasi pribadi dan rekap absensi</p>
     
@@ -66,3 +72,6 @@
 <div>
     <p>Total Hari Kerja: <span id="total-hari">30</span> hari</p>
 </div>
+    </div>
+</div>
+@endsection

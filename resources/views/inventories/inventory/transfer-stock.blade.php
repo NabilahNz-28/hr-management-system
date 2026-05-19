@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.pic')
 
 @section('title', 'Transfer Stock')
 
@@ -16,7 +16,7 @@
             <h6 class="m-0 font-weight-bold text-primary">Form Transfer Stock</h6>
         </div>
         <div class="card-body">
-            <form method="POST" action="{{ route('inventories.transfer-stock.store') }}">
+            <form method="POST" action="#">
                 @csrf
                 <div class="row">
                     <div class="col-md-6">
@@ -41,7 +41,7 @@
                             <label>Nama Barang *</label>
                             <select class="form-control" name="barang_id" required>
                                 <option value="">Pilih Barang</option>
-                                @foreach($barang as $item)
+                                @foreach($barang ?? [] as $item)
                                 <option value="{{ $item->id }}">
                                     {{ $item->nama_barang }} ({{ $item->kategori }}) - {{ $item->stok_fisik }} pcs tersedia
                                 </option>

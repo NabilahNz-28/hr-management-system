@@ -1,19 +1,9 @@
-@extends('layouts.app')
+@extends('layouts.pic')
 
 @section('title', 'Stock Opname')
 
 @section('content')
-<div class="container-fluid">
-    <!-- Page Heading -->
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Stock Opname</h1>
-        <button class="btn btn-dark" data-toggle="modal" data-target="#tambahBarangModal">
-            <i class="fas fa-plus mr-2"></i> Tambahkan Barang
-        </button>
-    </div>
-
-    <!-- pakai js yg atas-->
-            <div id="stock-opname" class="page-content">
+<div id="stock-opname" class="page-content">
                 <h1 class="page-title">Stock Opname</h1>
                 <p class="page-subtitle">Kelola stock opname inventory</p>
 
@@ -37,12 +27,12 @@
 
                     <!-- Tombol aksi di kanan: Tambahkan Barang + Input Opname -->
                     <div class="action-buttons">
-                        <button class="btn btn-black" id="add-item-btn">
+                        <a href="{{ route('inventory.tambah-barang') }}" class="btn btn-black">
                             <i class="bi bi-plus-circle me-2"></i> Tambahkan Barang
-                        </button>
-                        <button class="btn btn-black" id="show-opname-form">
-                            <i class="bi bi-plus-circle me-2"></i> Input Opname
-                        </button>
+                        </a>
+                        <a href="{{ route('inventory.input-opname') }}" class="btn btn-black">
+                            <i class="bi bi-card-checklist me-2"></i> Input Opname
+                        </a>
                     </div>
                 </div>
 
@@ -61,6 +51,5 @@
                         </tbody>
                     </table>
                 </div>
-        
-
-      
+</div>
+@endsection
