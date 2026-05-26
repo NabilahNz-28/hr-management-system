@@ -20,10 +20,9 @@
           <label class="form-label">Jenis Izin</label>
           <select class="form-control" name="jenis_izin" required>
             <option value="">Pilih jenis izin</option>
-            <option value="sakit">Sakit</option>
-            <option value="urusan_keluarga">Urusan Keluarga</option>
-            <option value="urusan_pribadi">Urusan Pribadi</option>
-            <option value="lainnya">Lainnya</option>
+            @foreach($leaveTypes as $type)
+              <option value="{{ $type->type_code }}">{{ $type->name }}</option>
+            @endforeach
           </select>
         </div>
       </div>

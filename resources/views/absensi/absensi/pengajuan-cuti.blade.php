@@ -25,11 +25,9 @@
                             <label class="form-label">Jenis Cuti</label>
                             <select class="form-control" required>
                                 <option value="">Pilih jenis cuti</option>
-                                <option value="tahunan">Cuti Tahunan</option>
-                                <option value="melahirkan">Cuti Melahirkan</option>
-                                <option value="besar">Cuti Besar</option>
-                                <option value="sakit">Cuti Sakit</option>
-                                <option value="penting">Cuti Alasan Penting</option>
+                                @foreach($leaveTypes as $type)
+                                    <option value="{{ $type->type_code }}">{{ $type->name }}</option>
+                                @endforeach
                             </select>
                         </div>
                         

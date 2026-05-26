@@ -66,9 +66,10 @@ Route::middleware('auth')->group(function () {
     Route::prefix('absensi')->name('absensi.')->group(function () {
         Route::get('/masuk', fn () => view('absensi.absensi.absen-masuk'))->name('masuk');
         Route::get('/pulang', fn () => view('absensi.absensi.absen-pulang'))->name('pulang');
-        Route::get('/pengajuan-izin', fn () => view('absensi.absensi.pengajuan-izin'))->name('pengajuan-izin');
-
-        Route::get('/cuti', fn () => view('absensi.absensi.pengajuan-cuti'))->name('cuti');
+        
+        // PENGGUNAAN CONTROLLER UNTUK CUTI & IZIN
+        Route::get('/pengajuan-izin', [LeaveController::class, 'createIzin'])->name('pengajuan-izin');
+        Route::get('/cuti', [LeaveController::class, 'createCuti'])->name('cuti');
         Route::post('/cuti', [LeaveController::class, 'store'])->name('cuti.post');
 
         Route::post('/simpan', [AttendanceController::class, 'simpanAbsensi'])->name('simpan');
