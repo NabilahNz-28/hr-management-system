@@ -49,8 +49,8 @@ Route::middleware('auth')->group(function () {
         ->name('dashboard.pic');
 
     // SUPERADMIN
-    Route::get('/superadmin/dashboard', [SuperadminController::class, 'dashboard'])
-        ->name('superadmin.dashboard');
+    Route::get('/dashboard/superadmin', [DashboardController::class, 'superadmin'])
+        ->name('dashboard.superadmin');
 
     Route::post('/superadmin/store-user', [SuperadminController::class, 'storeUser'])
         ->name('superadmin.storeUser');

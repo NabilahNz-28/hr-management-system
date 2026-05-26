@@ -30,7 +30,7 @@ class AuthController extends Controller
 
             // REDIRECT BERDASARKAN ROLE
             if ($userRole === 'superadmin') {
-                return redirect()->intended(route('superadmin.dashboard'));
+                return redirect()->intended(route('dashboard.superadmin'));
             } elseif ($userRole === 'pic') {
                 return redirect()->intended(route('dashboard.selection'));
             } elseif ($userRole === 'karyawan') {

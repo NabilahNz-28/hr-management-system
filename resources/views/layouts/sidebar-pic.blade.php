@@ -216,10 +216,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
 <div id="sidebar">
     <div class="sidebar-header">
         <div class="logo">PIC</div>
-        <div class="brand-text">Dashboard PIC</div>
+        <div class="brand-text">Dashboard PIC </div>
     </div>
 
     <div class="sidebar-menu">
