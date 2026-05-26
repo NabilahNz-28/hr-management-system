@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -15,19 +14,27 @@ class User extends Authenticatable
     /**
      * The attributes that are mass assignable.
      *
-     * @var array<int, string>
+     * Kolom dasar (auth): name, email, password, role
+     * Kolom profile (dari profile.blade.php):
+     *   nik, departemen, jabatan, no_hp, alamat, tgl_bergabung, foto_profile
      */
     protected $fillable = [
         'name',
         'email',
         'password',
         'role',
+        // Kolom profile karyawan
+        'nik',
+        'departemen',
+        'jabatan',
+        'no_hp',
+        'alamat',
+        'tgl_bergabung',
+        'foto_profile',
     ];
 
     /**
      * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
      */
     protected $hidden = [
         'password',
@@ -36,11 +43,22 @@ class User extends Authenticatable
 
     /**
      * The attributes that should be cast.
-     *
-     * @var array<string, string>
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'password' => 'hashed',
+        'password'          => 'hashed',
+        'tgl_bergabung'     => 'date',
     ];
+
+    // ===== RELASI =====
+
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class, 'user_id');
+    }
+
+    public function leaves()
+    {
+        return $this->hasMany(Leave::class, 'karyawan_id');
+    }
 }

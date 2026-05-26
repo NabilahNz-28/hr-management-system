@@ -13,36 +13,25 @@ class Leave extends Model
     protected $primaryKey = 'id';
 
     protected $fillable = [
-        'leave_number',
-        'employee_id',
-        'leave_type_id',
+        'karyawan_id',
+        'jenis',
+        'jenis_detail',   // tambahan: detail jenis dari dropdown blade
         'start_date',
-        'end_date',
-        'total_days',
-        'reason',
+        'end_date',       // nullable (izin 1 hari tidak perlu end_date)
+        'keterangan',
+        'file_path',
         'status',
-        'approved_at',
-        'rejection_reason'
     ];
 
     protected $casts = [
         'start_date' => 'date',
-        'end_date' => 'date',
-        'approved_at' => 'datetime',
+        'end_date'   => 'date',
     ];
 
-    public function employee()
-    {
-        return $this->belongsTo(User::class, 'employee_id');
-    }
+    // ===== RELASI =====
 
-    public function leaveType()
+    public function karyawan()
     {
-        return $this->belongsTo(LeaveType::class, 'leave_type_id');
-    }
-
-    public function documents()
-    {
-        return $this->hasMany(LeaveDocument::class, 'leave_id');
+        return $this->belongsTo(User::class, 'karyawan_id');
     }
 }

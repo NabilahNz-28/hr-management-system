@@ -75,4 +75,24 @@ class SuperadminController extends Controller
 
         return back()->with('success', 'User berhasil ditambahkan!');
     }
+
+    public function approvalIzinCuti()
+    {
+        $pengajuan = \App\Models\Leave::with('karyawan')->orderBy('created_at', 'desc')->get();
+        return view('superadmin.approval.approval-izincuti', compact('pengajuan'));
+    }
+
+    public function approve($id)
+    {
+        $leave = \App\Models\Leave::findOrFail($id);
+        $leave->update(['status' => 'approved']);
+        return back()->with('success', 'Pengajuan berhasil disetujui.');
+    }
+
+    public function reject($id)
+    {
+        $leave = \App\Models\Leave::findOrFail($id);
+        $leave->update(['status' => 'rejected']);
+        return back()->with('success', 'Pengajuan berhasil ditolak.');
+    }
 }

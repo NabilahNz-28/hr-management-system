@@ -55,6 +55,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/superadmin/store-user', [SuperadminController::class, 'storeUser'])
         ->name('superadmin.storeUser');
 
+    Route::get('/superadmin/approval-izincuti', [SuperadminController::class, 'approvalIzinCuti'])
+        ->name('superadmin.approval.izincuti');
+    Route::post('/superadmin/approval-approve/{id}', [SuperadminController::class, 'approve'])
+        ->name('superadmin.approval.approve');
+    Route::post('/superadmin/approval-reject/{id}', [SuperadminController::class, 'reject'])
+        ->name('superadmin.approval.reject');
+
     // ABSENSI
     Route::prefix('absensi')->name('absensi.')->group(function () {
         Route::get('/masuk', fn () => view('absensi.absensi.absen-masuk'))->name('masuk');
