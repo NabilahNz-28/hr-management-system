@@ -1,147 +1,275 @@
 @extends('layouts.absen')
 
-@section('title', 'Rekap Harian')
+@section('title', 'Rekap Harian Personal')
 
 @section('content')
-<div class="page-content active" id="rekap-harian">
-    <div class="content-title">Rekap Absensi Harian</div>
-    <p class="content-description">Data absensi seluruh karyawan hari ini</p>
-    
-    <div style="display: flex; gap: 16px; margin-bottom: 20px;">
-        <input type="date" id="tanggal" class="form-control" style="width: 200px;" value="2025-12-24">
-        <select id="departemen" class="form-control" style="width: 200px;">
-            <option value="all">Semua Departemen</option>
-            <option value="it">IT</option>
-            <option value="hrd">HRD</option>
-            <option value="finance">Finance</option>
-            <option value="marketing">Marketing</option>
-        </select>
-        <button class="btn btn-primary" onclick="filterData()">Filter</button>
-        <button id="btnExportExcel" class="btn btn-success">Export Excel</button>
-    </div>
-    
-    <div id="resultContainer">
-        <!-- Tabel hasil filter akan muncul di sini -->
+<div class="dashboard-content">
+    <div class="page-content active" id="rekap-harian-personal">
+        <div class="content-title">Rekap Absensi Harian Saya</div>
+        <p class="content-description">Data absensi pribadi Anda hari ini</p>
+        
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <div class="filter-group">
+                <label>Tanggal</label>
+                <input type="date" id="tanggal" class="form-control" value="{{ date('Y-m-d') }}">
+            </div>
+            
+            <button class="btn-filter" onclick="filterData()">Filter</button>
+            <button id="btnExportExcel" class="btn-filter" style="background: #10b981;">Export Excel</button>
+        </div>
+        
+        <!-- Profile Ringkasan -->
+        <div class="profile-info-card" style="margin-bottom: 20px;">
+            <div class="profile-info-grid-laporan">
+                <div class="info-item">
+                    <span class="info-label">Nama</span>
+                    <span class="info-value" id="profile-nama">Ahmad Wijaya</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">NIK</span>
+                    <span class="info-value" id="profile-nik">001</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Departemen</span>
+                    <span class="info-value" id="profile-departemen">IT</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Jabatan</span>
+                    <span class="info-value" id="profile-jabatan">Staff IT</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Result Container -->
+        <div id="resultContainer">
+            <!-- Tabel hasil filter akan muncul di sini -->
+        </div>
     </div>
 </div>
 
 <script>
-    // Fungsi export ke Excel (mengambil data langsung dari tabel)
-function exportToExcel() {
-    const tanggal = document.querySelector('#rekap-harian input[type="date"]').value;
-    const departemen = document.querySelector('#rekap-harian select').value;
-    
-    // Ambil tabel
-    const table = document.querySelector('#rekap-harian .data-table');
-    
-    // Buat salinan tabel untuk dimodifikasi
-    const tableClone = table.cloneNode(true);
-    
-    // Hapus kolom "Foto" dari tabel clone (kolom terakhir)
-    const rows = tableClone.querySelectorAll('tr');
-    rows.forEach(row => {
-        const lastCell = row.lastElementChild;
-        if (lastCell && (lastCell.textContent.includes('Lihat') || lastCell.textContent === '-')) {
-            row.removeChild(lastCell);
-        }
-    });
-    
-    // Hapus header "Foto"
-    const headerRow = tableClone.querySelector('thead tr');
-    if (headerRow.lastElementChild) {
-        headerRow.removeChild(headerRow.lastElementChild);
-    }
-    
-    // Siapkan konten Excel
-    let excelContent = '<table>';
-    
-    // Tambahkan judul
-    excelContent += '<tr><td colspan="5" style="font-size: 14px; font-weight: bold; text-align: center; background-color: #4CAF50; color: white; padding: 10px;">REKAP ABSENSI HARIAN</td></tr>';
-    excelContent += `<tr><td colspan="5" style="text-align: center; padding: 5px;">Tanggal: ${tanggal} | Departemen: ${departemen === 'all' ? 'Semua Departemen' : departemen.toUpperCase()}</td></tr>`;
-    excelContent += '<tr><td colspan="5" style="padding: 5px;"></td></tr>';
-    
-    // Style untuk header
-    excelContent += '<tr>';
-    const headers = tableClone.querySelectorAll('thead th');
-    headers.forEach(header => {
-        excelContent += `<th style="background-color: #2196F3; color: white; padding: 10px; border: 1px solid #ddd; font-weight: bold;">${header.textContent}</th>`;
-    });
-    excelContent += '</tr>';
-    
-    // Style untuk data
-    const dataRows = tableClone.querySelectorAll('tbody tr');
-    dataRows.forEach((row, index) => {
-        excelContent += '<tr>';
-        const cells = row.querySelectorAll('td');
-        cells.forEach(cell => {
-            // Ambil text content dari cell (termasuk dari span status badge)
-            let cellContent = cell.textContent.trim();
-            
-            // Style khusus untuk kolom status
-            if (cell.querySelector('.status-badge')) {
-                const badge = cell.querySelector('.status-badge');
-                let bgColor = '#4CAF50'; // default hijau
-                if (badge.classList.contains('status-late')) bgColor = '#FF9800';
-                if (badge.classList.contains('status-absent')) bgColor = '#f44336';
-                
-                excelContent += `<td style="text-align: center; padding: 8px; border: 1px solid #ddd; background-color: ${bgColor}; color: white; font-weight: bold;">${cellContent}</td>`;
-            } else {
-                excelContent += `<td style="text-align: center; padding: 8px; border: 1px solid #ddd;">${cellContent}</td>`;
-            }
-        });
-        excelContent += '</tr>';
-    });
-    
-    excelContent += '</table>';
-    
-    // Buat blob dan download
-    const blob = new Blob([excelContent], { 
-        type: 'application/vnd.ms-excel;charset=utf-8' 
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Rekap_Absensi_${tanggal.replace(/-/g, '')}.xls`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-}
+    // Data profile karyawan yang login
+    const profileKaryawan = {
+        nama: 'Ahmad Wijaya',
+        nik: '001',
+        departemen: 'IT',
+        jabatan: 'Staff IT'
+    };
 
-// Fungsi filter sederhana (bisa dikembangkan nanti)
-function filterTable() {
-    const departemen = document.querySelector('#rekap-harian select').value;
-    const rows = document.querySelectorAll('#rekap-harian tbody tr');
-    
-    rows.forEach(row => {
-        const deptCell = row.cells[1]; // Kolom Departemen (index 1)
-        if (departemen === 'all' || deptCell.textContent.toLowerCase() === departemen.toLowerCase()) {
-            row.style.display = '';
+    // Data dummy absensi personal (harian)
+    const dataAbsensiPersonal = {
+        '2025-05-01': { jam_masuk: '07:55', jam_pulang: '16:30', status: 'Hadir', keterangan: '-' },
+        '2025-05-02': { jam_masuk: '07:50', jam_pulang: '16:25', status: 'Hadir', keterangan: '-' },
+        '2025-05-03': { jam_masuk: '08:15', jam_pulang: '16:45', status: 'Terlambat', keterangan: 'Macet' },
+        '2025-05-04': { jam_masuk: '-', jam_pulang: '-', status: 'Libur', keterangan: 'Hari Libur Nasional' },
+        '2025-05-05': { jam_masuk: '07:48', jam_pulang: '16:30', status: 'Hadir', keterangan: '-' },
+        '2025-05-06': { jam_masuk: '08:20', jam_pulang: '16:50', status: 'Terlambat', keterangan: 'Bangun kesiangan' },
+        '2025-05-07': { jam_masuk: '07:52', jam_pulang: '16:28', status: 'Hadir', keterangan: '-' },
+        '2025-05-08': { jam_masuk: '-', jam_pulang: '-', status: 'Izin', keterangan: 'Ada keperluan keluarga' },
+        '2025-05-09': { jam_masuk: '07:45', jam_pulang: '16:20', status: 'Hadir', keterangan: '-' },
+        '2025-05-10': { jam_masuk: '-', jam_pulang: '-', status: 'Libur', keterangan: 'Hari Libur Sabtu' },
+        '2025-05-11': { jam_masuk: '-', jam_pulang: '-', status: 'Libur', keterangan: 'Hari Libur Minggu' },
+        '2025-05-12': { jam_masuk: '08:05', jam_pulang: '16:35', status: 'Hadir', keterangan: '-' },
+        '2025-05-13': { jam_masuk: '08:10', jam_pulang: '16:40', status: 'Hadir', keterangan: '-' },
+        '2025-05-14': { jam_masuk: '07:55', jam_pulang: '16:30', status: 'Hadir', keterangan: '-' },
+        '2025-05-15': { jam_masuk: '-', jam_pulang: '-', status: 'Cuti', keterangan: 'Cuti tahunan' },
+        '2025-05-16': { jam_masuk: '07:50', jam_pulang: '16:25', status: 'Hadir', keterangan: '-' }
+    };
+
+    // Status badge mapping (tanpa emoji, tanpa simbol)
+    function getStatusBadge(status) {
+        switch(status) {
+            case 'Hadir':
+                return '<span class="status-badge status-present">Hadir</span>';
+            case 'Terlambat':
+                return '<span class="status-badge status-late">Terlambat</span>';
+            case 'Absen':
+                return '<span class="status-badge status-absent">Absen</span>';
+            case 'Izin':
+                return '<span class="status-badge status-wfh">Izin</span>';
+            case 'Cuti':
+                return '<span class="status-badge status-wfh">Cuti</span>';
+            case 'Libur':
+                return '<span class="status-badge status-early">Libur</span>';
+            default:
+                return '<span class="status-badge">-</span>';
+        }
+    }
+
+    // Update profile di halaman
+    function updateProfile() {
+        document.getElementById('profile-nama').textContent = profileKaryawan.nama;
+        document.getElementById('profile-nik').textContent = profileKaryawan.nik;
+        document.getElementById('profile-departemen').textContent = profileKaryawan.departemen;
+        document.getElementById('profile-jabatan').textContent = profileKaryawan.jabatan;
+    }
+
+    // Render tabel
+    function renderTable(data, tanggal) {
+        const container = document.getElementById('resultContainer');
+        
+        if (!data) {
+            container.innerHTML = `
+                <div class="success-message" style="background: #fef3c7; border-color: #fbbf24;">
+                    <div class="emoji-big" style="font-size: 3rem;">📭</div>
+                    <h3 style="color: #92400e;">Belum Ada Data</h3>
+                    <p style="color: #92400e;">Data absensi untuk tanggal ${tanggal} belum tersedia.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        let statusRingkasan = '';
+        let ringkasanClass = '';
+        
+        if (data.status === 'Hadir') {
+            ringkasanClass = 'status-present';
+            statusRingkasan = 'Hadir';
+        } else if (data.status === 'Terlambat') {
+            ringkasanClass = 'status-late';
+            statusRingkasan = 'Terlambat';
+        } else if (data.status === 'Izin') {
+            ringkasanClass = 'status-wfh';
+            statusRingkasan = 'Izin';
+        } else if (data.status === 'Cuti') {
+            ringkasanClass = 'status-wfh';
+            statusRingkasan = 'Cuti';
+        } else if (data.status === 'Libur') {
+            ringkasanClass = 'status-early';
+            statusRingkasan = 'Libur';
         } else {
-            row.style.display = 'none';
+            ringkasanClass = 'status-absent';
+            statusRingkasan = 'Absen';
         }
+        
+        let tabelHTML = `
+            <div class="info-summary" style="margin-bottom: 20px; justify-content: space-between; flex-wrap: wrap;">
+                <p>📅 Tanggal: <strong>${tanggal}</strong></p>
+                <p>Status: <span class="status-badge ${ringkasanClass}" style="margin-left: 5px;">${statusRingkasan}</span></p>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="data-table-laporan">
+                    <thead>
+                        <tr>
+                            <th>Keterangan</th>
+                            <th>Detail</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="width: 200px; font-weight: 600;">Jam Masuk</td>
+                            <td>${data.jam_masuk}</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 600;">Jam Pulang</td>
+                            <td>${data.jam_pulang}</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 600;">Keterangan / Alasan</td>
+                            <td>${data.keterangan || '-'}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        container.innerHTML = tabelHTML;
+    }
+
+    // Filter data
+    function filterData() {
+        const tanggal = document.getElementById('tanggal').value;
+        
+        let data = dataAbsensiPersonal[tanggal];
+        
+        renderTable(data, tanggal);
+        
+        console.log(`Menampilkan data absensi untuk tanggal: ${tanggal}`);
+    }
+
+    // Export ke Excel
+    function exportToExcel() {
+        const tanggal = document.getElementById('tanggal').value;
+        const data = dataAbsensiPersonal[tanggal];
+        
+        if (!data) {
+            alert('Tidak ada data untuk tanggal yang dipilih');
+            return;
+        }
+        
+        let excelContent = `
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>Rekap Absensi Harian Personal</title>
+                <style>
+                    th { background: #2c7da0; color: white; padding: 8px; }
+                    td { padding: 6px; border: 1px solid #ddd; }
+                </style>
+            </head>
+            <body>
+                <h2>REKAP ABSENSI HARIAN PERSONAL</h2>
+                <p>Nama: ${profileKaryawan.nama}</p>
+                <p>NIK: ${profileKaryawan.nik}</p>
+                <p>Departemen: ${profileKaryawan.departemen}</p>
+                <p>Tanggal: ${tanggal}</p>
+                <table border="1" cellpadding="5" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Keterangan</th>
+                            <th>Detail</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Status</td>
+                            <td>${data.status}</td>
+                        </tr>
+                        <tr>
+                            <td>Jam Masuk</td>
+                            <td>${data.jam_masuk}</td>
+                        </tr>
+                        <tr>
+                            <td>Jam Pulang</td>
+                            <td>${data.jam_pulang}</td>
+                        </tr>
+                        <tr>
+                            <td>Keterangan / Alasan</td>
+                            <td>${data.keterangan || '-'}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </body>
+            </html>
+        `;
+        
+        const blob = new Blob([excelContent], { type: 'application/vnd.ms-excel' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Rekap_Absensi_Personal_${tanggal}.xls`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // Event listener
+    document.addEventListener('DOMContentLoaded', function() {
+        // Update profile
+        updateProfile();
+        
+        // Set default tanggal hari ini
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('tanggal').value = today;
+        
+        // Render awal
+        filterData();
+        
+        // Event listener export
+        document.getElementById('btnExportExcel').addEventListener('click', exportToExcel);
     });
-}
-
-// Event listener
-document.addEventListener('DOMContentLoaded', function() {
-    // Tombol Export Excel
-    const btnExport = document.querySelector('#rekap-harian .btn-success');
-    if (btnExport) {
-        btnExport.addEventListener('click', exportToExcel);
-    }
-    
-    // Tombol Filter
-    const btnFilter = document.querySelector('#rekap-harian .btn-primary');
-    if (btnFilter) {
-        btnFilter.addEventListener('click', filterTable);
-    }
-});
-
-// Fungsi showPhoto (placeholder)
-function showPhoto(nama) {
-    alert(`Menampilkan foto ${nama}`);
-    // Nanti bisa diganti dengan modal atau lightbox
-}
 </script>
 @endsection

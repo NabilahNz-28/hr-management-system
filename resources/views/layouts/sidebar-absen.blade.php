@@ -374,30 +374,6 @@
         <div class="menu-section">
             <div class="section-label">PENGATURAN</div>
 
-            <a href="#"
-               class="menu-item {{ request()->routeIs('pengaturan.lokasi') ? 'active' : '' }}">
-                <div class="menu-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                        <circle cx="12" cy="10" r="3"></circle>
-                    </svg>
-                </div>
-                <div class="menu-text">Lokasi Kantor</div>
-            </a>
-
-            <a href="#"
-               class="menu-item {{ request()->routeIs('pengaturan.jam-kerja') ? 'active' : '' }}">
-                <div class="menu-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <polyline points="12 6 12 12 16 14"></polyline>
-                    </svg>
-                </div>
-                <div class="menu-text">Jam Kerja</div>
-            </a>
-
             <a href="{{ route('profile') }}"
                class="menu-item {{ request()->routeIs('profile') ? 'active' : '' }}">
                 <div class="menu-icon">

@@ -3,73 +3,130 @@
 @section('title', 'Data Karyawan')
 
 @section('content')
-<div class="container-fluid py-4">
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800" style="font-weight: 600;">Data Karyawan</h1>
-        <a href="{{ route('superadmin.karyawan.create') }}" class="btn btn-primary shadow-sm" style="background-color: #3b82f6; border-color: #3b82f6;">
-            + Tambah Karyawan
-        </a>
-    </div>
+<div class="dashboard-content">
+    <div class="page-content active" id="data-karyawan">
+        <div class="content-title">Data Karyawan</div>
+        <p class="content-description">Kelola data seluruh karyawan perusahaan</p>
 
-    <div class="card shadow mb-4" style="border: none; border-radius: 8px;">
-        <div class="card-header py-3 d-flex justify-content-between align-items-center" style="background-color: #fff; border-bottom: 1px solid #e2e8f0;">
-            <h6 class="m-0 font-weight-bold" style="color: #3b82f6;">Daftar Karyawan Terdaftar</h6>
+        <!-- Header Action -->
+        <div class="action-header">
+            <a href="{{ route('superadmin.karyawan.create') }}" class="btn btn-primary btn-small">
+                + Tambah Karyawan
+            </a>
             
-            <!-- Search Form -->
-            <form action="{{ route('superadmin.karyawan.index') }}" method="GET" class="form-inline">
-                <div class="input-group">
-                    <input type="text" name="search" class="form-control form-control-sm" placeholder="Cari nama karyawan..." value="{{ request('search') }}">
-                    <div class="input-group-append">
-                        <button class="btn btn-sm btn-outline-secondary" type="submit">Cari</button>
-                    </div>
+            <form action="{{ route('superadmin.karyawan.index') }}" method="GET" class="search-form">
+                <div class="search-group">
+                    <input type="text" name="search" class="form-control" placeholder="Cari nama karyawan..." value="{{ request('search') }}">
+                    <button type="submit" class="btn-search">Cari</button>
                 </div>
             </form>
         </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover" width="100%" cellspacing="0" style="color: #334155;">
-                    <thead style="background-color: #f8fafc;">
-                        <tr>
-                            <th width="5%">No</th>
-                            <th width="30%">Nama Lengkap</th>
-                            <th width="25%">Email</th>
-                            <th width="15%">Role</th>
-                            <th width="15%">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($karyawan ?? [] as $index => $item)
-                        <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td>
-                                <!-- Link untuk melihat detail rincian absensi/cuti per karyawan -->
-                                <a href="{{ route('superadmin.karyawan.show', $item->id) }}" style="color: #1e293b; text-decoration: none; font-weight: 500;">
-                                    {{ $item->name }}
-                                </a>
-                            </td>
-                            <td>{{ $item->email }}</td>
-                            <td>
-                                <span class="badge" style="background-color: #e2e8f0; color: #475569; padding: 6px 10px; font-weight: 500;">
-                                    {{ $item->role }}
-                                </span>
-                            </td>
-                            <td>
-                                <a href="{{ route('superadmin.karyawan.show', $item->id) }}" class="btn btn-sm btn-info" style="font-size: 12px;">Detail & Absen</a>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="5" class="text-center py-4 text-muted">Data karyawan tidak ditemukan.</td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Pagination (1-10, 11-20 dst) -->
-            <div class="mt-3">
-                {{ $karyawan->links('pagination::bootstrap-4') ?? '' }}
-            </div>
+
+        <!-- Tabel Karyawan -->
+        <div class="table-responsive">
+            <table class="data-table-laporan">
+                <thead>
+                    <tr>
+                        <th width="5%">No</th>
+                        <th width="20%">Nama Lengkap</th>
+                        <th width="15%">NIK</th>
+                        <th width="20%">Email</th>
+                        <th width="10%">Departemen</th>
+                        <th width="10%">Jabatan</th>
+                        <th width="10%">Role</th>
+                        <th width="10%">Status</th>
+                        <th width="10%">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($karyawan ?? [] as $index => $item)
+                    <tr>
+                        <td class="text-center">{{ $index + 1 }}</td>
+                        <td>
+                            <a href="{{ route('superadmin.karyawan.show', $item->id) }}" class="link-detail">
+                                {{ $item->name }}
+                            </a>
+                        </td>
+                        <td>{{ $item->nik ?? '-' }}</td>
+                        <td>{{ $item->email }}</td>
+                        <td>{{ $item->departemen ?? '-' }}</td>
+                        <td>{{ $item->jabatan ?? '-' }}</td>
+                        <td>
+                            @php
+                                $roleClass = '';
+                                $roleText = '';
+                                switch($item->role) {
+                                    case 'superadmin':
+                                        $roleClass = 'role-superadmin';
+                                        $roleText = 'Super Admin';
+                                        break;
+                                    case 'admin':
+                                        $roleClass = 'role-admin';
+                                        $roleText = 'Admin';
+                                        break;
+                                    case 'inventory':
+                                        $roleClass = 'role-inventory';
+                                        $roleText = 'Inventory';
+                                        break;
+                                    default:
+                                        $roleClass = 'role-karyawan';
+                                        $roleText = 'Karyawan';
+                                }
+                            @endphp
+                            <span class="role-badge {{ $roleClass }}">{{ $roleText }}</span>
+                        </td>
+                        <td>
+                            @php
+                                $statusClass = $item->status === 'aktif' ? 'status-active' : 'status-inactive';
+                                $statusText = $item->status === 'aktif' ? 'Aktif' : 'Nonaktif';
+                            @endphp
+                            <span class="status-badge {{ $statusClass }}">{{ $statusText }}</span>
+                        </td>
+                        <td class="action-buttons">
+                            <a href="{{ route('superadmin.karyawan.show', $item->id) }}" class="btn-action btn-view" title="Detail">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </a>
+                            <a href="{{ route('superadmin.karyawan.edit', $item->id) }}" class="btn-action btn-edit" title="Edit">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17 3l4 4-7 7H10v-4l7-7z"></path>
+                                    <path d="M4 20h16"></path>
+                                </svg>
+                            </a>
+                            <form action="{{ route('superadmin.karyawan.destroy', $item->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Yakin ingin menghapus karyawan ini?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn-action btn-delete" title="Hapus">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0h10"></path>
+                                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                                    </svg>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="9" class="text-center py-4 text-muted">
+                            <div class="empty-state">
+                                <div class="empty-icon">📭</div>
+                                <p>Data karyawan tidak ditemukan</p>
+                                <a href="{{ route('superadmin.karyawan.create') }}" class="btn btn-primary btn-small mt-2">Tambah Karyawan</a>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-container">
+            {{ $karyawan->links('pagination::bootstrap-4') ?? '' }}
         </div>
     </div>
 </div>

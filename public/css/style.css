@@ -1002,6 +1002,766 @@ body {
     text-align: center;
 }
 
+/* =========================================== */
+/* LAPORAN KETERLAMBATAN & LAPORAN ABSENSI     */
+/* Gaya formal casual, tombol kecil, rapi      */
+/* =========================================== */
+
+/* Filter Section (Dropdown + Button) */
+.filter-section {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.filter-group label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #4a627a;
+}
+
+.filter-group select {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.85rem;
+    border: 1px solid #dce3ec;
+    border-radius: 12px;
+    background: white;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-group select:focus {
+    outline: none;
+    border-color: #2c7da0;
+    box-shadow: 0 0 0 3px rgba(44, 125, 160, 0.1);
+}
+
+.btn-filter {
+    background: #2c7da0;
+    border: none;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 0.5rem 1.2rem;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 0;
+    min-height: auto;
+}
+
+.btn-filter:hover {
+    background: #1f5e7a;
+    transform: translateY(-1px);
+}
+
+/* Info Summary Card */
+.info-summary {
+    background: linear-gradient(135deg, #eef2ff 0%, #e6f0fa 100%);
+    padding: 14px 20px;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #dce7f0;
+}
+
+.info-summary p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #1e3c72;
+}
+
+.info-summary span {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #2c7da0;
+}
+
+/* Success Message (Sanjungan) */
+.success-message {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    border-radius: 20px;
+    padding: 32px 24px;
+    text-align: center;
+    border: 1px solid #86efac;
+}
+
+.success-message .emoji-big {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 12px;
+}
+
+.success-message h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #065f46;
+    margin-bottom: 8px;
+}
+
+.success-message p {
+    color: #047857;
+    margin-bottom: 8px;
+}
+
+.success-message .stars {
+    font-size: 1.5rem;
+    letter-spacing: 4px;
+    color: #f59e0b;
+    margin-top: 12px;
+}
+
+/* Table Styles untuk Laporan */
+.data-table-laporan {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.data-table-laporan thead tr {
+    background: #f1f5f9;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.data-table-laporan th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #4a627a;
+}
+
+.data-table-laporan td {
+    padding: 12px 16px;
+    font-size: 0.85rem;
+    color: #334155;
+    border-bottom: 1px solid #f0f2f5;
+}
+
+.data-table-laporan tbody tr:hover {
+    background: #fafcff;
+}
+
+/* Rekap Absensi (Card Stats di Laporan Absensi) */
+.rekap-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+}
+
+.rekap-card {
+    background: white;
+    border-radius: 20px;
+    padding: 20px 16px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid #eef2f8;
+    transition: all 0.2s;
+}
+
+.rekap-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+.rekap-card .rekap-value {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #1e3c72;
+    line-height: 1.2;
+}
+
+.rekap-card .rekap-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: #6c7e97;
+    margin-top: 8px;
+}
+
+.rekap-card .rekap-unit {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    margin-top: 4px;
+}
+
+/* Profile Info dalam Laporan Absensi */
+.profile-info-card {
+    background: #f8fafc;
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 24px;
+    border: 1px solid #eef2f8;
+}
+
+.profile-info-grid-laporan {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px 20px;
+}
+
+.profile-info-grid-laporan .info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.profile-info-grid-laporan .info-item .info-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #6c7e97;
+}
+
+.profile-info-grid-laporan .info-item .info-value {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #1e3c72;
+}
+
+/* Total Hari Kerja */
+.total-hari-card {
+    background: #eef2ff;
+    border-radius: 14px;
+    padding: 12px 20px;
+    text-align: center;
+    margin-top: 20px;
+    border: 1px solid #dce7f0;
+}
+
+.total-hari-card span {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #2c7da0;
+}
+
+/* Responsive untuk Laporan */
+@media (max-width: 640px) {
+    .filter-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-group select {
+        width: 100%;
+    }
+    
+    .btn-filter {
+        width: 100%;
+        padding: 0.6rem;
+    }
+    
+    .info-summary {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+    }
+    
+    .rekap-stats {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+    
+    .rekap-card {
+        padding: 14px;
+    }
+    
+    .rekap-card .rekap-value {
+        font-size: 1.6rem;
+    }
+    
+    .data-table-laporan {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+    
+    .data-table-laporan th,
+    .data-table-laporan td {
+        padding: 8px 12px;
+        font-size: 0.75rem;
+    }
+    
+    .profile-info-grid-laporan {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+}
+
+/* =========================================== */
+/* PROFILE SUPERADMIN                          */
+/* =========================================== */
+
+/* Card Profile Superadmin */
+.profile-card-superadmin {
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.02);
+    padding: 2rem;
+    transition: box-shadow 0.2s;
+}
+
+.profile-card-superadmin:hover {
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+}
+
+/* Avatar Section Superadmin */
+.avatar-section-superadmin {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.avatar-wrapper-superadmin {
+    position: relative;
+    margin-bottom: 0.75rem;
+}
+
+.avatar-wrapper-superadmin img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+    background: #eef2f6;
+}
+
+.btn-avatar-superadmin {
+    background: linear-gradient(135deg, #2c7da0, #1e4e6e);
+    border: none;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 0.35rem 1rem;
+    border-radius: 30px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all 0.2s;
+}
+
+.btn-avatar-superadmin:hover {
+    background: linear-gradient(135deg, #1f5e7a, #163d54);
+    transform: translateY(-1px);
+}
+
+/* Role Badge */
+.role-badge {
+    text-align: center;
+    margin-bottom: 1.8rem;
+}
+
+.role-badge-text {
+    display: inline-block;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.35rem 1.2rem;
+    border-radius: 40px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* Form Superadmin */
+.profile-form-superadmin {
+    margin-bottom: 1.8rem;
+}
+
+.form-row-superadmin {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem;
+    margin-bottom: 1.2rem;
+}
+
+@media (max-width: 640px) {
+    .form-row-superadmin {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+.form-group-superadmin {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.form-group-superadmin label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #4a627a;
+}
+
+/* Password Section Superadmin */
+.password-section-superadmin {
+    border-top: 1px solid #eef2f8;
+    padding-top: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.password-section-superadmin h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1e3c72;
+    margin-bottom: 1rem;
+}
+
+.password-form-superadmin {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    max-width: 360px;
+}
+
+/* Logout Section Superadmin */
+.logout-section-superadmin {
+    border-top: 1px solid #eef2f8;
+    padding-top: 1.5rem;
+    text-align: center;
+}
+
+/* Form Actions */
+.form-actions-superadmin {
+    margin-top: 0.5rem;
+    text-align: right;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .profile-card-superadmin {
+        padding: 1.25rem;
+    }
+    
+    .avatar-wrapper-superadmin img {
+        width: 90px;
+        height: 90px;
+    }
+    
+    .role-badge-text {
+        font-size: 0.65rem;
+        padding: 0.25rem 1rem;
+    }
+    
+    .password-form-superadmin {
+        max-width: 100%;
+    }
+    
+    .form-actions-superadmin {
+        text-align: center;
+    }
+}
+
+/* =========================================== */
+/* DATA KARYAWAN & INSERT KARYAWAN             */
+/* =========================================== */
+
+/* Action Header */
+.action-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.search-form {
+    margin: 0;
+}
+
+.search-group {
+    display: flex;
+    gap: 8px;
+}
+
+.search-group .form-control {
+    width: 250px;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.85rem;
+}
+
+.btn-search {
+    background: #2c7da0;
+    border: none;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-search:hover {
+    background: #1f5e7a;
+}
+
+/* Link Detail */
+.link-detail {
+    color: #1e3c72;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.link-detail:hover {
+    color: #2c7da0;
+    text-decoration: underline;
+}
+
+/* Role Badges */
+.role-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.role-superadmin {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+.role-admin {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+}
+
+.role-inventory {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.role-karyawan {
+    background: #e2e8f0;
+    color: #475569;
+}
+
+/* Status Badges */
+.status-active {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-inactive {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-view {
+    background: #e0f2fe;
+    color: #0284c7;
+}
+
+.btn-view:hover {
+    background: #bae6fd;
+    transform: translateY(-1px);
+}
+
+.btn-edit {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.btn-edit:hover {
+    background: #fde68a;
+    transform: translateY(-1px);
+}
+
+.btn-delete {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.btn-delete:hover {
+    background: #fecaca;
+    transform: translateY(-1px);
+}
+
+/* Form Card */
+.form-card {
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid #eef2f8;
+    padding: 24px;
+}
+
+.form-section {
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eef2f8;
+}
+
+.form-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.form-section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1e3c72;
+    margin-bottom: 20px;
+    padding-left: 8px;
+    border-left: 4px solid #2c7da0;
+}
+
+.form-row-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.full-width {
+    grid-column: span 2;
+}
+
+.required {
+    color: #ef4444;
+    margin-left: 2px;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.empty-icon {
+    font-size: 3rem;
+    margin-bottom: 12px;
+    opacity: 0.5;
+}
+
+.empty-state p {
+    color: #6c7e97;
+    margin-bottom: 8px;
+}
+
+/* Pagination Container */
+.pagination-container {
+    margin-top: 24px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.pagination-container nav {
+    display: inline-block;
+}
+
+.pagination-container .pagination {
+    margin: 0;
+    flex-wrap: wrap;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .action-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-group {
+        width: 100%;
+    }
+    
+    .search-group .form-control {
+        width: 100%;
+    }
+    
+    .form-row-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .full-width {
+        grid-column: span 1;
+    }
+    
+    .form-card {
+        padding: 16px;
+    }
+    
+    .action-buttons {
+        flex-wrap: wrap;
+    }
+    
+    .btn-action {
+        width: 28px;
+        height: 28px;
+    }
+}
+
+@media (max-width: 640px) {
+    .data-table-laporan {
+        font-size: 0.75rem;
+    }
+    
+    .data-table-laporan th,
+    .data-table-laporan td {
+        padding: 8px 10px;
+    }
+    
+    .role-badge {
+        font-size: 0.65rem;
+        padding: 2px 8px;
+    }
+}
+
 .mt-1 { margin-top: 4px; }
 .mt-2 { margin-top: 8px; }
 .mt-3 { margin-top: 12px; }
