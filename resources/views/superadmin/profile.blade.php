@@ -1,4 +1,4 @@
-@extends('layouts.absen')
+@extends('layouts.superadmin')
 
 @section('title', 'Profile Super Administrator')
 

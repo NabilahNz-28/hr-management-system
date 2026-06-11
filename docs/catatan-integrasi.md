@@ -176,3 +176,123 @@ Jika *class* bawaan tidak cukup membantu, Anda bisa menaruh CSS khusus mobile di
     }
 }
 ```
+
+---
+
+## 8. Tombol Logout Tidak Bereaksi (Silent JavaScript Error)
+
+**Kasus:** Tombol **Logout** di sidebar PIC diklik, namun tidak ada konfirmasi yang muncul dan tidak terjadi apa-apa.
+
+**Penyebab:** Atribut `onclick` pada elemen `<a>` logout memanggil fungsi JavaScript yang **tidak pernah didefinisikan**. Dalam hal ini, fungsi `showLogoutModal()` dipanggil, padahal yang terdefinisi di bagian bawah file adalah `confirmLogout()`. Browser mengalami `ReferenceError` secara diam-diam (silent), sehingga tidak ada tindakan yang dijalankan.
+
+**Lokasi File:** `resources/views/layouts/sidebar-pic.blade.php`
+
+**Solusi:**
+Pastikan nama fungsi yang dipanggil di `onclick` **benar-benar sama persis** dengan nama fungsi yang didefinisikan di blok `<script>` dalam file yang sama.
+
+```diff
+- onclick="event.preventDefault(); showLogoutModal();"
++ onclick="event.preventDefault(); confirmLogout();"
+```
+
+> **Tips:** Sebelum deploy, buka DevTools browser (F12 → tab Console) dan klik tombol yang bermasalah. Jika ada pesan `ReferenceError: showLogoutModal is not defined`, berarti fungsi yang dipanggil tidak ada.
+
+---
+
+## 9. Login Superadmin Gagal: `View [layouts.superadmin] not found`
+
+**Kasus:** Setelah login sebagai superadmin, muncul layar merah dengan pesan `InvalidArgumentException: View [layouts.superadmin] not found.`
+
+**Penyebab:** Semua halaman superadmin (mis. `dashboard-superadmin.blade.php`) menggunakan `@extends('layouts.superadmin')`, namun file layout tersebut (`resources/views/layouts/superadmin.blade.php`) **belum pernah dibuat**. Layout untuk superadmin terlewat dibuat saat migrasi.
+
+**Solusi:**
+Buat file layout `resources/views/layouts/superadmin.blade.php` yang mengikutkan sidebar dan topbar superadmin:
+
+```blade
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>@yield('title', 'Superadmin')</title>
+  <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+  @yield('styles')
+</head>
+<body>
+  @include('layouts.sidebar-superadmin')
+  <div id="main-content" class="main-content">
+    @include('layouts.topbar-absen')
+    <div class="dashboard-content">
+      @yield('content')
+    </div>
+  </div>
+  <script src="{{ asset('js/script.js') }}"></script>
+  @yield('scripts')
+</body>
+</html>
+```
+
+> **Aturan:** Setiap role (karyawan, PIC, superadmin) **wajib memiliki file layout-nya sendiri** di folder `resources/views/layouts/`. Jika file layout tidak ada, semua halaman yang menggunakan `@extends()` akan langsung error.
+
+---
+
+## 10. Login Superadmin Gagal: `Route [superadmin.dashboard] not defined`
+
+**Kasus:** Setelah layout dibuat dan login berhasil, muncul layar merah baru: `RouteNotFoundException: Route [superadmin.dashboard] not defined.` Error ini muncul dari `sidebar-superadmin.blade.php`.
+
+**Penyebab (berlapis-lapis):** Ada tiga masalah sekaligus:
+
+1. **Home redirect menggunakan nama route lama.** Di `routes/web.php`, saat superadmin login redirect awalnya mengarah ke `superadmin.dashboard`, namun di commit sebelumnya route itu sudah **diganti namanya** menjadi `dashboard.superadmin`.
+
+2. **Sidebar menggunakan route yang belum terdefinisi.** `sidebar-superadmin.blade.php` memanggil 7 route sekaligus yang tidak ada di `routes/web.php`:
+   - `superadmin.dashboard` (sudah diubah namanya)
+   - `superadmin.karyawan.index`, `.create`, `.store`, `.show`, `.edit`, `.update`, `.destroy`
+   - `superadmin.approval.index`
+   - `superadmin.inventory.index`
+   - `superadmin.transfer.index`
+   - `superadmin.profile`
+
+3. **`ProfileController` tidak di-import** di `routes/web.php`, padahal dipakai di route inventory profile PIC.
+
+**Solusi:**
+
+**A. Perbaiki redirect di `routes/web.php`:**
+```diff
+- 'superadmin' => redirect()->route('superadmin.dashboard'),
++ 'superadmin' => redirect()->route('dashboard.superadmin'),
+```
+
+**B. Tambahkan alias dan semua route yang hilang di `routes/web.php`:**
+```php
+// Alias agar sidebar bisa pakai route('superadmin.dashboard')
+Route::get('/superadmin/dashboard', [DashboardController::class, 'superadmin'])
+    ->name('superadmin.dashboard');
+
+// Karyawan
+Route::get('/superadmin/karyawan', [SuperadminController::class, 'karyawanIndex'])
+    ->name('superadmin.karyawan.index');
+// ... (beserta route create, store, show, edit, update, destroy)
+
+// Approval
+Route::get('/superadmin/approval', [SuperadminController::class, 'approvalIzinCuti'])
+    ->name('superadmin.approval.index');
+
+// Inventory & Transfer
+Route::get('/superadmin/inventory', [SuperadminController::class, 'inventoryIndex'])
+    ->name('superadmin.inventory.index');
+Route::get('/superadmin/transfer', [SuperadminController::class, 'transferIndex'])
+    ->name('superadmin.transfer.index');
+
+// Profile
+Route::get('/superadmin/profile', [SuperadminController::class, 'profile'])
+    ->name('superadmin.profile');
+```
+
+**C. Tambahkan import `ProfileController` di bagian atas `routes/web.php`:**
+```php
+use App\Http\Controllers\ProfileController;
+```
+
+**D. Tambahkan semua method yang hilang di `SuperadminController.php`** (karyawanIndex, karyawanCreate, karyawanStore, karyawanShow, karyawanEdit, karyawanUpdate, karyawanDestroy, inventoryIndex, transferIndex, profile).
+
+> **Pelajaran Penting:** Jika sebuah commit mengubah nama route (mis. dari `superadmin.dashboard` menjadi `dashboard.superadmin`), **semua tempat yang memanggil route lama harus ikut diperbarui** — termasuk sidebar, layout, dan home redirect. Gunakan perintah `php artisan route:list` untuk memverifikasi semua route sudah terdaftar dengan benar sebelum mencoba login.

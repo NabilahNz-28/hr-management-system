@@ -968,29 +968,35 @@ async function submitAbsensi(tipe) {
 }
 
 async function simpanKeDatabase(tipe, data) {
-  // Simulasi penyimpanan ke localStorage seperti halaman masuk
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      try {
-        const absensiData = {
-          id: Date.now(),
-          type: tipe,
-          ...data,
-          status: 'success',
-          created_at: new Date().toISOString()
-        };
+  // Simpan ke database lewat endpoint absensi.simpan
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
-        const existingData = JSON.parse(localStorage.getItem('absensi_data') || '[]');
-        existingData.push(absensiData);
-        localStorage.setItem('absensi_data', JSON.stringify(existingData));
-
-        sessionStorage.setItem('last_attendance_pulang', JSON.stringify(absensiData));
-        resolve(absensiData);
-      } catch (e) {
-        reject(e);
-      }
-    }, 1500);
+  const response = await fetch("{{ route('absensi.simpan') }}", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'X-CSRF-TOKEN': csrfToken,
+    },
+    body: JSON.stringify({
+      attendance_type: tipe,
+      photo: data.photo,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      address: data.address,
+    }),
   });
+
+  const result = await response.json().catch(() => ({}));
+
+  if (!response.ok || !result.success) {
+    throw new Error(result.message || 'Gagal menyimpan absensi ke server.');
+  }
+
+  console.log('Data absensi pulang tersimpan ke DB:', result.data);
+  sessionStorage.setItem('last_attendance_pulang', JSON.stringify({ type: tipe, ...result.data, ...data }));
+
+  return result.data;
 }
 
 function updateUIAfterSubmit() {

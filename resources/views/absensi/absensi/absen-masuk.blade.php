@@ -967,33 +967,37 @@ async function submitAbsensi(tipe) {
 }
 
 async function simpanKeDatabase(tipe, data) {
-    // Simulasi penyimpanan ke database
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            try {
-                const absensiData = {
-                    id: Date.now(),
-                    type: tipe,
-                    ...data,
-                    status: 'success',
-                    created_at: new Date().toISOString()
-                };
+    // Simpan ke database lewat endpoint absensi.simpan
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
-                const existingData = JSON.parse(localStorage.getItem('absensi_data') || '[]');
-                existingData.push(absensiData);
-
-                localStorage.setItem('absensi_data', JSON.stringify(existingData));
-                console.log('Data absensi disimpan:', absensiData);
-
-                sessionStorage.setItem('last_attendance', JSON.stringify(absensiData));
-
-                resolve(absensiData);
-
-            } catch (error) {
-                reject(error);
-            }
-        }, 1500);
+    const response = await fetch("{{ route('absensi.simpan') }}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+        },
+        body: JSON.stringify({
+            attendance_type: tipe,
+            photo: data.photo,
+            latitude: data.latitude,
+            longitude: data.longitude,
+            address: data.address,
+        }),
     });
+
+    const result = await response.json().catch(() => ({}));
+
+    if (!response.ok || !result.success) {
+        throw new Error(result.message || 'Gagal menyimpan absensi ke server.');
+    }
+
+    console.log('Data absensi tersimpan ke DB:', result.data);
+
+    // Simpan jejak ke session untuk kebutuhan halaman pulang (perhitungan jam kerja)
+    sessionStorage.setItem('last_attendance', JSON.stringify({ type: tipe, ...result.data, ...data }));
+
+    return result.data;
 }
 
 function updateUIAfterSubmit() {

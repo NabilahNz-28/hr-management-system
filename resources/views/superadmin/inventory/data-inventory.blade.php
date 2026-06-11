@@ -1,4 +1,4 @@
-@extends('layouts.pic')
+@extends('layouts.superadmin')
 
 @section('title', 'Laporan Opname')
 

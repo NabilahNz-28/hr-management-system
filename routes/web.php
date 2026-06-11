@@ -8,15 +8,17 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\SuperadminController;
+use App\Http\Controllers\AbsensiReportController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ProfileController;
 
 // HOME REDIRECT
 Route::get('/', function () {
     if (Auth::check()) {
         return match (Auth::user()->role) {
-            'superadmin' => redirect()->route('superadmin.dashboard'),
+            'superadmin' => redirect()->route('dashboard.superadmin'),
             'pic'        => redirect()->route('dashboard.selection'),
             'karyawan'   => redirect()->route('dashboard.absensi'),
             default      => redirect()->route('login'),
@@ -52,15 +54,46 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/superadmin', [DashboardController::class, 'superadmin'])
         ->name('dashboard.superadmin');
 
-    Route::post('/superadmin/store-user', [SuperadminController::class, 'storeUser'])
-        ->name('superadmin.storeUser');
+    // Alias agar sidebar bisa pakai route('superadmin.dashboard')
+    Route::get('/superadmin/dashboard', [DashboardController::class, 'superadmin'])
+        ->name('superadmin.dashboard');
 
-    Route::get('/superadmin/approval-izincuti', [SuperadminController::class, 'approvalIzinCuti'])
-        ->name('superadmin.approval.izincuti');
+    // Karyawan
+    Route::get('/superadmin/karyawan', [SuperadminController::class, 'karyawanIndex'])
+        ->name('superadmin.karyawan.index');
+    Route::get('/superadmin/karyawan/create', [SuperadminController::class, 'karyawanCreate'])
+        ->name('superadmin.karyawan.create');
+    Route::post('/superadmin/karyawan', [SuperadminController::class, 'karyawanStore'])
+        ->name('superadmin.karyawan.store');
+    Route::get('/superadmin/karyawan/{id}', [SuperadminController::class, 'karyawanShow'])
+        ->name('superadmin.karyawan.show');
+    Route::get('/superadmin/karyawan/{id}/edit', [SuperadminController::class, 'karyawanEdit'])
+        ->name('superadmin.karyawan.edit');
+    Route::put('/superadmin/karyawan/{id}', [SuperadminController::class, 'karyawanUpdate'])
+        ->name('superadmin.karyawan.update');
+    Route::delete('/superadmin/karyawan/{id}', [SuperadminController::class, 'karyawanDestroy'])
+        ->name('superadmin.karyawan.destroy');
+
+    // Approval
+    Route::get('/superadmin/approval', [SuperadminController::class, 'approvalIzinCuti'])
+        ->name('superadmin.approval.index');
     Route::post('/superadmin/approval-approve/{id}', [SuperadminController::class, 'approve'])
         ->name('superadmin.approval.approve');
     Route::post('/superadmin/approval-reject/{id}', [SuperadminController::class, 'reject'])
         ->name('superadmin.approval.reject');
+
+    // Inventory superadmin
+    Route::get('/superadmin/inventory', [SuperadminController::class, 'inventoryIndex'])
+        ->name('superadmin.inventory.index');
+    Route::get('/superadmin/transfer', [SuperadminController::class, 'transferIndex'])
+        ->name('superadmin.transfer.index');
+
+    // Profile superadmin
+    Route::get('/superadmin/profile', [SuperadminController::class, 'profile'])
+        ->name('superadmin.profile');
+
+    Route::post('/superadmin/store-user', [SuperadminController::class, 'storeUser'])
+        ->name('superadmin.storeUser');
 
     // ABSENSI
     Route::prefix('absensi')->name('absensi.')->group(function () {
@@ -78,19 +111,21 @@ Route::middleware('auth')->group(function () {
 
     // MONITORING ABSENSI
     Route::prefix('monitoring')->name('monitoring.')->group(function () {
-        Route::get('/rekap-harian', fn () => view('absensi.monitoring.rekap-harian'))->name('harian');
-        Route::get('/rekap-bulanan', fn () => view('absensi.monitoring.rekap-bulanan'))->name('bulanan');
+        Route::get('/rekap-harian', [AbsensiReportController::class, 'harian'])->name('harian');
+        Route::get('/rekap-bulanan', [AbsensiReportController::class, 'bulanan'])->name('bulanan');
     });
 
     // LAPORAN ABSENSI
     Route::prefix('laporan')->name('laporan.')->group(function () {
-        Route::get('/absensi', fn () => view('absensi.laporan.laporan-absensi'))->name('absensi');
+        Route::get('/absensi', [AbsensiReportController::class, 'laporan'])->name('absensi');
         Route::get('/terlambat', fn () => view('absensi.laporan.laporan-terlambat'))->name('terlambat');
         Route::get('/izin-cuti', [LaporanController::class, 'index'])->name('cuti');
     });
 
     // PENGATURAN
-    Route::get('/profile', fn () => view('absensi.pengaturan.profile'))->name('profile');
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
 
     // INVENTORY
     Route::prefix('inventory')->name('inventory.')->group(function () {
@@ -109,10 +144,6 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/laporan-opname', [InventoryController::class, 'laporanOpname'])->name('laporan-opname');
         Route::get('/laporan-transfer', [InventoryController::class, 'laporanTransfer'])->name('laporan-transfer');
-
-        Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
-        Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
-        Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
     });
 
     // LOGOUT

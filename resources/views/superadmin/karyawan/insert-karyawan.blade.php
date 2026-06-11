@@ -75,7 +75,7 @@
                             <select class="form-control" name="role" required>
                                 <option value="">-- Pilih Role --</option>
                                 <option value="karyawan">Karyawan</option>
-                                <option value="inventory">PIC / Inventory</option>
+                                <option value="pic">PIC / Inventory</option>
                                 <option value="superadmin">Superadmin</option>
                             </select>
                         </div>

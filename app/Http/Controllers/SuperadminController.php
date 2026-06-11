@@ -95,4 +95,119 @@ class SuperadminController extends Controller
         $leave->update(['status' => 'rejected']);
         return back()->with('success', 'Pengajuan berhasil ditolak.');
     }
+
+    // ===== KARYAWAN =====
+
+    public function karyawanIndex(Request $request)
+    {
+        $query = User::where('role', '!=', 'superadmin');
+
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        $karyawan = $query->orderBy('name')->paginate(10);
+
+        return view('superadmin.karyawan.data-karyawan', compact('karyawan'));
+    }
+
+    public function karyawanCreate()
+    {
+        return view('superadmin.karyawan.insert-karyawan');
+    }
+
+    public function karyawanStore(Request $request)
+    {
+        $request->validate([
+            'name'     => 'required|string|max:255',
+            'nik'      => 'nullable|string|max:50',
+            'email'    => 'required|email|unique:users,email',
+            'no_hp'    => 'nullable|string|max:20',
+            'password' => 'required|min:6|confirmed',
+            'role'     => 'required|in:karyawan,pic,superadmin',
+            'status'   => 'nullable|in:aktif,nonaktif',
+        ]);
+
+        User::create([
+            'name'         => $request->name,
+            'nik'          => $request->nik,
+            'email'        => $request->email,
+            'no_hp'        => $request->no_hp,
+            'password'     => Hash::make($request->password),
+            'role'         => $request->role,
+            'status'       => $request->status ?? 'aktif',
+            'departemen'   => $request->departemen,
+            'jabatan'      => $request->jabatan,
+            'tgl_bergabung'=> $request->tgl_bergabung,
+            'alamat'       => $request->alamat,
+        ]);
+
+        return redirect()->route('superadmin.karyawan.index')
+            ->with('success', 'Karyawan berhasil ditambahkan.');
+    }
+
+    public function karyawanShow($id)
+    {
+        $user = User::findOrFail($id);
+        return view('superadmin.karyawan.data-karyawan', compact('user'));
+    }
+
+    public function karyawanEdit($id)
+    {
+        $user = User::findOrFail($id);
+        return view('superadmin.karyawan.insert-karyawan', compact('user'));
+    }
+
+    public function karyawanUpdate(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        $request->validate([
+            'name'  => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'role'  => 'required|in:karyawan,pic,superadmin',
+        ]);
+
+        $data = $request->only([
+            'name', 'email', 'role', 'status', 'nik', 'departemen',
+            'jabatan', 'no_hp', 'alamat', 'tgl_bergabung',
+        ]);
+
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($request->password);
+        }
+
+        $user->update($data);
+
+        return redirect()->route('superadmin.karyawan.index')
+            ->with('success', 'Data karyawan berhasil diperbarui.');
+    }
+
+    public function karyawanDestroy($id)
+    {
+        $user = User::findOrFail($id);
+        $user->delete();
+
+        return redirect()->route('superadmin.karyawan.index')
+            ->with('success', 'Karyawan berhasil dihapus.');
+    }
+
+    // ===== INVENTORY =====
+
+    public function inventoryIndex()
+    {
+        return view('superadmin.inventory.data-inventory');
+    }
+
+    public function transferIndex()
+    {
+        return view('superadmin.inventory.transfer-stock');
+    }
+
+    // ===== PROFILE =====
+
+    public function profile()
+    {
+        return view('superadmin.profile');
+    }
 }

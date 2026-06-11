@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Attendance;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class AttendanceController extends Controller
 {
@@ -27,9 +28,14 @@ class AttendanceController extends Controller
         try {
             // Validasi input
             $request->validate([
-                'employee_name' => 'required|string|max:255',
-                'photo' => 'required'
+                'attendance_type' => 'required|in:masuk,pulang',
+                'photo'           => 'required|string',
+                'latitude'        => 'nullable|numeric',
+                'longitude'       => 'nullable|numeric',
+                'address'         => 'nullable|string',
             ]);
+
+            $user = Auth::user();
 
             // Generate nama file unik
             $fileName = 'attendance_' . time() . '_' . rand(1000, 9999) . '.jpg';
@@ -71,19 +77,25 @@ class AttendanceController extends Controller
 
             // Simpan ke database
             $attendance = Attendance::create([
-                'employee_name' => $request->employee_name,
-                'photo' => $fileName,
-                'time_in' => now()->format('H:i:s'),
-                'date' => now()->format('Y-m-d')
+                'user_id'         => $user?->id,
+                'employee_name'   => $user?->name ?? 'Unknown',
+                'attendance_type' => $request->attendance_type,
+                'photo'           => $fileName,
+                'latitude'        => $request->latitude,
+                'longitude'       => $request->longitude,
+                'address'         => $request->address,
+                'attendance_time' => now(),
             ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Attendance recorded successfully!',
+                'message' => 'Absensi ' . $attendance->attendance_type . ' berhasil disimpan!',
                 'data' => [
-                    'name' => $attendance->employee_name,
-                    'time' => $attendance->time_in,
-                    'date' => $attendance->date
+                    'id'    => $attendance->id,
+                    'name'  => $attendance->employee_name,
+                    'type'  => $attendance->attendance_type,
+                    'time'  => $attendance->attendance_time->format('H:i:s'),
+                    'date'  => $attendance->attendance_time->format('Y-m-d'),
                 ]
             ]);
 
@@ -121,16 +133,17 @@ class AttendanceController extends Controller
     // Fungsi untuk cek apakah sudah absen hari ini (opsional)
     public function checkTodayAttendance(Request $request)
     {
-        $name = $request->input('name');
-        $today = now()->format('Y-m-d');
+        $userId = Auth::id();
+        $type   = $request->input('attendance_type', 'masuk');
 
-        $attendance = Attendance::where('employee_name', $name)
-            ->where('date', $today)
+        $attendance = Attendance::where('user_id', $userId)
+            ->where('attendance_type', $type)
+            ->whereDate('attendance_time', now()->toDateString())
             ->first();
 
         return response()->json([
             'has_attended' => $attendance ? true : false,
-            'time_in' => $attendance ? $attendance->time_in : null
+            'time'         => $attendance ? $attendance->attendance_time->format('H:i:s') : null,
         ]);
     }
 

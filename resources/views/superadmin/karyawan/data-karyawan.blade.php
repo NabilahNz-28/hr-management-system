@@ -68,6 +68,10 @@
                                         $roleClass = 'role-inventory';
                                         $roleText = 'Inventory';
                                         break;
+                                    case 'pic':
+                                        $roleClass = 'role-pic';
+                                        $roleText = 'PIC';
+                                        break;
                                     default:
                                         $roleClass = 'role-karyawan';
                                         $roleText = 'Karyawan';

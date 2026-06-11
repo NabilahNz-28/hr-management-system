@@ -3,27 +3,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>@yield('title', 'Absensi')</title>
+  <title>@yield('title', 'Superadmin')</title>
 
   <link rel="stylesheet" href="{{ asset('css/style.css') }}">
   @yield('styles')
 </head>
 <body>
 
-  @include('layouts.sidebar-absen')
+  @include('layouts.sidebar-superadmin')
   <div id="main-content" class="main-content">
     @include('layouts.topbar-absen')
 
     <div class="dashboard-content">
-      @hasSection('content')
-        @yield('content')
-      @else
-        <div class="page-content active">
-          <div class="content-title">Dashboard Absensi</div>
-          <p class="content-description">Pilih menu absensi di sidebar untuk mulai menggunakan fitur.</p>
-        </div>
-      @endif
+      @yield('content')
     </div>
   </div>
 

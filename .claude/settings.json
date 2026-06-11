@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -n 'fillable\\\\|protected $fillable' -A 20 /Users/pandi-fauzan/PANDI-Fauzan/Fauzan/Project/hr-management-system/app/Models/User.php)",
+      "Bash(php artisan *)",
+      "Bash(ls public/photos/ 2>/dev/null | head; rm -f public/photos/attendance_*.jpg 2>/dev/null; echo \"cleaned, remaining:\"; ls public/photos/ 2>/dev/null | wc -l)",
+      "Bash(awk '{print $11, $12, $13, $14}')",
+      "Bash(mysql -uroot -h127.0.0.1 -P3306 -N -e \"SELECT AUTO_INCREMENT FROM information_schema.TABLES WHERE TABLE_SCHEMA='hr-management' AND TABLE_NAME='attendances';\")"
+    ],
+    "additionalDirectories": [
+      "/Users/pandi-fauzan/PANDI-Fauzan/Fauzan/Project/hr-management-system/public/photos"
+    ]
+  }
+}

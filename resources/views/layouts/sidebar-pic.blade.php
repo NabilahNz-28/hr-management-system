@@ -277,9 +277,9 @@
     </div>
 
     <div class="menu-section">
-    <!-- Ubah onclick menjadi showLogoutModal() -->
+    <!-- Ubah onclick menjadi confirmLogout() -->
     <a href="#" class="menu-item logout-item"
-       onclick="event.preventDefault(); showLogoutModal();">
+       onclick="event.preventDefault(); confirmLogout();">
         <div class="menu-icon">
             <i class="bi bi-box-arrow-right"></i>
         </div>
