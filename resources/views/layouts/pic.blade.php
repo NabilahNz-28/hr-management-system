@@ -29,16 +29,7 @@
                 <i class="bi bi-list"></i>
             </button>
 
-            <div class="user-menu">
-                <button class="notification-btn">
-                    <i class="bi bi-bell"></i>
-                    <div class="badge"></div>
-                </button>
-
-                <div class="user-avatar">
-                    PIC
-                </div>
-            </div>
+            
         </div>
 
         <div class="dashboard-content">

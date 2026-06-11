@@ -21,14 +21,14 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>Hari Tanggal *</label>
+                            <label>Hari Tanggal </label>
                             <input type="date" class="form-control" name="tanggal" 
                                    value="{{ date('Y-m-d') }}" required>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>Gudang Tujuan *</label>
+                            <label>Gudang Tujuan </label>
                             <input type="text" class="form-control" name="gudang_tujuan" 
                                    placeholder="Contoh: Gudang Cabang Bandung" required>
                         </div>
@@ -38,7 +38,7 @@
                 <div class="row">
                     <div class="col-md-12">
                         <div class="form-group">
-                            <label>Nama Barang *</label>
+                            <label>Nama Barang </label>
                             <select class="form-control" name="barang_id" required>
                                 <option value="">Pilih Barang</option>
                                 @foreach($barang ?? [] as $item)
@@ -54,13 +54,13 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>Jumlah *</label>
+                            <label>Jumlah </label>
                             <input type="number" class="form-control" name="jumlah" min="1" required>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>Satuan *</label>
+                            <label>Satuan </label>
                             <select class="form-control" name="satuan" required>
                                 <option value="pcs">Pcs</option>
                                 <option value="carton">Carton (24 pcs)</option>

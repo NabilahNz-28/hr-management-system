@@ -222,7 +222,6 @@
 <!-- Sidebar -->
 <div id="sidebar">
     <div class="sidebar-header">
-        <div class="logo">SA</div>
         <div class="brand-text">Superadmin </div>
     </div>
 

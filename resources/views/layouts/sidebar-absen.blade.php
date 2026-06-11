@@ -222,7 +222,6 @@
 <!-- Sidebar -->
 <div id="sidebar">
     <div class="sidebar-header">
-        <div class="logo">AK</div>
         <div class="brand-text">Absensi Karyawan</div>
     </div>
 

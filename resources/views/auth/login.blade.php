@@ -31,7 +31,7 @@
                     <i class="fas fa-network-wired fa-4x mb-4 text-light opacity-75"></i>
                     <h2 class="fw-bold text-center">HR System ERP</h2>
                     <p class="text-center mt-3 opacity-75">
-                        Portal manajemen sumber daya manusia terintegrasi. Kelola absensi, cuti, dan penggajian dalam satu platform yang aman.
+                        Portal manajemen sumber daya manusia terintegrasi. Kelola absensi, cuti, dan perizinan dalam satu platform yang aman.
                     </p>
                 </div>
 
@@ -70,13 +70,18 @@
                                 <a href="#" class="text-decoration-none small">Lupa password?</a>
                             </div>
                             <div class="input-group mt-2">
-                                <span class="input-group-text bg-light"><i class="fas fa-lock text-muted"></i></span>
-                                <input type="password" class="form-control bg-light @error('password') is-invalid @enderror"
-                                       id="password" name="password" placeholder="••••••••" required>
-                                @error('password')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
+                            <span class="input-group-text bg-light"><i class="fas fa-lock text-muted"></i></span>
+                            <!-- Hapus border kanan agar menyatu dengan ikon mata -->
+                            <input type="password" class="form-control bg-light border-end-0 @error('password') is-invalid @enderror"
+                                id="password" name="password" placeholder="••••••••" required>
+                            <!-- Tambahkan span untuk ikon mata -->
+                            <span class="input-group-text bg-light bg-transparent" id="togglePassword" style="cursor: pointer;">
+                                <i class="fas fa-eye text-muted" id="eyeIcon"></i>
+                            </span>
+                            @error('password')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
                         </div>
 
                         <div class="mb-4 form-check">
@@ -91,8 +96,8 @@
                         </div>
 
                         <div class="text-center mt-4 text-muted">
-                            Belum mendaftarkan akun Karyawan? <br>
-                            <a href="{{ route('register') }}" class="fw-bold text-decoration-none">Hubungi HRD atau Daftar di sini</a>
+                           Akun karyawan belum terdaftar? <br>
+                            <a href="{{ route('register') }}" class="fw-bold text-decoration-none">Hubungi HRD di sini</a>
                         </div>
                     </form>
                 </div>
@@ -103,5 +108,25 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    const togglePassword = document.querySelector('#togglePassword');
+    const password = document.querySelector('#password');
+    const eyeIcon = document.querySelector('#eyeIcon');
+
+    togglePassword.addEventListener('click', function (e) {
+        // Cek dan ubah tipe input
+        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+        password.setAttribute('type', type);
+        
+        // Ubah ikon mata terbuka dan tertutup
+        if(type === 'text') {
+            eyeIcon.classList.remove('fa-eye');
+            eyeIcon.classList.add('fa-eye-slash');
+        } else {
+            eyeIcon.classList.remove('fa-eye-slash');
+            eyeIcon.classList.add('fa-eye');
+        }
+    });
+</script>
 </body>
 </html>

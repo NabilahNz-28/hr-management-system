@@ -19,11 +19,15 @@
                 <label>Departemen</label>
                 <select id="departemen" class="form-control">
                     <option value="all">Semua Departemen</option>
-                    <option value="IT">IT</option>
-                    <option value="HRD">HRD</option>
-                    <option value="Finance">Finance</option>
-                    <option value="Marketing">Marketing</option>
-                    <option value="Produksi">Produksi</option>
+                            <option value="ADMIN COD">ADMIN COD</option>
+                            <option value="ADMIN RESI">ADMIN RESI</option>
+                            <option value="ADMIN CC">ADMIN CC</option>
+                            <option value="OUTGOING">OUTGOING</option>
+                            <option value="INCOMING">INCOMING</option>
+                            <option value="RETUR">RETUR</option>
+                            <option value="TRANSPORTER">TRANSPORTER</option>
+                            <option value="PROCESSING">PROCESSING</option>
+                            <option value="LAINNYA">LAINNYA</option>
                 </select>
             </div>
             
@@ -41,16 +45,16 @@
 <script>
     // Data dummy absensi karyawan
     const dataAbsensi = [
-        { nama: 'Ahmad Wijaya', nik: '001', departemen: 'IT', jam_masuk: '07:55', jam_pulang: '16:30', status: 'Hadir', foto: 'ahmad.jpg' },
-        { nama: 'Siti Rahma', nik: '002', departemen: 'HRD', jam_masuk: '08:15', jam_pulang: '16:45', status: 'Terlambat', foto: 'siti.jpg' },
-        { nama: 'Budi Santoso', nik: '003', departemen: 'Finance', jam_masuk: '08:30', jam_pulang: '17:00', status: 'Terlambat', foto: 'budi.jpg' },
-        { nama: 'Dewi Anggraini', nik: '004', departemen: 'Marketing', jam_masuk: '07:50', jam_pulang: '16:20', status: 'Hadir', foto: 'dewi.jpg' },
-        { nama: 'Rudi Hartono', nik: '005', departemen: 'Produksi', jam_masuk: '-', jam_pulang: '-', status: 'Absen', foto: 'rudi.jpg' },
-        { nama: 'Maya Sari', nik: '006', departemen: 'IT', jam_masuk: '08:05', jam_pulang: '16:35', status: 'Hadir', foto: 'maya.jpg' },
-        { nama: 'Joko Widodo', nik: '007', departemen: 'Produksi', jam_masuk: '08:20', jam_pulang: '16:50', status: 'Terlambat', foto: 'joko.jpg' },
-        { nama: 'Linda Cahyani', nik: '008', departemen: 'HRD', jam_masuk: '07:45', jam_pulang: '16:15', status: 'Hadir', foto: 'linda.jpg' },
-        { nama: 'Agus Salim', nik: '009', departemen: 'Finance', jam_masuk: '-', jam_pulang: '-', status: 'Cuti', foto: 'agus.jpg' },
-        { nama: 'Nina Kartika', nik: '010', departemen: 'Marketing', jam_masuk: '08:10', jam_pulang: '16:40', status: 'Hadir', foto: 'nina.jpg' }
+        { nama: 'Ahmad Wijaya', nik: '001', departemen: 'OUTGOING ', jam_masuk: '07:55', jam_pulang: '16:30', status: 'Hadir', foto: 'ahmad.jpg' },
+        { nama: 'Siti Rahma', nik: '002', departemen: 'OUTGOING', jam_masuk: '08:15', jam_pulang: '16:45', status: 'Terlambat', foto: 'siti.jpg' },
+        { nama: 'Budi Santoso', nik: '003', departemen: 'ADMIN CC', jam_masuk: '08:30', jam_pulang: '17:00', status: 'Terlambat', foto: 'budi.jpg' },
+        { nama: 'Dewi Anggraini', nik: '004', departemen: 'INCOMING', jam_masuk: '07:50', jam_pulang: '16:20', status: 'Hadir', foto: 'dewi.jpg' },
+        { nama: 'Rudi Hartono', nik: '005', departemen: 'ADMIN RESI', jam_masuk: '-', jam_pulang: '-', status: 'Absen', foto: 'rudi.jpg' },
+        { nama: 'Maya Sari', nik: '006', departemen: 'ADMIN RESI', jam_masuk: '08:05', jam_pulang: '16:35', status: 'Hadir', foto: 'maya.jpg' },
+        { nama: 'Joko Widodo', nik: '007', departemen: 'INCOMING', jam_masuk: '08:20', jam_pulang: '16:50', status: 'Terlambat', foto: 'joko.jpg' },
+        { nama: 'Linda Cahyani', nik: '008', departemen: 'ADMIN CC', jam_masuk: '07:45', jam_pulang: '16:15', status: 'Hadir', foto: 'linda.jpg' },
+        { nama: 'Agus Salim', nik: '009', departemen: 'RETUR', jam_masuk: '-', jam_pulang: '-', status: 'Cuti', foto: 'agus.jpg' },
+        { nama: 'Nina Kartika', nik: '010', departemen: 'RETUR', jam_masuk: '08:10', jam_pulang: '16:40', status: 'Hadir', foto: 'nina.jpg' }
     ];
 
     // Status badge mapping (tanpa emoji, tanpa checklist, tanpa X)

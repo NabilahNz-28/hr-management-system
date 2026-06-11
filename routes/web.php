@@ -109,6 +109,10 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/laporan-opname', [InventoryController::class, 'laporanOpname'])->name('laporan-opname');
         Route::get('/laporan-transfer', [InventoryController::class, 'laporanTransfer'])->name('laporan-transfer');
+
+        Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
+        Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
     });
 
     // LOGOUT

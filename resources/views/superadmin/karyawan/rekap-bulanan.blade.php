@@ -41,11 +41,15 @@
                 <label>Departemen</label>
                 <select id="departemen" class="form-control">
                     <option value="all">Semua Departemen</option>
-                    <option value="IT">IT</option>
-                    <option value="HRD">HRD</option>
-                    <option value="Finance">Finance</option>
-                    <option value="Marketing">Marketing</option>
-                    <option value="Produksi">Produksi</option>
+                            <option value="ADMIN COD">ADMIN COD</option>
+                            <option value="ADMIN RESI">ADMIN RESI</option>
+                            <option value="ADMIN CC">ADMIN CC</option>
+                            <option value="OUTGOING">OUTGOING</option>
+                            <option value="INCOMING">INCOMING</option>
+                            <option value="RETUR">RETUR</option>
+                            <option value="TRANSPORTER">TRANSPORTER</option>
+                            <option value="PROCESSING">PROCESSING</option>
+                            <option value="LAINNYA">LAINNYA</option>
                 </select>
             </div>
             
@@ -63,16 +67,16 @@
 <script>
     // Data dummy rekap absensi bulanan
     const dataRekapBulanan = [
-        { nama: 'Ahmad Wijaya', nik: '001', departemen: 'IT', hadir: 21, terlambat: 2, izin: 1, cuti: 0, alpha: 0 },
-        { nama: 'Siti Rahma', nik: '002', departemen: 'HRD', hadir: 20, terlambat: 1, izin: 2, cuti: 0, alpha: 1 },
-        { nama: 'Budi Santoso', nik: '003', departemen: 'Finance', hadir: 18, terlambat: 5, izin: 1, cuti: 1, alpha: 0 },
-        { nama: 'Dewi Anggraini', nik: '004', departemen: 'Marketing', hadir: 22, terlambat: 0, izin: 0, cuti: 0, alpha: 0 },
-        { nama: 'Rudi Hartono', nik: '005', departemen: 'Produksi', hadir: 17, terlambat: 3, izin: 2, cuti: 0, alpha: 1 },
-        { nama: 'Maya Sari', nik: '006', departemen: 'IT', hadir: 20, terlambat: 2, izin: 1, cuti: 1, alpha: 0 },
-        { nama: 'Joko Widodo', nik: '007', departemen: 'Produksi', hadir: 19, terlambat: 4, izin: 0, cuti: 0, alpha: 1 },
-        { nama: 'Linda Cahyani', nik: '008', departemen: 'HRD', hadir: 21, terlambat: 0, izin: 2, cuti: 0, alpha: 0 },
-        { nama: 'Agus Salim', nik: '009', departemen: 'Finance', hadir: 20, terlambat: 1, izin: 1, cuti: 1, alpha: 0 },
-        { nama: 'Nina Kartika', nik: '010', departemen: 'Marketing', hadir: 22, terlambat: 0, izin: 0, cuti: 0, alpha: 0 }
+        { nama: 'Ahmad Wijaya', nik: '001', departemen: 'OUTGOING', hadir: 21, terlambat: 2, izin: 1, cuti: 0, alpha: 0 },
+        { nama: 'Siti Rahma', nik: '002', departemen: 'OUTGOING', hadir: 20, terlambat: 1, izin: 2, cuti: 0, alpha: 1 },
+        { nama: 'Budi Santoso', nik: '003', departemen: 'ADMIN CC', hadir: 18, terlambat: 5, izin: 1, cuti: 1, alpha: 0 },
+        { nama: 'Dewi Anggraini', nik: '004', departemen: 'INCOMING', hadir: 22, terlambat: 0, izin: 0, cuti: 0, alpha: 0 },
+        { nama: 'Rudi Hartono', nik: '005', departemen: 'ADMIN RESI', hadir: 17, terlambat: 3, izin: 2, cuti: 0, alpha: 1 },
+        { nama: 'Maya Sari', nik: '006', departemen: 'ADMIN RESI', hadir: 20, terlambat: 2, izin: 1, cuti: 1, alpha: 0 },
+        { nama: 'Joko Widodo', nik: '007', departemen: 'INCOMING', hadir: 19, terlambat: 4, izin: 0, cuti: 0, alpha: 1 },
+        { nama: 'Linda Cahyani', nik: '008', departemen: 'ADMIN CC', hadir: 21, terlambat: 0, izin: 2, cuti: 0, alpha: 0 },
+        { nama: 'Agus Salim', nik: '009', departemen: 'RETUR', hadir: 20, terlambat: 1, izin: 1, cuti: 1, alpha: 0 },
+        { nama: 'Nina Kartika', nik: '010', departemen: 'RETUR', hadir: 22, terlambat: 0, izin: 0, cuti: 0, alpha: 0 }
     ];
 
     // Nama bulan

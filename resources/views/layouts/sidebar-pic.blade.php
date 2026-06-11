@@ -219,7 +219,6 @@
 
 <div id="sidebar">
     <div class="sidebar-header">
-        <div class="logo">PIC</div>
         <div class="brand-text">Dashboard PIC </div>
     </div>
 
@@ -278,14 +277,15 @@
     </div>
 
     <div class="menu-section">
-        <a href="#" class="menu-item logout-item"
-           onclick="event.preventDefault(); confirmLogout();">
-            <div class="menu-icon">
-                <i class="bi bi-box-arrow-right"></i>
-            </div>
-            <div class="menu-text">Logout</div>
-        </a>
-    </div>
+    <!-- Ubah onclick menjadi showLogoutModal() -->
+    <a href="#" class="menu-item logout-item"
+       onclick="event.preventDefault(); showLogoutModal();">
+        <div class="menu-icon">
+            <i class="bi bi-box-arrow-right"></i>
+        </div>
+        <div class="menu-text">Logout</div>
+    </a>
+</div>
 
 </div>
 </div>
