@@ -296,3 +296,89 @@ use App\Http\Controllers\ProfileController;
 **D. Tambahkan semua method yang hilang di `SuperadminController.php`** (karyawanIndex, karyawanCreate, karyawanStore, karyawanShow, karyawanEdit, karyawanUpdate, karyawanDestroy, inventoryIndex, transferIndex, profile).
 
 > **Pelajaran Penting:** Jika sebuah commit mengubah nama route (mis. dari `superadmin.dashboard` menjadi `dashboard.superadmin`), **semua tempat yang memanggil route lama harus ikut diperbarui** — termasuk sidebar, layout, dan home redirect. Gunakan perintah `php artisan route:list` untuk memverifikasi semua route sudah terdaftar dengan benar sebelum mencoba login.
+
+---
+
+## 11. Error Undefined Variable saat Menampilkan View Detail
+**Kasus:** Mengakses halaman detail karyawan (`/superadmin/karyawan/5`) memicu error `Undefined variable $karyawan` di view `data-karyawan.blade.php`.
+**Penyebab:** Controller `karyawanShow` memanggil view `data-karyawan` (yang didesain untuk menampilkan tabel semua karyawan dengan variabel `$karyawan`), namun controller hanya mengirimkan data detail satu user (`compact('user')`).
+**Solusi:** 
+Ubah alur detail karyawan. Alih-alih membuat halaman detail tersendiri, detail karyawan kini ditampilkan menggunakan modal popup di halaman index (`data.blade.php`). Controller `karyawanShow` cukup me-redirect ke halaman index dengan membawa flash session `show_karyawan`.
+```php
+public function karyawanShow($id)
+{
+    $user = User::findOrFail($id);
+    return redirect()->route('superadmin.karyawan.index')->with('show_karyawan', $user);
+}
+```
+Latu di bagian script `data.blade.php`, tangkap session tersebut untuk menampilkan modal secara otomatis:
+```javascript
+@if(session('show_karyawan'))
+const showUser = @json(session('show_karyawan'));
+if (showUser) {
+    // Isi field modal dan tampilkan modal...
+    modal.classList.add('show');
+}
+@endif
+```
+
+---
+
+## 12. Menyesuaikan View Hasil Git Pull di Controller
+**Kasus:** Halaman edit karyawan error atau tampilan data karyawan tidak berubah setelah melakukan `git pull` dari repositori.
+**Penyebab:** Branch baru menambahkan view terpisah seperti `data.blade.php` dan `edit.blade.php` di bawah folder `resources/views/superadmin/karyawan/`, namun controller masih memanggil view lama (`data-karyawan` dan `insert-karyawan` untuk edit).
+**Solusi:**
+Selalu periksa file view baru setelah melakukan merge/pull, dan sesuaikan pemanggilan view di controller agar mengarah ke file yang tepat beserta nama variabel yang diharapkan oleh view tersebut.
+❌ **Salah (Controller):**
+```php
+return view('superadmin.karyawan.insert-karyawan', compact('user'));
+```
+✅ **Benar (Controller):**
+```php
+$karyawan = User::findOrFail($id);
+return view('superadmin.karyawan.edit', compact('karyawan'));
+```
+
+---
+
+## 13. Kolom Status dan Aksi pada Halaman Approval Bersifat Statis
+**Kasus:** Notifikasi sukses muncul setelah menekan tombol "Setujui" / "Tolak", namun kolom status tetap bertuliskan "Pending" dan tombol aksi masih muncul. Selain itu, tombol "Lihat File" lampiran rusak.
+**Penyebab:** 
+1. Teks status di-hardcode langsung sebagai `"Pending"` di file blade.
+2. Form aksi tidak menyaring status data, sehingga tombol persetujuan selalu dirender meskipun data sudah disetujui/ditolak.
+3. Menggunakan field `$data->filepath` padahal kolom pada database bernama `file_path`.
+**Solusi:**
+Sajikan status secara dinamis berdasarkan nilai kolom status database, sembunyikan tombol aksi jika status sudah selesai diproses (`approved` atau `rejected`), dan gunakan nama kolom database yang benar (`file_path`):
+```blade
+<td class="text-center">
+    @if($data->status == 'approved')
+        <span class="badge-custom badge-approved">Disetujui</span>
+    @elseif($data->status == 'rejected')
+        <span class="badge-custom badge-rejected">Ditolak</span>
+    @else
+        <span class="badge-custom badge-pending">Pending</span>
+    @endif
+</td>
+<td class="text-center">
+    @if($data->status == 'pending')
+        <!-- Render form Setujui & Tolak -->
+    @else
+        <span>Selesai</span>
+    @endif
+</td>
+```
+
+---
+
+## 14. Grafik/Statistik di Dashboard Absensi Karyawan Bersifat Dummy (Hardcoded JS)
+**Kasus:** Statistik tingkat kehadiran bulanan di dashboard personal karyawan tidak berubah dan selalu mengikuti angka dummy bawaan template JavaScript.
+**Penyebab:** Data bulanan dihitung di sisi client menggunakan variabel array JavaScript statis (`dataDashboard = { '2025': ... }`).
+**Solusi:**
+1. Hitung seluruh data kehadiran secara real-time di controller (absen masuk, keterlambatan di atas pukul `08:00:00`, izin/cuti yang disetujui, dan jumlah hari libur akhir pekan) pada bulan berjalan.
+2. Kirim data tersebut dari controller ke view.
+3. Di dalam view, gantikan object JS dummy dengan data JSON dari backend:
+```javascript
+// Di dalam script blade
+const data = @json($stats);
+// Lakukan kalkulasi persentase dan render ke elemen DOM
+```

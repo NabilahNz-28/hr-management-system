@@ -307,6 +307,20 @@ document.addEventListener('DOMContentLoaded', function () {
             modal.classList.remove('show');
         }
     });
+
+    @if(session('show_karyawan'))
+    const showUser = @json(session('show_karyawan'));
+    if (showUser) {
+        detailName.textContent = showUser.name || '-';
+        detailNik.textContent = showUser.nik || '-';
+        detailEmail.textContent = showUser.email || '-';
+        detailDepartemen.textContent = showUser.departemen || '-';
+        detailJabatan.textContent = showUser.jabatan || '-';
+        detailRole.textContent = showUser.role || '-';
+        detailStatus.textContent = showUser.status || '-';
+        modal.classList.add('show');
+    }
+    @endif
 });
 </script>
 @endsection

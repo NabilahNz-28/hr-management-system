@@ -50,9 +50,18 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="departemen">Departemen</label>
-                        <input type="text" id="departemen" name="departemen" class="form-control"
-                               value="{{ old('departemen', $karyawan->departemen) }}">
+                        <label for="departemen">Departemen <span class="required">*</span></label>
+                        <select id="departemen" name="departemen" class="form-control" required>
+                            <option value="">-- Pilih Departemen --</option>
+                            <option value="ADMIN RESI" {{ old('departemen', $karyawan->departemen) == 'ADMIN RESI' ? 'selected' : '' }}>ADMIN RESI</option>
+                            <option value="ADMIN CC" {{ old('departemen', $karyawan->departemen) == 'ADMIN CC' ? 'selected' : '' }}>ADMIN CC</option>
+                            <option value="OUTGOING" {{ old('departemen', $karyawan->departemen) == 'OUTGOING' ? 'selected' : '' }}>OUTGOING</option>
+                            <option value="INCOMING" {{ old('departemen', $karyawan->departemen) == 'INCOMING' ? 'selected' : '' }}>INCOMING</option>
+                            <option value="RETUR" {{ old('departemen', $karyawan->departemen) == 'RETUR' ? 'selected' : '' }}>RETUR</option>
+                            <option value="TRANSPORTER" {{ old('departemen', $karyawan->departemen) == 'TRANSPORTER' ? 'selected' : '' }}>TRANSPORTER</option>
+                            <option value="PROCESSING" {{ old('departemen', $karyawan->departemen) == 'PROCESSING' ? 'selected' : '' }}>PROCESSING</option>
+                            <option value="LAINNYA" {{ old('departemen', $karyawan->departemen) == 'LAINNYA' ? 'selected' : '' }}>LAINNYA</option>
+                        </select>
                     </div>
 
                     <div class="form-group">

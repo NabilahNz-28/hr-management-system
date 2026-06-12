@@ -5,7 +5,7 @@
 @section('content')
 <div class="dashboard-content">
     <div class="welcome-section">
-        <h1 class="page-title">Selamat Datang, Ahmad Wijaya! 👋</h1>
+        <h1 class="page-title">Selamat Datang, {{ auth()->user()->name }}! 👋</h1>
         <p class="page-subtitle">Berikut adalah ringkasan absensi Anda pada bulan ini</p>
     </div>
 
@@ -135,23 +135,6 @@
 
 @section('scripts')
 <script>
-    const dataDashboard = {
-        '2025': {
-            '01': { hadir: 21, terlambat: 3, libur: 6, cuti: 2, izin: 1, total_hari_kerja: 30 },
-            '02': { hadir: 19, terlambat: 2, libur: 7, cuti: 1, izin: 1, total_hari_kerja: 28 },
-            '03': { hadir: 23, terlambat: 1, libur: 5, cuti: 1, izin: 1, total_hari_kerja: 30 },
-            '04': { hadir: 22, terlambat: 1, libur: 6, cuti: 1, izin: 1, total_hari_kerja: 30 },
-            '05': { hadir: 20, terlambat: 2, libur: 7, cuti: 2, izin: 1, total_hari_kerja: 30 },
-            '06': { hadir: 21, terlambat: 2, libur: 6, cuti: 2, izin: 1, total_hari_kerja: 30 },
-            '07': { hadir: 23, terlambat: 0, libur: 5, cuti: 1, izin: 1, total_hari_kerja: 30 },
-            '08': { hadir: 22, terlambat: 1, libur: 6, cuti: 1, izin: 1, total_hari_kerja: 30 },
-            '09': { hadir: 21, terlambat: 1, libur: 7, cuti: 1, izin: 1, total_hari_kerja: 30 },
-            '10': { hadir: 23, terlambat: 0, libur: 5, cuti: 1, izin: 1, total_hari_kerja: 30 },
-            '11': { hadir: 19, terlambat: 2, libur: 8, cuti: 2, izin: 1, total_hari_kerja: 30 },
-            '12': { hadir: 20, terlambat: 2, libur: 7, cuti: 2, izin: 1, total_hari_kerja: 30 }
-        }
-    };
-
     const namaBulan = [
         'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
         'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
@@ -159,21 +142,13 @@
 
     function updateDashboard() {
         const sekarang = new Date();
-        const bulan = String(sekarang.getMonth() + 1).padStart(2, '0');
-        const tahun = sekarang.getFullYear();
         const namaBulanSekarang = namaBulan[sekarang.getMonth()];
+        const tahun = sekarang.getFullYear();
 
-        let data = dataDashboard[tahun]?.[bulan];
+        // Ambil data real dari backend
+        const data = @json($stats);
 
-        if (!data && dataDashboard['2025']?.[bulan]) {
-            data = dataDashboard['2025'][bulan];
-        }
-
-        if (!data) {
-            data = { hadir: 0, terlambat: 0, libur: 0, cuti: 0, izin: 0, total_hari_kerja: 30 };
-        }
-
-        const persentase = Math.round((data.hadir / data.total_hari_kerja) * 100);
+        const persentase = data.total_hari_kerja > 0 ? Math.round((data.hadir / data.total_hari_kerja) * 100) : 0;
         const sisaHari = data.total_hari_kerja - (data.hadir + data.libur + data.cuti + data.izin);
 
         document.getElementById('total-hadir').textContent = data.hadir;

@@ -108,7 +108,7 @@ class SuperadminController extends Controller
 
         $karyawan = $query->orderBy('name')->paginate(10);
 
-        return view('superadmin.karyawan.data-karyawan', compact('karyawan'));
+        return view('superadmin.karyawan.data', compact('karyawan'));
     }
 
     public function karyawanCreate()
@@ -149,13 +149,13 @@ class SuperadminController extends Controller
     public function karyawanShow($id)
     {
         $user = User::findOrFail($id);
-        return view('superadmin.karyawan.data-karyawan', compact('user'));
+        return redirect()->route('superadmin.karyawan.index')->with('show_karyawan', $user);
     }
 
     public function karyawanEdit($id)
     {
-        $user = User::findOrFail($id);
-        return view('superadmin.karyawan.insert-karyawan', compact('user'));
+        $karyawan = User::findOrFail($id);
+        return view('superadmin.karyawan.edit', compact('karyawan'));
     }
 
     public function karyawanUpdate(Request $request, $id)
