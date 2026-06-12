@@ -194,14 +194,28 @@ class SuperadminController extends Controller
 
     // ===== INVENTORY =====
 
-    public function inventoryIndex()
+    public function inventoryIndex(Request $request)
     {
-        return view('superadmin.inventory.data-inventory');
+        $laporan = \App\Models\StockOpname::with(['inventory', 'user'])
+            ->when($request->filled('start_date'), fn ($q) => $q->whereDate('tanggal', '>=', $request->start_date))
+            ->when($request->filled('end_date'), fn ($q) => $q->whereDate('tanggal', '<=', $request->end_date))
+            ->when($request->filled('kategori'), fn ($q) => $q->whereHas('inventory', fn ($q2) => $q2->where('kategori', $request->kategori)))
+            ->orderBy('tanggal', 'desc')
+            ->get();
+
+        return view('superadmin.inventory.data-inventory', compact('laporan'));
     }
 
-    public function transferIndex()
+    public function transferIndex(Request $request)
     {
-        return view('superadmin.inventory.transfer-stock');
+        $laporan = \App\Models\TransferStock::with(['barang', 'user'])
+            ->when($request->filled('start_date'), fn ($q) => $q->whereDate('tanggal', '>=', $request->start_date))
+            ->when($request->filled('end_date'), fn ($q) => $q->whereDate('tanggal', '<=', $request->end_date))
+            ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
+            ->orderBy('tanggal', 'desc')
+            ->get();
+
+        return view('superadmin.inventory.transfer-stock', compact('laporan'));
     }
 
     // ===== PROFILE =====

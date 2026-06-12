@@ -1,6 +1,6 @@
 @extends('layouts.superadmin')
 
-@section('title', 'Laporan Opname')
+@section('title', 'Data Inventory')
 
 @section('content')
 <div class="container-fluid">
@@ -8,8 +8,8 @@
     {{-- Page Header --}}
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <div>
-            <h1 class="page-title">Laporan Opname</h1>
-            <p class="page-subtitle">Laporan lengkap stock opname</p>
+            <h1 class="page-title">Data Inventory</h1>
+            <p class="page-subtitle">Rekap stock opname seluruh PIC</p>
         </div>
     </div>
 
@@ -26,7 +26,7 @@
     {{-- Filter --}}
     <div class="card shadow mb-4" style="border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05) !important;">
         <div class="card-body">
-            <form action="{{ route('inventory.laporan-opname') }}" method="GET">
+            <form action="{{ route('superadmin.inventory.index') }}" method="GET">
                 <div class="row align-items-end">
                     <div class="col-md-3 mb-3 mb-md-0">
                         <label class="form-label" style="font-size: 14px; font-weight: 500;">Tanggal Mulai</label>
@@ -51,7 +51,7 @@
                         <button type="submit" class="btn btn-black" style="padding: 10px 16px; border-radius: 8px;">
                             <i class="bi bi-search me-1"></i> Filter
                         </button>
-                        <a href="{{ route('inventory.laporan-opname') }}" class="btn btn-secondary" style="padding: 10px 16px; border-radius: 8px; background-color: #e2e8f0; color: #334155; border: none;">
+                        <a href="{{ route('superadmin.inventory.index') }}" class="btn btn-secondary" style="padding: 10px 16px; border-radius: 8px; background-color: #e2e8f0; color: #334155; border: none;">
                             <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
                         </a>
                     </div>
@@ -72,6 +72,7 @@
                         <tr>
                             <th>No</th>
                             <th>Tanggal</th>
+                            <th>Petugas</th>
                             <th>Nama Barang</th>
                             <th>Kategori</th>
                             <th>Stok Sebelum</th>
@@ -85,6 +86,7 @@
                         <tr>
                             <td>{{ $index + 1 }}</td>
                             <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d M Y') }}</td>
+                            <td>{{ $item->user->name ?? '-' }}</td>
                             <td>{{ $item->inventory->nama_barang ?? '-' }}</td>
                             <td>
                                 <span class="category-btn" style="padding: 4px 10px; font-size: 12px; border-radius: 20px; background: #e2e8f0; font-weight: 500;">
@@ -106,7 +108,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="8" class="text-center" style="padding: 40px; color: #94a3b8;">
+                            <td colspan="9" class="text-center" style="padding: 40px; color: #94a3b8;">
                                 Belum ada data opname.
                             </td>
                         </tr>

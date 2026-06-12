@@ -87,6 +87,45 @@ class AbsensiReportController extends Controller
     }
 
     /**
+     * Riwayat keterlambatan personal per bulan (jam masuk melewati batas).
+     */
+    public function keterlambatan(Request $request)
+    {
+        $user  = Auth::user();
+        $bulan = (int) $request->input('bulan', now()->month);
+        $tahun = (int) $request->input('tahun', now()->year);
+
+        $awal  = Carbon::create($tahun, $bulan, 1)->startOfMonth();
+        $akhir = $awal->copy()->endOfMonth();
+
+        $masuk = Attendance::where('user_id', $user->id)
+            ->where('attendance_type', 'masuk')
+            ->whereBetween('attendance_time', [$awal, $akhir->copy()->endOfDay()])
+            ->orderBy('attendance_time')
+            ->get();
+
+        $terlambat = $masuk
+            ->filter(fn ($a) => $a->attendance_time->format('H:i:s') > self::JAM_BATAS_MASUK)
+            ->map(function ($a) {
+                $batas = $a->attendance_time->copy()->setTimeFromTimeString(self::JAM_BATAS_MASUK);
+                return [
+                    'tanggal'   => $a->attendance_time->toDateString(),
+                    'jam_masuk' => $a->attendance_time->format('H:i'),
+                    'menit'     => $batas->diffInMinutes($a->attendance_time),
+                ];
+            })
+            ->values();
+
+        return view('absensi.laporan.laporan-terlambat', [
+            'user'      => $user,
+            'bulan'     => $bulan,
+            'tahun'     => $tahun,
+            'terlambat' => $terlambat,
+            'total'     => $terlambat->count(),
+        ]);
+    }
+
+    /**
      * Hitung statistik kehadiran satu bulan dari tabel attendances + leaves.
      *
      * @return array{hadir:int,terlambat:int,izin:int,cuti:int,libur:int,totalHari:int}
@@ -110,13 +149,17 @@ class AbsensiReportController extends Controller
             return $pertama->attendance_time->format('H:i:s') > self::JAM_BATAS_MASUK;
         })->count();
 
-        // Izin & cuti dari tabel leaves yang sudah disetujui dan beririsan dengan bulan ini.
+        // Izin & cuti yang sudah disetujui dan benar-benar beririsan dengan bulan ini.
+        // end_date kosong (izin 1 hari) diperlakukan sebagai sama dengan start_date.
         $leaves = Leave::where('karyawan_id', $userId)
             ->where('status', 'approved')
             ->whereDate('start_date', '<=', $akhir->toDateString())
             ->where(function ($q) use ($awal) {
-                $q->whereNull('end_date')
-                  ->orWhereDate('end_date', '>=', $awal->toDateString());
+                $q->whereDate('end_date', '>=', $awal->toDateString())
+                  ->orWhere(function ($q2) use ($awal) {
+                      $q2->whereNull('end_date')
+                         ->whereDate('start_date', '>=', $awal->toDateString());
+                  });
             })
             ->get();
 

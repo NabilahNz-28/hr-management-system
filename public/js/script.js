@@ -212,29 +212,25 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
     
-    // Form submission handlers
+    // Konfirmasi sebelum submit (form izin/cuti tetap POST native ke server)
     const formIzin = document.getElementById('formIzin');
     if (formIzin) {
         formIzin.addEventListener('submit', function(e) {
-            e.preventDefault();
-            if (confirm('Ajukan izin?')) {
-                alert('Izin berhasil diajukan! Menunggu persetujuan atasan.');
-                this.reset();
+            if (!confirm('Ajukan izin?')) {
+                e.preventDefault();
             }
         });
     }
-    
+
     const formCuti = document.getElementById('formCuti');
     if (formCuti) {
         formCuti.addEventListener('submit', function(e) {
-            e.preventDefault();
-            if (confirm('Ajukan cuti?')) {
-                alert('Cuti berhasil diajukan! Menunggu persetujuan atasan.');
-                this.reset();
+            if (!confirm('Ajukan cuti?')) {
+                e.preventDefault();
             }
         });
     }
-    
+
     // Handle resize
     function handleResize() {
         if (window.innerWidth <= 768) {

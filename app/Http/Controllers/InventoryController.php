@@ -63,7 +63,7 @@ class InventoryController extends Controller
             'catatan'       => $request->catatan,
         ]);
 
-        return redirect()->route('inventories.inventory.stock.opname')
+        return redirect()->route('inventory.stock-opname')
             ->with('success', 'Barang berhasil ditambahkan.');
     }
 
@@ -113,7 +113,7 @@ class InventoryController extends Controller
             }
         }
 
-        return redirect()->route('inventories.inventory.stock.opname')
+        return redirect()->route('inventory.stock-opname')
             ->with('success', 'Opname berhasil disimpan.');
     }
 
@@ -172,7 +172,7 @@ class InventoryController extends Controller
             'status'    => 'Selesai',
         ]);
 
-        return redirect()->route('inventories.inventory.transfer.stock')
+        return redirect()->route('inventory.transfer-stock')
             ->with('success', 'Transfer berhasil disimpan.');
     }
 
@@ -181,12 +181,15 @@ class InventoryController extends Controller
     // View: laporan-opname
     // Kolom: tanggal, nama_barang, kategori, stok
     // ─────────────────────────────────────────────────────────────
-    public function laporanOpname()
+    public function laporanOpname(Request $request)
     {
         $this->authorizeOnlyPic();
 
         $laporan = StockOpname::with('inventory')
-            ->where('user_id', auth()->id()) // ✅
+            ->where('user_id', auth()->id())
+            ->when($request->filled('start_date'), fn ($q) => $q->whereDate('tanggal', '>=', $request->start_date))
+            ->when($request->filled('end_date'), fn ($q) => $q->whereDate('tanggal', '<=', $request->end_date))
+            ->when($request->filled('kategori'), fn ($q) => $q->whereHas('inventory', fn ($q2) => $q2->where('kategori', $request->kategori)))
             ->orderBy('tanggal', 'desc')
             ->get();
 
@@ -198,12 +201,15 @@ class InventoryController extends Controller
     // View: laporan-transfer
     // Kolom: tanggal, barang, gudang_utama (default), ke_gudang, jumlah_pcs, catatan
     // ─────────────────────────────────────────────────────────────
-    public function laporanTransfer()
+    public function laporanTransfer(Request $request)
     {
         $this->authorizeOnlyPic();
 
         $laporan = TransferStock::with('barang')
-            ->where('user_id', auth()->id()) // ✅
+            ->where('user_id', auth()->id())
+            ->when($request->filled('start_date'), fn ($q) => $q->whereDate('tanggal', '>=', $request->start_date))
+            ->when($request->filled('end_date'), fn ($q) => $q->whereDate('tanggal', '<=', $request->end_date))
+            ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
             ->orderBy('tanggal', 'desc')
             ->get();
 

@@ -1,6 +1,6 @@
 @extends('layouts.superadmin')
 
-@section('title', 'Laporan Transfer')
+@section('title', 'Transfer Stock')
 
 @section('content')
 <div class="container-fluid">
@@ -8,8 +8,8 @@
     {{-- Page Header --}}
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <div>
-            <h1 class="page-title">Laporan Transfer</h1>
-            <p class="page-subtitle">Laporan lengkap transfer stock antar gudang</p>
+            <h1 class="page-title">Transfer Stock</h1>
+            <p class="page-subtitle">Rekap transfer stock antar gudang seluruh PIC</p>
         </div>
     </div>
 
@@ -26,7 +26,7 @@
     {{-- Filter --}}
     <div class="card shadow mb-4" style="border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05) !important;">
         <div class="card-body">
-            <form action="{{ route('inventory.laporan-transfer') }}" method="GET">
+            <form action="{{ route('superadmin.transfer.index') }}" method="GET">
                 <div class="row align-items-end">
                     <div class="col-md-3 mb-3 mb-md-0">
                         <label class="form-label" style="font-size: 14px; font-weight: 500;">Tanggal Mulai</label>
@@ -49,7 +49,7 @@
                         <button type="submit" class="btn btn-black" style="padding: 10px 16px; border-radius: 8px;">
                             <i class="bi bi-search me-1"></i> Filter
                         </button>
-                        <a href="{{ route('inventory.laporan-transfer') }}" class="btn btn-secondary" style="padding: 10px 16px; border-radius: 8px; background-color: #e2e8f0; color: #334155; border: none;">
+                        <a href="{{ route('superadmin.transfer.index') }}" class="btn btn-secondary" style="padding: 10px 16px; border-radius: 8px; background-color: #e2e8f0; color: #334155; border: none;">
                             <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
                         </a>
                     </div>
@@ -70,6 +70,7 @@
                         <tr>
                             <th>No</th>
                             <th>Tanggal</th>
+                            <th>Petugas</th>
                             <th>Barang</th>
                             <th>Gudang Asal</th>
                             <th>Ke Gudang</th>
@@ -84,6 +85,7 @@
                         <tr>
                             <td>{{ $index + 1 }}</td>
                             <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d M Y') }}</td>
+                            <td>{{ $item->user->name ?? '-' }}</td>
                             <td>{{ $item->barang->nama_barang ?? '-' }}</td>
                             <td>
                                 <span style="font-weight: 500; color: #1e293b;">Gudang Utama</span>
@@ -110,7 +112,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="9" class="text-center" style="padding: 40px; color: #94a3b8;">
+                            <td colspan="10" class="text-center" style="padding: 40px; color: #94a3b8;">
                                 Belum ada data transfer.
                             </td>
                         </tr>

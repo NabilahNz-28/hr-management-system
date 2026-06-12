@@ -118,7 +118,7 @@ Route::middleware('auth')->group(function () {
     // LAPORAN ABSENSI
     Route::prefix('laporan')->name('laporan.')->group(function () {
         Route::get('/absensi', [AbsensiReportController::class, 'laporan'])->name('absensi');
-        Route::get('/terlambat', fn () => view('absensi.laporan.laporan-terlambat'))->name('terlambat');
+        Route::get('/terlambat', [AbsensiReportController::class, 'keterlambatan'])->name('terlambat');
         Route::get('/izin-cuti', [LaporanController::class, 'index'])->name('cuti');
     });
 

@@ -16,7 +16,14 @@
             <h6 class="m-0 font-weight-bold text-primary">Form Transfer Stock</h6>
         </div>
         <div class="card-body">
-            <form method="POST" action="#">
+            @if($errors->any())
+                <div class="alert alert-danger">
+                    <ul style="margin:0;padding-left:18px;">
+                        @foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach
+                    </ul>
+                </div>
+            @endif
+            <form method="POST" action="{{ route('inventory.transfer-stock.store') }}">
                 @csrf
                 <div class="row">
                     <div class="col-md-6">

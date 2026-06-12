@@ -13,9 +13,55 @@ class DashboardController extends Controller
         // Dashboard PIC - Inventory
     public function pic()
     {
-        $aktivitasList = []; // sementara (atau ambil dari DB nanti)
+        $userId = auth()->id();
+        $now    = \Carbon\Carbon::now();
 
-        return view('dashboard.dashboard-pic', compact('aktivitasList'));
+        // Statistik
+        $totalBarang = \App\Models\Inventory::count();
+
+        $totalOpname = \App\Models\StockOpname::where('user_id', $userId)
+            ->whereMonth('tanggal', $now->month)
+            ->whereYear('tanggal', $now->year)
+            ->count();
+
+        $totalTransfer = \App\Models\TransferStock::where('user_id', $userId)
+            ->whereMonth('tanggal', $now->month)
+            ->whereYear('tanggal', $now->year)
+            ->count();
+
+        // Aktivitas terbaru (gabungan opname + transfer milik PIC ini)
+        $opnames = \App\Models\StockOpname::with('inventory')
+            ->where('user_id', $userId)
+            ->latest('tanggal')
+            ->take(10)
+            ->get()
+            ->map(fn ($o) => (object) [
+                'tanggal'     => $o->tanggal,
+                'jenis'       => 'Stock Opname',
+                'nama_barang' => $o->inventory->nama_barang ?? '-',
+                'jumlah'      => $o->stok_sesudah . ' pcs',
+            ]);
+
+        $transfers = \App\Models\TransferStock::with('barang')
+            ->where('user_id', $userId)
+            ->latest('tanggal')
+            ->take(10)
+            ->get()
+            ->map(fn ($t) => (object) [
+                'tanggal'     => $t->tanggal,
+                'jenis'       => 'Transfer Stock',
+                'nama_barang' => $t->barang->nama_barang ?? '-',
+                'jumlah'      => $t->jumlah . ' ' . $t->satuan,
+            ]);
+
+        $aktivitasList = $opnames->concat($transfers)
+            ->sortByDesc('tanggal')
+            ->take(10)
+            ->values();
+
+        return view('dashboard.dashboard-pic', compact(
+            'totalBarang', 'totalOpname', 'totalTransfer', 'aktivitasList'
+        ));
     }
 
     // Dashboard Absensi

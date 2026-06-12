@@ -6,42 +6,51 @@
 <div class="page-content">
     <h3 class="content-title">Form Tambah Barang Stock Opname</h3>
     
-    <form id="item-form" action="#" method="POST">
+    @if($errors->any())
+        <div class="success-message" style="background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;padding:12px 16px;border-radius:8px;margin-bottom:16px;">
+            <ul style="margin:0;padding-left:18px;">
+                @foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach
+            </ul>
+        </div>
+    @endif
+
+    <form id="item-form" action="{{ route('inventory.tambah-barang.store') }}" method="POST">
         @csrf
         <div class="form-row">
             <div class="form-group">
                 <label class="form-label" for="item-name">Nama Barang</label>
-                <input type="text" class="form-control" id="item-name" name="item_name" placeholder="Contoh: Box Eco 250ml" required>
+                <input type="text" class="form-control" id="item-name" name="nama_barang" value="{{ old('nama_barang') }}" placeholder="Contoh: Box Eco 250ml" required>
             </div>
-            
+
             <div class="form-group">
                 <label class="form-label" for="item-category">Kategori</label>
-                <select class="form-select" id="item-category" name="item_category" required>
+                <select class="form-select" id="item-category" name="kategori" required>
                     <option value="">Pilih Kategori</option>
-                    <option value="eco">Eco</option>
-                    <option value="fragile">Fragile</option>
-                    <option value="plastic">Plastic</option>
-                    <option value="thermal">Thermal</option>
-                    <option value="carton">Carton</option>
+                    <option value="eco" {{ old('kategori') == 'eco' ? 'selected' : '' }}>Eco</option>
+                    <option value="fragile" {{ old('kategori') == 'fragile' ? 'selected' : '' }}>Fragile</option>
+                    <option value="plastic" {{ old('kategori') == 'plastic' ? 'selected' : '' }}>Plastic</option>
+                    <option value="thermal" {{ old('kategori') == 'thermal' ? 'selected' : '' }}>Thermal</option>
+                    <option value="carton" {{ old('kategori') == 'carton' ? 'selected' : '' }}>Carton</option>
+                    <option value="other" {{ old('kategori') == 'other' ? 'selected' : '' }}>Other</option>
                 </select>
             </div>
         </div>
-        
+
         <div class="form-row">
             <div class="form-group">
                 <label class="form-label" for="item-pcs">Jumlah (Pcs)</label>
-                <input type="number" class="form-control" id="item-pcs" name="item_pcs" placeholder="0" min="0" required>
+                <input type="number" class="form-control" id="item-pcs" name="jumlah_pcs" value="{{ old('jumlah_pcs') }}" placeholder="0" min="0" required>
             </div>
-            
+
             <div class="form-group">
                 <label class="form-label" for="item-carton">Jumlah (Carton)</label>
-                <input type="number" class="form-control" id="item-carton" name="item_carton" placeholder="0" min="0">
+                <input type="number" class="form-control" id="item-carton" name="jumlah_carton" value="{{ old('jumlah_carton') }}" placeholder="0" min="0">
             </div>
         </div>
-        
+
         <div class="form-group">
             <label class="form-label" for="item-notes">Catatan (Opsional)</label>
-            <textarea class="form-control" id="item-notes" name="item_notes" rows="3" placeholder="Tambahkan catatan jika diperlukan..."></textarea>
+            <textarea class="form-control" id="item-notes" name="catatan" rows="3" placeholder="Tambahkan catatan jika diperlukan...">{{ old('catatan') }}</textarea>
         </div>
         
         <div class="action-buttons mt-4" style="gap: 15px;">
