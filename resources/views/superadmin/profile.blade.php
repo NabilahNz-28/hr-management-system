@@ -5,9 +5,8 @@
 @section('content')
 <div class="dashboard-content">
     <div class="page-content active" id="profile-superadmin">
-        <div class="content-title">Profile Super Administrator</div>
-        <p class="content-description">Kelola data diri Anda</p>
-
+        <div class="content-title text-center">Profile Super Admin</div>
+        <p class="content-description text-center">Kelola data diri dan keamanan akun Anda</p>
         <!-- Card Profile -->
         <div class="profile-card-superadmin">
             <!-- Foto Profile -->
@@ -20,8 +19,8 @@
             </div>
 
             <!-- Badge Role -->
-            <div class="role-badge">
-                <span class="role-badge-text">Super Administrator</span>
+            <div class="superadmin-role-wrap">
+                <span class="superadmin-role-badge">Super Administrator</span>
             </div>
 
             <!-- Form Data Diri (Grid 2 kolom) -->

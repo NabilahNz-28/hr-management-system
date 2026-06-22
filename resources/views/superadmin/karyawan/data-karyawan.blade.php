@@ -8,7 +8,7 @@
         <div class="content-title">Data Karyawan</div>
         <p class="content-description">Kelola data seluruh karyawan perusahaan</p>
 
-        <!-- Header Action -->
+        <!-- Header Action - DIPERBAIKI -->
         <div class="action-header">
             <a href="{{ route('superadmin.karyawan.create') }}" class="btn btn-primary btn-small">
                 + Tambah Karyawan
@@ -22,7 +22,7 @@
             </form>
         </div>
 
-        <!-- Tabel Karyawan -->
+        <!-- Tabel Karyawan - DIPERBAIKI -->
         <div class="table-responsive">
             <table class="data-table-laporan">
                 <thead>
@@ -123,14 +123,49 @@
                             </div>
                         </td>
                     </tr>
-                    @endforelse
+                    @endforelse <!-- INI DIPERBAIKI -->
                 </tbody>
             </table>
         </div>
 
-        <!-- Pagination -->
+        <!-- Pagination - DIPERBAIKI -->
         <div class="pagination-container">
-            {{ $karyawan->links('pagination::bootstrap-4') ?? '' }}
+            @if(isset($karyawan) && $karyawan->hasPages())
+                <div class="pagination-wrapper">
+                    {{-- Mobile Pagination --}}
+                    <div class="pagination-mobile">
+                        <div class="pagination-info">
+                            Menampilkan {{ $karyawan->firstItem() ?? 0 }} - {{ $karyawan->lastItem() ?? 0 }} 
+                            dari {{ $karyawan->total() }} data
+                        </div>
+                        <div class="pagination-nav">
+                            @if($karyawan->onFirstPage())
+                                <span class="page-link disabled">‹</span>
+                            @else
+                                <a href="{{ $karyawan->previousPageUrl() }}" class="page-link">‹</a>
+                            @endif
+
+                            <span class="page-current">{{ $karyawan->currentPage() }} / {{ $karyawan->lastPage() }}</span>
+
+                            @if($karyawan->hasMorePages())
+                                <a href="{{ $karyawan->nextPageUrl() }}" class="page-link">›</a>
+                            @else
+                                <span class="page-link disabled">›</span>
+                            @endif
+                        </div>
+                    </div>
+
+                    {{-- Desktop Pagination --}}
+                    <div class="pagination-desktop">
+                        {{ $karyawan->links('pagination::bootstrap-4') }}
+                    </div>
+                </div>
+            @elseif(isset($karyawan) && $karyawan->total() > 0)
+                <div class="pagination-info">
+                    Menampilkan {{ $karyawan->firstItem() ?? 0 }} - {{ $karyawan->lastItem() ?? 0 }} 
+                    dari {{ $karyawan->total() }} data
+                </div>
+            @endif
         </div>
     </div>
 </div>
