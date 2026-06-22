@@ -74,6 +74,7 @@
                             @error('password')
                             <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
+                            <small class="text-muted">Min. 8 karakter, kombinasi huruf besar &amp; kecil, angka, dan simbol.</small>
                         </div>
 
                         <div class="form-group">

@@ -305,6 +305,24 @@
 
 <script>
 /**
+ * ===================== GUARD MULTI-USER =====================
+ * Data absensi disimpan di browser (sessionStorage/localStorage). Pastikan data
+ * tsb milik user yang sedang login. Jika user berbeda (mis. ganti akun di
+ * browser yang sama), bersihkan agar status "sudah mulai bekerja" tidak bocor
+ * antar akun.
+ */
+(function() {
+    const currentUserId = String(@json(auth()->id()));
+    const ATT_KEYS = ['waktu_masuk_iso', 'waktu_masuk', 'absensi_pulang_done',
+                      'last_attendance', 'last_attendance_pulang'];
+    if (sessionStorage.getItem('attendance_owner_id') !== currentUserId) {
+        ATT_KEYS.forEach(k => sessionStorage.removeItem(k));
+        localStorage.removeItem('absensi_data');
+        sessionStorage.setItem('attendance_owner_id', currentUserId);
+    }
+})();
+
+/**
  * ===================== KONFIGURASI =====================
  */
 const TIMEOUT = 30; // detik
@@ -407,9 +425,26 @@ document.addEventListener('DOMContentLoaded', async function() {
         updateGPS('masuk');
     }, 30000);
 
-    // Waktu Kerja
-    const saved = sessionStorage.getItem('waktu_masuk_iso');
-    if(saved) startWorkClock(saved)
+    // Waktu Kerja — validasi ke server (DB) untuk user yang sedang login.
+    // Timer hanya tampil jika user ini sudah absen MASUK hari ini dan BELUM pulang.
+    try {
+        const res = await fetch("{{ route('absensi.cek') }}?attendance_type=masuk", {
+            headers: { 'Accept': 'application/json' }
+        });
+        const data = await res.json();
+        const box = document.getElementById('workClockBox');
+        if (data.has_masuk && !data.has_pulang) {
+            sessionStorage.setItem('waktu_masuk_iso', data.masuk_iso);
+            startWorkClock(data.masuk_iso);
+        } else {
+            // Belum absen masuk hari ini (atau sudah pulang) → jangan tampilkan timer
+            sessionStorage.removeItem('waktu_masuk_iso');
+            if (workInterval) clearInterval(workInterval);
+            if (box) box.style.display = 'none';
+        }
+    } catch (e) {
+        console.warn('Gagal cek status absensi hari ini:', e);
+    }
 });
 
 /**

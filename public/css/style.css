@@ -1600,6 +1600,11 @@ body {
     color: #475569;
 }
 
+.role-pic {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+}
+
 /* Status Badges */
 .status-active {
     background: #d1fae5;

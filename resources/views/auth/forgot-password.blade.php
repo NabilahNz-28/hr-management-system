@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lupa Password - HR Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f4f7f6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .login-logo { width: 80px; height: 80px; object-fit: contain; }
+    </style>
+</head>
+<body class="bg-light">
+
+    <div class="container d-flex justify-content-center align-items-center min-vh-100">
+
+        <div class="card border-0 shadow-lg rounded-4 p-4 p-md-5" style="max-width: 420px; width: 100%;">
+
+            <div class="text-center mb-4">
+                <img src="{{ asset('photos/LOGO.jpeg') }}" alt="Logo" class="login-logo mb-3">
+                <h4 class="fw-bold text-dark mb-1">Lupa Password</h4>
+                <p class="text-muted mb-0">Masukkan email Anda, kami akan mengirim link reset password.</p>
+            </div>
+
+            @if(session('status'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i> {{ session('status') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            <form method="POST" action="{{ route('password.email') }}">
+                @csrf
+
+                <div class="mb-4">
+                    <label for="email" class="form-label fw-semibold">Alamat Email</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="fas fa-envelope text-muted"></i></span>
+                        <input type="email" class="form-control @error('email') is-invalid @enderror"
+                               id="email" name="email" value="{{ old('email') }}"
+                               placeholder="admin@perusahaan.com" required autofocus>
+                        @error('email')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg fw-bold">
+                        Kirim Link Reset <i class="fas fa-paper-plane ms-2"></i>
+                    </button>
+                </div>
+
+                <div class="text-center mt-4">
+                    <a href="{{ route('login') }}" class="text-decoration-none">
+                        <i class="fas fa-arrow-left me-1"></i> Kembali ke Login
+                    </a>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

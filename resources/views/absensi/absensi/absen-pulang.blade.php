@@ -308,6 +308,23 @@
 
 <script>
 /**
+ * ===================== GUARD MULTI-USER =====================
+ * Data absensi disimpan di browser (sessionStorage/localStorage). Pastikan data
+ * tsb milik user yang sedang login. Jika user berbeda (mis. ganti akun di
+ * browser yang sama), bersihkan agar status absensi tidak bocor antar akun.
+ */
+(function() {
+    const currentUserId = String(@json(auth()->id()));
+    const ATT_KEYS = ['waktu_masuk_iso', 'waktu_masuk', 'absensi_pulang_done',
+                      'last_attendance', 'last_attendance_pulang'];
+    if (sessionStorage.getItem('attendance_owner_id') !== currentUserId) {
+        ATT_KEYS.forEach(k => sessionStorage.removeItem(k));
+        localStorage.removeItem('absensi_data');
+        sessionStorage.setItem('attendance_owner_id', currentUserId);
+    }
+})();
+
+/**
  * ===================== KONFIGURASI =====================
  */
 const TIMEOUT = 30; // detik
@@ -434,8 +451,8 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   await initFaceDetector();
 
-  // Load data absensi masuk (integrasi)
-  loadAbsensiMasukData();
+  // Load data absensi masuk (dari server/DB, per user yang login)
+  await loadAbsensiMasukData();
 
   // Update info absensi masuk setiap detik
   if (attendanceInterval) clearInterval(attendanceInterval);
@@ -453,53 +470,50 @@ document.addEventListener('DOMContentLoaded', async function() {
 });
 
 /**
- * ===================== LOAD DATA ABSENSI MASUK (INTEGRASI) =====================
- * Prioritas:
- * 1) sessionStorage.waktu_masuk_iso (dari halaman absen masuk)
- * 2) localStorage.absensi_data (fallback kalau buka pulang langsung)
+ * ===================== LOAD DATA ABSENSI MASUK (DARI SERVER) =====================
+ * Sumber kebenaran = database (per user yang login), bukan storage browser.
+ * Ini mencegah data absensi bocor/hilang saat ganti akun di browser yang sama.
  */
-function loadAbsensiMasukData() {
-    if(sessionStorage.getItem('absensi_pulang_done') === 'true'){
-        absensiMasukHariIni = null;
-        
-        document.getElementById('displayWaktuMasuk').textContent = 'Belum ada data'; 
-        document.getElementById('displayLamaKerja').textContent = '00:00:00'; 
-        document.getElementById('displayStatusMasuk').innerHTML = '<span style="color: #10b981"> Absensi selesai hari ini</span>'; 
-        return;
-    }
+async function loadAbsensiMasukData() {
   try {
-    // 1) Prioritas ISO dari halaman masuk
-    const masukIso = sessionStorage.getItem('waktu_masuk_iso');
-    if (masukIso) {
-      absensiMasukHariIni = { created_at: masukIso, type: 'masuk' };
+    const res = await fetch("{{ route('absensi.cek') }}?attendance_type=masuk", {
+      headers: { 'Accept': 'application/json' }
+    });
+    const data = await res.json();
 
-      const t = new Date(masukIso);
-      document.getElementById('displayWaktuMasuk').textContent =
-        t.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    const elWaktu  = document.getElementById('displayWaktuMasuk');
+    const elLama   = document.getElementById('displayLamaKerja');
+    const elStatus = document.getElementById('displayStatusMasuk');
 
-      document.getElementById('displayStatusMasuk').textContent = 'Sudah Absen';
+    // Sudah absen pulang hari ini → absensi lengkap
+    if (data.has_pulang) {
+      absensiMasukHariIni = null;
+      sessionStorage.setItem('absensi_pulang_done', 'true');
+      elWaktu.textContent  = data.masuk_time || '—';
+      elLama.textContent   = '00:00:00';
+      elStatus.innerHTML   = '<span style="color: #10b981;">✓ Absensi selesai hari ini</span>';
       return;
     }
 
-    // 2) Fallback: cari di localStorage
-    const absensiData = JSON.parse(localStorage.getItem('absensi_data') || '[]');
-    const today = new Date().toDateString();
+    // Sudah absen masuk & belum pulang → tampilkan & hitung lama kerja
+    if (data.has_masuk && data.masuk_iso) {
+      absensiMasukHariIni = { created_at: data.masuk_iso, type: 'masuk' };
+      sessionStorage.setItem('waktu_masuk_iso', data.masuk_iso);
+      sessionStorage.removeItem('absensi_pulang_done');
 
-    const found = absensiData.find(item => {
-      const itemDate = new Date(item.created_at).toDateString();
-      return item.type === 'masuk' && itemDate === today;
-    });
-
-    if (found) {
-      absensiMasukHariIni = found;
-
-      const waktu = new Date(found.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-      document.getElementById('displayWaktuMasuk').textContent = waktu;
-      document.getElementById('displayStatusMasuk').textContent = 'Sudah Absen';
-
-      // simpan ke session biar konsisten (integrasi)
-      sessionStorage.setItem('waktu_masuk_iso', found.created_at);
+      const t = new Date(data.masuk_iso);
+      elWaktu.textContent  = t.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+      elStatus.textContent = 'Sudah Absen';
+      return;
     }
+
+    // Belum absen masuk hari ini
+    absensiMasukHariIni = null;
+    sessionStorage.removeItem('waktu_masuk_iso');
+    sessionStorage.removeItem('absensi_pulang_done');
+    elWaktu.textContent  = 'Belum absen masuk';
+    elLama.textContent   = '00:00:00';
+    elStatus.innerHTML   = '<span style="color: #ef4444;">⚠ Belum absen masuk</span>';
   } catch (error) {
     console.error('Error loading attendance data:', error);
   }
@@ -894,6 +908,22 @@ async function submitAbsensi(tipe) {
     return;
   }
 
+  // Tidak boleh absen pulang sebelum absen masuk hari ini (verifikasi ke server)
+  try {
+    const cekResp = await fetch("{{ route('absensi.cek') }}?attendance_type=masuk", {
+      headers: { 'Accept': 'application/json' }
+    });
+    const cek = await cekResp.json().catch(() => ({}));
+    if (!cek.has_attended) {
+      alert('⚠️ Anda belum absen masuk hari ini.\n\nSilakan absen masuk terlebih dahulu sebelum absen pulang.');
+      return;
+    }
+  } catch (e) {
+    console.error('Gagal memeriksa absen masuk:', e);
+    alert('Gagal memeriksa status absen masuk. Periksa koneksi Anda lalu coba lagi.');
+    return;
+  }
+
   // Optional: enforce rule 16:30 (kalau mau benar-benar dikunci)
   const now = new Date();
   const bisaAbsenPulang = (now.getHours() > 16) || (now.getHours() === 16 && now.getMinutes() >= 30);
@@ -959,7 +989,7 @@ async function submitAbsensi(tipe) {
   } catch (error) {
     console.error('Error submit absensi pulang:', error);
     hideLoading();
-    alert('❌ Gagal menyimpan absensi. Silakan coba lagi.');
+    alert('❌ ' + (error?.message || 'Gagal menyimpan absensi. Silakan coba lagi.'));
 
     const submitBtn = document.getElementById('submitBtnPulang');
     submitBtn.innerHTML = 'Submit Absensi Pulang';

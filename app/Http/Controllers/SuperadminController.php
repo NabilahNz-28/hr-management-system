@@ -6,6 +6,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 // use App\Models\Attendance; // Buka comment ini jika model sudah ada
 // use App\Models\Inventory; // Buka comment ini jika model sudah ada
 
@@ -123,7 +124,7 @@ class SuperadminController extends Controller
             'nik'      => 'nullable|string|max:50',
             'email'    => 'required|email|unique:users,email',
             'no_hp'    => 'nullable|string|max:20',
-            'password' => 'required|min:6|confirmed',
+            'password' => ['required', 'confirmed', Password::min(8)->letters()->mixedCase()->numbers()->symbols()],
             'role'     => 'required|in:karyawan,pic,superadmin',
             'status'   => 'nullable|in:aktif,nonaktif',
         ]);
@@ -163,9 +164,11 @@ class SuperadminController extends Controller
         $user = User::findOrFail($id);
 
         $request->validate([
-            'name'  => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'role'  => 'required|in:karyawan,pic,superadmin',
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:users,email,' . $user->id,
+            'role'     => 'required|in:karyawan,pic,superadmin',
+            // Password opsional saat edit; jika diisi wajib kuat
+            'password' => ['nullable', 'confirmed', Password::min(8)->letters()->mixedCase()->numbers()->symbols()],
         ]);
 
         $data = $request->only([
@@ -201,7 +204,8 @@ class SuperadminController extends Controller
             ->when($request->filled('end_date'), fn ($q) => $q->whereDate('tanggal', '<=', $request->end_date))
             ->when($request->filled('kategori'), fn ($q) => $q->whereHas('inventory', fn ($q2) => $q2->where('kategori', $request->kategori)))
             ->orderBy('tanggal', 'desc')
-            ->get();
+            ->paginate(10)
+            ->withQueryString();
 
         return view('superadmin.inventory.data-inventory', compact('laporan'));
     }
@@ -213,7 +217,8 @@ class SuperadminController extends Controller
             ->when($request->filled('end_date'), fn ($q) => $q->whereDate('tanggal', '<=', $request->end_date))
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
             ->orderBy('tanggal', 'desc')
-            ->get();
+            ->paginate(10)
+            ->withQueryString();
 
         return view('superadmin.inventory.transfer-stock', compact('laporan'));
     }
@@ -222,6 +227,49 @@ class SuperadminController extends Controller
 
     public function profile()
     {
-        return view('superadmin.profile');
+        $user = auth()->user();
+        return view('superadmin.profile', compact('user'));
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = auth()->user();
+
+        $request->validate([
+            'name'         => 'required|string|max:255',
+            'no_hp'        => 'nullable|string|max:20',
+            'alamat'       => 'nullable|string|max:500',
+            'foto_profile' => 'nullable|image|max:2048',
+        ]);
+
+        $data = $request->only(['name', 'no_hp', 'alamat']);
+
+        if ($request->hasFile('foto_profile')) {
+            $data['foto_profile'] = $request->file('foto_profile')->store('profiles', 'public');
+        }
+
+        $user->update($data);
+
+        return redirect()->route('superadmin.profile')
+            ->with('success', 'Profil berhasil diperbarui.');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'password'         => 'required|min:6|confirmed',
+        ]);
+
+        $user = auth()->user();
+
+        if (! Hash::check($request->current_password, $user->password)) {
+            return back()->withErrors(['current_password' => 'Password lama tidak sesuai.']);
+        }
+
+        $user->update(['password' => Hash::make($request->password)]);
+
+        return redirect()->route('superadmin.profile')
+            ->with('success', 'Password berhasil diubah.');
     }
 }

@@ -76,7 +76,7 @@
                             <option value="">-- Pilih Role --</option>
                             <option value="superadmin" {{ old('role', $karyawan->role) == 'superadmin' ? 'selected' : '' }}>Super Admin</option>
                             <option value="admin" {{ old('role', $karyawan->role) == 'admin' ? 'selected' : '' }}>Admin</option>
-                            <option value="inventory" {{ old('role', $karyawan->role) == 'inventory' ? 'selected' : '' }}>Inventory</option>
+                            <!-- <option value="inventory" {{ old('role', $karyawan->role) == 'inventory' ? 'selected' : '' }}>Inventory</option> -->
                             <option value="pic" {{ old('role', $karyawan->role) == 'pic' ? 'selected' : '' }}>PIC</option>
                             <option value="karyawan" {{ old('role', $karyawan->role) == 'karyawan' ? 'selected' : '' }}>Karyawan</option>
                         </select>
@@ -95,7 +95,10 @@
                         <label for="password">Password Baru</label>
                         <input type="password" id="password" name="password" class="form-control"
                                placeholder="Kosongkan jika tidak ingin ganti password">
-                        <small class="text-muted">Isi hanya jika ingin mengganti password.</small>
+                        <small class="text-muted">Isi hanya jika ingin mengganti password. Min. 8 karakter, kombinasi huruf besar &amp; kecil, angka, dan simbol.</small>
+                        @error('password')
+                            <div class="text-danger small mt-1">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="form-group">

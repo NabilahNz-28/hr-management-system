@@ -7,84 +7,108 @@
     <div class="page-content active" id="profile-superadmin">
         <div class="content-title text-center">Profile Super Admin</div>
         <p class="content-description text-center">Kelola data diri dan keamanan akun Anda</p>
+
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                ✅ {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+        @if($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <ul class="mb-0" style="padding-left:18px;">
+                    @foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
         <!-- Card Profile -->
         <div class="profile-card-superadmin">
-            <!-- Foto Profile -->
-            <div class="avatar-section-superadmin">
-                <div class="avatar-wrapper-superadmin">
-                    <img id="foto-profile" src="{{ asset('default-avatar.png') }}" alt="Foto Profile">
-                    <button type="button" class="btn-avatar-superadmin" onclick="gantiFoto()">Ganti Foto</button>
+            <!-- Form Data Diri -->
+            <form id="form-profile" class="profile-form-superadmin" method="POST"
+                  action="{{ route('superadmin.profile.update') }}" enctype="multipart/form-data">
+                @csrf
+                @method('PUT')
+
+                <!-- Foto Profile -->
+                <div class="avatar-section-superadmin">
+                    <div class="avatar-wrapper-superadmin">
+                        <img id="foto-profile"
+                             src="{{ $user->foto_profile ? asset('storage/'.$user->foto_profile) : asset('default-avatar.png') }}"
+                             alt="Foto Profile">
+                        <button type="button" class="btn-avatar-superadmin" onclick="document.getElementById('upload-foto').click()">Ganti Foto</button>
+                    </div>
+                    <input type="file" id="upload-foto" name="foto_profile" accept="image/*" style="display: none;" onchange="previewFoto(this)">
                 </div>
-                <input type="file" id="upload-foto" accept="image/*" style="display: none;" onchange="uploadFoto(this)">
-            </div>
 
-            <!-- Badge Role -->
-            <div class="superadmin-role-wrap">
-                <span class="superadmin-role-badge">Super Administrator</span>
-            </div>
+                <!-- Badge Role -->
+                <div class="superadmin-role-wrap">
+                    <span class="superadmin-role-badge">{{ ucfirst($user->role) }}</span>
+                </div>
 
-            <!-- Form Data Diri (Grid 2 kolom) -->
-            <form id="form-profile" class="profile-form-superadmin">
                 <div class="form-row-superadmin">
                     <div class="form-group-superadmin">
                         <label>Nama Lengkap</label>
-                        <input type="text" id="profile-nama" class="form-control" value="Admin Utama">
+                        <input type="text" name="name" class="form-control" value="{{ old('name', $user->name) }}" required>
                     </div>
                     <div class="form-group-superadmin">
-                        <label>Username</label>
-                        <input type="text" id="profile-username" class="form-control" value="superadmin" readonly>
+                        <label>Email</label>
+                        <input type="email" class="form-control" value="{{ $user->email }}" readonly>
                     </div>
                 </div>
                 <div class="form-row-superadmin">
                     <div class="form-group-superadmin">
-                        <label>Email</label>
-                        <input type="email" id="profile-email" class="form-control" value="admin@company.com" readonly>
+                        <label>NIK</label>
+                        <input type="text" class="form-control" value="{{ $user->nik ?? '-' }}" readonly>
                     </div>
                     <div class="form-group-superadmin">
                         <label>Role</label>
-                        <input type="text" id="profile-role" class="form-control" value="Super Administrator" readonly>
+                        <input type="text" class="form-control" value="{{ ucfirst($user->role) }}" readonly>
                     </div>
                 </div>
                 <div class="form-row-superadmin">
                     <div class="form-group-superadmin">
                         <label>No. HP</label>
-                        <input type="tel" id="profile-hp" class="form-control" value="081234567890" placeholder="Masukkan nomor HP">
+                        <input type="tel" name="no_hp" class="form-control" value="{{ old('no_hp', $user->no_hp) }}" placeholder="Masukkan nomor HP">
                     </div>
                     <div class="form-group-superadmin">
-                        <label>Alamat</label>
-                        <textarea id="profile-alamat" class="form-control" rows="2" placeholder="Masukkan alamat lengkap">Jl. Sudirman No. 45, Jakarta Pusat</textarea>
+                        <label>Tanggal Bergabung</label>
+                        <input type="text" class="form-control"
+                               value="{{ $user->tgl_bergabung ? \Carbon\Carbon::parse($user->tgl_bergabung)->format('d F Y') : '-' }}" readonly>
                     </div>
                 </div>
                 <div class="form-row-superadmin">
-                    <div class="form-group-superadmin">
-                        <label>Tanggal Bergabung</label>
-                        <input type="text" id="profile-tgl-gabung" class="form-control" value="01 Januari 2020" readonly>
-                    </div>
-                    <div class="form-group-superadmin">
-                        <label>Terakhir Login</label>
-                        <input type="text" id="profile-last-login" class="form-control" value="24 Mei 2026, 08:30 WIB" readonly>
+                    <div class="form-group-superadmin" style="grid-column: 1 / -1;">
+                        <label>Alamat</label>
+                        <textarea name="alamat" class="form-control" rows="2" placeholder="Masukkan alamat lengkap">{{ old('alamat', $user->alamat) }}</textarea>
                     </div>
                 </div>
 
                 <div class="form-actions-superadmin">
-                    <button type="button" class="btn btn-primary btn-small" onclick="simpanProfile()">Simpan Perubahan</button>
+                    <button type="submit" class="btn btn-primary btn-small">Simpan Perubahan</button>
                 </div>
             </form>
 
             <!-- Ubah Password -->
             <div class="password-section-superadmin">
                 <h3>Ubah Password</h3>
-                <div class="password-form-superadmin">
-                    <input type="password" id="password-lama" class="form-control" placeholder="Password lama">
-                    <input type="password" id="password-baru" class="form-control" placeholder="Password baru">
-                    <input type="password" id="password-konfirmasi" class="form-control" placeholder="Konfirmasi password baru">
-                    <button type="button" class="btn btn-primary btn-small" onclick="ubahPassword()">Ubah Password</button>
-                </div>
+                <form class="password-form-superadmin" method="POST" action="{{ route('superadmin.profile.password') }}">
+                    @csrf
+                    @method('PUT')
+                    <input type="password" name="current_password" class="form-control" placeholder="Password lama" required>
+                    <input type="password" name="password" class="form-control" placeholder="Password baru (min. 6 karakter)" required>
+                    <input type="password" name="password_confirmation" class="form-control" placeholder="Konfirmasi password baru" required>
+                    <button type="submit" class="btn btn-primary btn-small">Ubah Password</button>
+                </form>
             </div>
 
             <!-- Logout -->
             <div class="logout-section-superadmin">
-                <button type="button" class="btn btn-danger btn-small" onclick="logout()">Logout</button>
+                <form method="POST" action="{{ route('logout') }}" onsubmit="return confirm('Apakah anda yakin ingin keluar?')">
+                    @csrf
+                    <button type="submit" class="btn btn-danger btn-small">Logout</button>
+                </form>
             </div>
         </div>
     </div>
@@ -93,115 +117,15 @@
 
 @section('scripts')
 <script>
-    // Data profile superadmin (bisa diisi dari database nanti)
-    let profileData = {
-        nama: 'Admin Utama',
-        username: 'superadmin',
-        email: 'admin@company.com',
-        role: 'Super Administrator',
-        no_hp: '081234567890',
-        alamat: 'Jl. Sudirman No. 45, Jakarta Pusat',
-        tgl_gabung: '01 Januari 2020',
-        last_login: '24 Mei 2026, 08:30 WIB',
-        foto: '{{ asset("default-avatar.png") }}'
-    };
-
-    // Load dari localStorage jika ada
-    function loadFromStorage() {
-        const saved = localStorage.getItem('profile_superadmin_data');
-        if (saved) {
-            try {
-                const data = JSON.parse(saved);
-                Object.assign(profileData, data);
-            } catch(e) {}
-        }
-        // Isi ke form
-        document.getElementById('profile-nama').value = profileData.nama;
-        document.getElementById('profile-username').value = profileData.username;
-        document.getElementById('profile-email').value = profileData.email;
-        document.getElementById('profile-role').value = profileData.role;
-        document.getElementById('profile-hp').value = profileData.no_hp || '';
-        document.getElementById('profile-alamat').value = profileData.alamat || '';
-        document.getElementById('profile-tgl-gabung').value = profileData.tgl_gabung;
-        document.getElementById('profile-last-login').value = profileData.last_login;
-        document.getElementById('foto-profile').src = profileData.foto;
-    }
-
-    function simpanProfile() {
-        // Ambil nilai dari form
-        const newData = {
-            nama: document.getElementById('profile-nama').value,
-            username: document.getElementById('profile-username').value,
-            email: document.getElementById('profile-email').value,
-            role: document.getElementById('profile-role').value,
-            no_hp: document.getElementById('profile-hp').value,
-            alamat: document.getElementById('profile-alamat').value,
-            tgl_gabung: document.getElementById('profile-tgl-gabung').value,
-            last_login: document.getElementById('profile-last-login').value,
-            foto: profileData.foto
-        };
-
-        // Validasi sederhana
-        if (!newData.nama) return alert('Nama tidak boleh kosong');
-        if (!newData.no_hp) return alert('No. HP tidak boleh kosong');
-        const regexHP = /^(\+62|62|0)8[1-9][0-9]{7,11}$/;
-        if (!regexHP.test(newData.no_hp)) return alert('Format nomor HP tidak valid (contoh: 081234567890)');
-        if (!newData.alamat) return alert('Alamat tidak boleh kosong');
-        if (newData.alamat.length < 10) return alert('Alamat minimal 10 karakter');
-
-        // Simpan ke object dan localStorage
-        Object.assign(profileData, newData);
-        localStorage.setItem('profile_superadmin_data', JSON.stringify(profileData));
-
-        alert('Data profile berhasil disimpan!');
-    }
-
-    // Ganti foto
-    function gantiFoto() {
-        document.getElementById('upload-foto').click();
-    }
-
-    function uploadFoto(input) {
+    // Preview foto sebelum di-upload (file tetap dikirim saat "Simpan Perubahan")
+    function previewFoto(input) {
         const file = input.files[0];
         if (!file) return;
-        if (!file.type.match('image.*')) return alert('File harus gambar');
-        if (file.size > 5 * 1024 * 1024) return alert('Maksimal 5MB');
+        if (!file.type.match('image.*')) { alert('File harus gambar'); input.value = ''; return; }
+        if (file.size > 2 * 1024 * 1024) { alert('Maksimal 2MB'); input.value = ''; return; }
         const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('foto-profile').src = e.target.result;
-            profileData.foto = e.target.result;
-            localStorage.setItem('profile_superadmin_data', JSON.stringify(profileData));
-            alert('Foto berhasil diupdate');
-        };
+        reader.onload = e => document.getElementById('foto-profile').src = e.target.result;
         reader.readAsDataURL(file);
     }
-
-    // Ubah password
-    function ubahPassword() {
-        const lama = document.getElementById('password-lama').value;
-        const baru = document.getElementById('password-baru').value;
-        const konfirmasi = document.getElementById('password-konfirmasi').value;
-        if (!lama) return alert('Password lama harus diisi');
-        if (!baru) return alert('Password baru harus diisi');
-        if (baru.length < 6) return alert('Password baru minimal 6 karakter');
-        if (baru !== konfirmasi) return alert('Konfirmasi password tidak cocok');
-        if (lama === baru) return alert('Password baru tidak boleh sama dengan lama');
-        alert('Password berhasil diubah. Silakan login ulang.');
-        document.getElementById('password-lama').value = '';
-        document.getElementById('password-baru').value = '';
-        document.getElementById('password-konfirmasi').value = '';
-    }
-
-    // Logout
-    function logout() {
-        if (confirm('Apakah anda yakin ingin keluar?')) {
-            sessionStorage.clear();
-            localStorage.removeItem('is_logged_in');
-            alert('Anda telah logout');
-            // window.location.href = '/login';
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', loadFromStorage);
 </script>
 @endsection

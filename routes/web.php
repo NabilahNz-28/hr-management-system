@@ -31,10 +31,18 @@ Route::get('/', function () {
 // GUEST
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+    // Backstop per-IP (selain throttle email+IP di controller)
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:30,1')->name('login.post');
 
+    // Registrasi publik dinonaktifkan: akun dibuat oleh Superadmin (Data Karyawan).
+    // Route GET dipertahankan agar link 'register' yang ada tidak rusak (redirect ke login).
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
-    Route::post('/register', [AuthController::class, 'register'])->name('register.post');
+
+    // LUPA / RESET PASSWORD
+    Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->name('password.request');
+    Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->middleware('throttle:6,1')->name('password.email');
+    Route::get('/reset-password/{token}', [AuthController::class, 'showResetPassword'])->name('password.reset');
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:6,1')->name('password.update');
 });
 
 // AUTH
@@ -91,6 +99,10 @@ Route::middleware('auth')->group(function () {
     // Profile superadmin
     Route::get('/superadmin/profile', [SuperadminController::class, 'profile'])
         ->name('superadmin.profile');
+    Route::put('/superadmin/profile', [SuperadminController::class, 'updateProfile'])
+        ->name('superadmin.profile.update');
+    Route::put('/superadmin/profile/password', [SuperadminController::class, 'updatePassword'])
+        ->name('superadmin.profile.password');
 
     Route::post('/superadmin/store-user', [SuperadminController::class, 'storeUser'])
         ->name('superadmin.storeUser');
@@ -107,6 +119,7 @@ Route::middleware('auth')->group(function () {
 
         Route::post('/simpan', [AttendanceController::class, 'simpanAbsensi'])->name('simpan');
         Route::get('/riwayat', [AttendanceController::class, 'getRiwayat'])->name('riwayat');
+        Route::get('/cek-hari-ini', [AttendanceController::class, 'checkTodayAttendance'])->name('cek');
     });
 
     // MONITORING ABSENSI

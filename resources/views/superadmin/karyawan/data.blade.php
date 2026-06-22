@@ -39,7 +39,7 @@
                 <tbody>
                     @forelse($karyawan ?? [] as $index => $item)
                     <tr>
-                        <td class="text-center">{{ $index + 1 }}</td>
+                        <td class="text-center">{{ ($karyawan->firstItem() ?? 1) + $index }}</td>
                         <td>
                             <button type="button"
                                     class="link-detail btn-detail-karyawan"
@@ -145,9 +145,41 @@
             </table>
         </div>
 
+        @if(isset($karyawan) && $karyawan->total() > 0)
         <div class="pagination-container">
-            {{ $karyawan->links('pagination::bootstrap-4') ?? '' }}
+            <div class="pagination-info">
+                Menampilkan <strong>{{ $karyawan->firstItem() }}</strong>–<strong>{{ $karyawan->lastItem() }}</strong>
+                dari <strong>{{ $karyawan->total() }}</strong> karyawan
+            </div>
+
+            @if($karyawan->hasPages())
+            <nav class="pagination-nav">
+                {{-- Prev --}}
+                @if($karyawan->onFirstPage())
+                    <span class="page-btn disabled">‹</span>
+                @else
+                    <a href="{{ $karyawan->previousPageUrl() }}" class="page-btn" rel="prev">‹</a>
+                @endif
+
+                {{-- Page numbers --}}
+                @foreach($karyawan->getUrlRange(1, $karyawan->lastPage()) as $page => $url)
+                    @if($page == $karyawan->currentPage())
+                        <span class="page-btn active">{{ $page }}</span>
+                    @else
+                        <a href="{{ $url }}" class="page-btn">{{ $page }}</a>
+                    @endif
+                @endforeach
+
+                {{-- Next --}}
+                @if($karyawan->hasMorePages())
+                    <a href="{{ $karyawan->nextPageUrl() }}" class="page-btn" rel="next">›</a>
+                @else
+                    <span class="page-btn disabled">›</span>
+                @endif
+            </nav>
+            @endif
         </div>
+        @endif
     </div>
 </div>
 
@@ -192,6 +224,66 @@
 </div>
 
 <style>
+.pagination-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.pagination-info {
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+.pagination-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.page-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 38px;
+    height: 38px;
+    padding: 0 10px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    color: #374151;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.page-btn:hover:not(.disabled):not(.active) {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+}
+
+.page-btn.active {
+    background: #0d6efd;
+    border-color: #0d6efd;
+    color: #fff;
+}
+
+.page-btn.disabled {
+    color: #cbd5e1;
+    cursor: not-allowed;
+    background: #f9fafb;
+}
+
+@media (max-width: 576px) {
+    .pagination-container {
+        justify-content: center;
+    }
+}
+
 .link-detail {
     background: none;
     border: none;

@@ -67,10 +67,11 @@
                             <label for="password" class="form-label">Password</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                                <input type="password" class="form-control" 
-                                       id="password" name="password" 
-                                       placeholder="Enter password (min. 8 characters)" required>
+                                <input type="password" class="form-control"
+                                       id="password" name="password"
+                                       placeholder="Masukkan password" required>
                             </div>
+                            <small class="text-muted">Min. 8 karakter, kombinasi huruf besar &amp; kecil, angka, dan simbol.</small>
                         </div>
                         
                         <div class="mb-4">

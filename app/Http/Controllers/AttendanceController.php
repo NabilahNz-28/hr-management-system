@@ -37,6 +37,31 @@ class AttendanceController extends Controller
 
             $user = Auth::user();
 
+            // Cek record TERAKHIR user hari ini untuk menentukan status sesi kerja
+            $lastToday = Attendance::where('user_id', $user?->id)
+                ->whereDate('attendance_time', now()->toDateString())
+                ->orderByDesc('attendance_time')
+                ->orderByDesc('id')
+                ->first();
+
+            $sedangBekerja = $lastToday && $lastToday->attendance_type === 'masuk';
+
+            // Pulang hanya boleh jika sedang dalam sesi kerja (record terakhir = masuk)
+            if ($request->attendance_type === 'pulang' && !$sedangBekerja) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda belum absen masuk (atau sudah absen pulang), jadi tidak bisa absen pulang.',
+                ], 422);
+            }
+
+            // Masuk hanya boleh jika belum dalam sesi kerja (hindari double masuk)
+            if ($request->attendance_type === 'masuk' && $sedangBekerja) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda sudah absen masuk dan belum absen pulang.',
+                ], 422);
+            }
+
             // Generate nama file unik
             $fileName = 'attendance_' . time() . '_' . rand(1000, 9999) . '.jpg';
 
@@ -130,20 +155,35 @@ class AttendanceController extends Controller
         }
     }
 
-    // Fungsi untuk cek apakah sudah absen hari ini (opsional)
+    // Cek STATUS absensi user hari ini berdasarkan record TERAKHIR (stateful).
+    // - sedang bekerja  : record terakhir hari ini = 'masuk'  (sesi terbuka)
+    // - sudah pulang     : record terakhir hari ini = 'pulang'
+    // - belum absen      : tidak ada record hari ini
     public function checkTodayAttendance(Request $request)
     {
         $userId = Auth::id();
-        $type   = $request->input('attendance_type', 'masuk');
+        $today  = now()->toDateString();
 
-        $attendance = Attendance::where('user_id', $userId)
-            ->where('attendance_type', $type)
-            ->whereDate('attendance_time', now()->toDateString())
+        $last = Attendance::where('user_id', $userId)
+            ->whereDate('attendance_time', $today)
+            ->orderByDesc('attendance_time')
+            ->orderByDesc('id')
             ->first();
 
+        $working = $last && $last->attendance_type === 'masuk';
+        $done    = $last && $last->attendance_type === 'pulang';
+
         return response()->json([
-            'has_attended' => $attendance ? true : false,
-            'time'         => $attendance ? $attendance->attendance_time->format('H:i:s') : null,
+            // status utama
+            'working'      => $working,
+            'masuk_iso'    => $working ? $last->attendance_time->toIso8601String() : null,
+            'masuk_time'   => $working ? $last->attendance_time->format('H:i:s') : null,
+            // dipakai frontend: tampilkan jam kerja jika has_masuk && !has_pulang
+            'has_masuk'    => $working,
+            'has_pulang'   => $done,
+            // kompatibilitas lama (boleh absen pulang hanya jika sedang bekerja)
+            'has_attended' => $working,
+            'time'         => $working ? $last->attendance_time->format('H:i:s') : null,
         ]);
     }
 
