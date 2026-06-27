@@ -53,9 +53,9 @@
             <textarea class="form-control" id="item-notes" name="catatan" rows="3" placeholder="Tambahkan catatan jika diperlukan...">{{ old('catatan') }}</textarea>
         </div>
         
-        <div class="action-buttons mt-4" style="gap: 15px;">
-            <button type="submit" class="btn btn-black">Submit</button>
-            <a href="{{ route('inventory.stock-opname') }}" class="btn" style="background-color: #e2e8f0; color: #334155;">Batal</a>
+        <div class="action-buttons mt-4 d-flex gap-2">
+            <button type="submit" class="btn btn-black flex-fill py-2">Submit</button>
+            <a href="{{ route('inventory.stock-opname') }}" class="btn flex-fill py-2 text-center" style="background-color: #e2e8f0; color: #334155; text-decoration: none;">Batal</a>
         </div>
     </form>
 </div>

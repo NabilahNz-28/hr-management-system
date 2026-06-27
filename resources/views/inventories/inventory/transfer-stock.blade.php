@@ -124,10 +124,15 @@
                             <td>{{ $transfer->ke_gudang }}</td>
                             <td>{{ $transfer->jumlah }} pcs</td>
                             <td>
-                                @if($transfer->status == 'Selesai')
-                                    <span class="badge badge-success">{{ $transfer->status }}</span>
+                                @php $status = !empty($transfer->status) ? ucfirst($transfer->status) : 'Selesai'; @endphp
+                                @if(strtolower($status) === 'selesai')
+                                    <span style="padding: 5px 12px; border-radius: 20px; background: #dcfce7; color: #16a34a; font-size: 12px; font-weight: 600; display: inline-block;">
+                                        {{ $status }}
+                                    </span>
                                 @else
-                                    <span class="badge badge-warning">{{ $transfer->status }}</span>
+                                    <span style="padding: 5px 12px; border-radius: 20px; background: #fef9c3; color: #ca8a04; font-size: 12px; font-weight: 600; display: inline-block;">
+                                        {{ $status }}
+                                    </span>
                                 @endif
                             </td>
                             <td>{{ $transfer->catatan ?? '-' }}</td>
@@ -140,6 +145,36 @@
                     </tbody>
                 </table>
             </div>
+            @if($transfer_terbaru instanceof \Illuminate\Pagination\LengthAwarePaginator && $transfer_terbaru->total() > 0)
+            <div class="pagination-container">
+                <div class="pagination-info">
+                    Menampilkan <strong>{{ $transfer_terbaru->firstItem() ?? 0 }}</strong>–<strong>{{ $transfer_terbaru->lastItem() ?? 0 }}</strong>
+                    dari <strong>{{ $transfer_terbaru->total() }}</strong> data transfer
+                </div>
+
+                <nav class="pagination-nav">
+                    @if($transfer_terbaru->onFirstPage())
+                        <span class="page-btn disabled">‹</span>
+                    @else
+                        <a href="{{ $transfer_terbaru->previousPageUrl() }}" class="page-btn" rel="prev">‹</a>
+                    @endif
+
+                    @foreach($transfer_terbaru->getUrlRange(1, $transfer_terbaru->lastPage()) as $page => $url)
+                        @if($page == $transfer_terbaru->currentPage())
+                            <span class="page-btn active">{{ $page }}</span>
+                        @else
+                            <a href="{{ $url }}" class="page-btn">{{ $page }}</a>
+                        @endif
+                    @endforeach
+
+                    @if($transfer_terbaru->hasMorePages())
+                        <a href="{{ $transfer_terbaru->nextPageUrl() }}" class="page-btn" rel="next">›</a>
+                    @else
+                        <span class="page-btn disabled">›</span>
+                    @endif
+                </nav>
+            </div>
+            @endif
         </div>
     </div>
 </div>

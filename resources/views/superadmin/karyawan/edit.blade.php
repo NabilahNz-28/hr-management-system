@@ -187,8 +187,23 @@
 }
 
 @media (max-width: 768px) {
+    .form-container-karyawan {
+        padding: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+        margin-top: 10px !important;
+        background: transparent !important;
+    }
     .form-grid {
         grid-template-columns: 1fr;
+        gap: 14px;
+    }
+    .form-actions {
+        flex-direction: column;
+    }
+    .form-actions .btn {
+        width: 100%;
+        text-align: center;
     }
 }
 </style>

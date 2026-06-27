@@ -51,6 +51,13 @@ class User extends Authenticatable
         'tgl_bergabung'     => 'date',
     ];
 
+    protected $appends = [
+        'hadir_count',
+        'izin_count',
+        'cuti_count',
+        'terlambat_count',
+    ];
+
     // ===== RELASI =====
 
     public function attendances()
@@ -61,5 +68,87 @@ class User extends Authenticatable
     public function leaves()
     {
         return $this->hasMany(Leave::class, 'karyawan_id');
+    }
+
+    // ===== ACCESSORS STATISTIK BULAN INI =====
+
+    public function getHadirCountAttribute()
+    {
+        $awal  = \Carbon\Carbon::now()->startOfMonth();
+        $akhir = \Carbon\Carbon::now()->endOfMonth();
+
+        return $this->attendances()
+            ->where('attendance_type', 'masuk')
+            ->whereBetween('attendance_time', [$awal, $akhir])
+            ->get()
+            ->groupBy(fn ($a) => \Carbon\Carbon::parse($a->attendance_time)->toDateString())
+            ->count();
+    }
+
+    public function getTerlambatCountAttribute()
+    {
+        $awal  = \Carbon\Carbon::now()->startOfMonth();
+        $akhir = \Carbon\Carbon::now()->endOfMonth();
+
+        return $this->attendances()
+            ->where('attendance_type', 'masuk')
+            ->whereBetween('attendance_time', [$awal, $akhir])
+            ->get()
+            ->groupBy(fn ($a) => \Carbon\Carbon::parse($a->attendance_time)->toDateString())
+            ->filter(function ($items) {
+                $pertama = $items->sortBy('attendance_time')->first();
+                return \Carbon\Carbon::parse($pertama->attendance_time)->format('H:i:s') > '08:00:00';
+            })
+            ->count();
+    }
+
+    public function getIzinCountAttribute()
+    {
+        $awal  = \Carbon\Carbon::now()->startOfMonth();
+        $akhir = \Carbon\Carbon::now()->endOfMonth();
+
+        $leaves = $this->leaves()
+            ->where('status', 'approved')
+            ->where('jenis', 'izin')
+            ->whereDate('start_date', '<=', $akhir->toDateString())
+            ->where(function ($q) use ($awal) {
+                $q->whereDate('end_date', '>=', $awal->toDateString())
+                  ->orWhere(function ($q2) use ($awal) {
+                      $q2->whereNull('end_date')
+                         ->whereDate('start_date', '>=', $awal->toDateString());
+                  });
+            })
+            ->get();
+
+        return $leaves->sum(function ($item) use ($awal, $akhir) {
+            $start = \Carbon\Carbon::parse($item->start_date)->max($awal);
+            $end = $item->end_date ? \Carbon\Carbon::parse($item->end_date)->min($akhir) : $start;
+            return max(1, $start->diffInDays($end) + 1);
+        });
+    }
+
+    public function getCutiCountAttribute()
+    {
+        $awal  = \Carbon\Carbon::now()->startOfMonth();
+        $akhir = \Carbon\Carbon::now()->endOfMonth();
+
+        $leaves = $this->leaves()
+            ->where('status', 'approved')
+            ->where('jenis', 'cuti')
+            ->whereDate('start_date', '<=', $akhir->toDateString())
+            ->where(function ($q) use ($awal) {
+                $q->whereDate('end_date', '>=', $awal->toDateString())
+                  ->orWhere(function ($q2) use ($awal) {
+                      $q2->whereNull('end_date')
+                         ->whereDate('start_date', '>=', $awal->toDateString());
+                  });
+            })
+            ->get();
+
+        return $leaves->sum(function ($item) use ($awal, $akhir) {
+            $start = \Carbon\Carbon::parse($item->start_date)->max($awal);
+            $end = $item->end_date ? \Carbon\Carbon::parse($item->end_date)->min($akhir) : $start;
+            return max(1, $start->diffInDays($end) + 1);
+        });
     }
 }

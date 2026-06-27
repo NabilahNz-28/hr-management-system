@@ -100,6 +100,39 @@
                 </tbody>
             </table>
         </div>
+
+        @if(isset($pengajuan) && $pengajuan->total() > 0)
+        <div class="pagination-container" style="margin-top: 20px;">
+            <div class="pagination-info">
+                Menampilkan <strong>{{ $pengajuan->firstItem() }}</strong>–<strong>{{ $pengajuan->lastItem() }}</strong>
+                dari <strong>{{ $pengajuan->total() }}</strong> pengajuan
+            </div>
+
+            @if($pengajuan->hasPages())
+            <nav class="pagination-nav">
+                @if($pengajuan->onFirstPage())
+                    <span class="page-btn disabled">‹</span>
+                @else
+                    <a href="{{ $pengajuan->previousPageUrl() }}" class="page-btn" rel="prev">‹</a>
+                @endif
+
+                @foreach($pengajuan->getUrlRange(1, $pengajuan->lastPage()) as $page => $url)
+                    @if($page == $pengajuan->currentPage())
+                        <span class="page-btn active">{{ $page }}</span>
+                    @else
+                        <a href="{{ $url }}" class="page-btn">{{ $page }}</a>
+                    @endif
+                @endforeach
+
+                @if($pengajuan->hasMorePages())
+                    <a href="{{ $pengajuan->nextPageUrl() }}" class="page-btn" rel="next">›</a>
+                @else
+                    <span class="page-btn disabled">›</span>
+                @endif
+            </nav>
+            @endif
+        </div>
+        @endif
     </div>
 </div>
 

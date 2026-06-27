@@ -3,7 +3,7 @@
 @section('title', 'Dashboard PIC Inventory')
 
 @section('content')
-<div id="dashboard-home" class="page-content active">
+<div id="dashboard-home" class="dashboard-home-container">
     <div class="welcome-section">
         <h1 class="page-title">Dashboard PIC Inventory</h1>
         <p class="page-subtitle">Ringkasan aktivitas inventory bulan ini</p>

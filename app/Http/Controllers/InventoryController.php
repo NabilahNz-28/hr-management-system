@@ -21,12 +21,15 @@ class InventoryController extends Controller
     // STOCK OPNAME — tampilkan semua barang
     // View: stock-opname (filter kategori pakai JS, bukan server-side)
     // ─────────────────────────────────────────────────────────────
-    public function stockOpname()
+    public function stockOpname(Request $request)
     {
         $this->authorizeOnlyPic();
 
-        // Kirim semua barang, filter dilakukan JS di view
-        $barang = Inventory::orderBy('nama_barang')->get();
+        $query = Inventory::orderBy('nama_barang');
+        if ($request->filled('kategori') && $request->kategori !== 'all') {
+            $query->where('kategori', $request->kategori);
+        }
+        $barang = $query->paginate(10)->withQueryString();
 
         return view('inventories.inventory.stock-opname', compact('barang'));
     }
@@ -132,8 +135,7 @@ class InventoryController extends Controller
         $transfer_terbaru = TransferStock::with('barang')
             ->where('user_id', auth()->id())
             ->orderBy('tanggal', 'desc')
-            ->take(10)
-            ->get();
+            ->paginate(10)->withQueryString();
 
         return view('inventories.inventory.transfer-stock', compact('barang', 'transfer_terbaru'));
     }
@@ -191,7 +193,7 @@ class InventoryController extends Controller
             ->when($request->filled('end_date'), fn ($q) => $q->whereDate('tanggal', '<=', $request->end_date))
             ->when($request->filled('kategori'), fn ($q) => $q->whereHas('inventory', fn ($q2) => $q2->where('kategori', $request->kategori)))
             ->orderBy('tanggal', 'desc')
-            ->get();
+            ->paginate(10)->withQueryString();
 
         return view('inventories.laporan.laporan-opname', compact('laporan'));
     }
@@ -211,7 +213,7 @@ class InventoryController extends Controller
             ->when($request->filled('end_date'), fn ($q) => $q->whereDate('tanggal', '<=', $request->end_date))
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
             ->orderBy('tanggal', 'desc')
-            ->get();
+            ->paginate(10)->withQueryString();
 
         return view('inventories.laporan.laporan-transfer', compact('laporan'));
     }

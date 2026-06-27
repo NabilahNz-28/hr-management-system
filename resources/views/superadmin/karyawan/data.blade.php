@@ -9,7 +9,7 @@
         <p class="content-description">Kelola data seluruh karyawan perusahaan</p>
 
         <div class="action-header">
-            <a href="{{ route('superadmin.karyawan.create') }}" class="btn btn-primary btn-small">
+            <a href="{{ route('superadmin.karyawan.create') }}" class="btn btn-primary btn-small" style="text-decoration: none !important;">
                 + Tambah Karyawan
             </a>
 
@@ -49,7 +49,11 @@
                                     data-departemen="{{ $item->departemen ?? '-' }}"
                                     data-jabatan="{{ $item->jabatan ?? '-' }}"
                                     data-role="{{ $item->role ?? '-' }}"
-                                    data-status="{{ $item->status ?? '-' }}">
+                                    data-status="{{ $item->status ?? '-' }}"
+                                    data-hadir="{{ $item->hadir_count }}"
+                                    data-izin="{{ $item->izin_count }}"
+                                    data-cuti="{{ $item->cuti_count }}"
+                                    data-terlambat="{{ $item->terlambat_count }}">
                                 {{ $item->name }}
                             </button>
                         </td>
@@ -102,7 +106,11 @@
                                     data-departemen="{{ $item->departemen ?? '-' }}"
                                     data-jabatan="{{ $item->jabatan ?? '-' }}"
                                     data-role="{{ $item->role ?? '-' }}"
-                                    data-status="{{ $item->status ?? '-' }}">
+                                    data-status="{{ $item->status ?? '-' }}"
+                                    data-hadir="{{ $item->hadir_count }}"
+                                    data-izin="{{ $item->izin_count }}"
+                                    data-cuti="{{ $item->cuti_count }}"
+                                    data-terlambat="{{ $item->terlambat_count }}">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                     <circle cx="12" cy="12" r="3"></circle>
@@ -218,6 +226,22 @@
             <div class="detail-item">
                 <span class="detail-label">Status</span>
                 <span class="detail-value" id="detailStatus">-</span>
+            </div>
+            <div class="detail-item" style="border-top: 2px dashed #e5e7eb; margin-top: 10px; padding-top: 15px;">
+                <span class="detail-label">Hari Masuk (Bulan Ini)</span>
+                <span class="detail-value font-weight-bold" id="detailHadir">0 Hari</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Izin (Bulan Ini)</span>
+                <span class="detail-value font-weight-bold" id="detailIzin">0 Hari</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Cuti (Bulan Ini)</span>
+                <span class="detail-value font-weight-bold" id="detailCuti">0 Hari</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Terlambat (Bulan Ini)</span>
+                <span class="detail-value font-weight-bold" id="detailTerlambat">0 Kali</span>
             </div>
         </div>
     </div>
@@ -360,6 +384,27 @@
     text-align: right;
     color: #222;
 }
+
+@media (max-width: 576px) {
+    .modal-detail {
+        padding: 10px;
+    }
+    .modal-detail-body {
+        padding: 15px;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+    .detail-item {
+        gap: 10px;
+    }
+    .detail-label {
+        min-width: 110px;
+        font-size: 0.85rem;
+    }
+    .detail-value {
+        font-size: 0.85rem;
+    }
+}
 </style>
 
 <script>
@@ -375,6 +420,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const detailJabatan = document.getElementById('detailJabatan');
     const detailRole = document.getElementById('detailRole');
     const detailStatus = document.getElementById('detailStatus');
+    const detailHadir = document.getElementById('detailHadir');
+    const detailIzin = document.getElementById('detailIzin');
+    const detailCuti = document.getElementById('detailCuti');
+    const detailTerlambat = document.getElementById('detailTerlambat');
 
     buttons.forEach(button => {
         button.addEventListener('click', function () {
@@ -385,6 +434,10 @@ document.addEventListener('DOMContentLoaded', function () {
             detailJabatan.textContent = this.dataset.jabatan || '-';
             detailRole.textContent = this.dataset.role || '-';
             detailStatus.textContent = this.dataset.status || '-';
+            detailHadir.textContent = (this.dataset.hadir !== undefined ? this.dataset.hadir : 0) + ' Hari';
+            detailIzin.textContent = (this.dataset.izin !== undefined ? this.dataset.izin : 0) + ' Hari';
+            detailCuti.textContent = (this.dataset.cuti !== undefined ? this.dataset.cuti : 0) + ' Hari';
+            detailTerlambat.textContent = (this.dataset.terlambat !== undefined ? this.dataset.terlambat : 0) + ' Kali';
 
             modal.classList.add('show');
         });
@@ -410,6 +463,10 @@ document.addEventListener('DOMContentLoaded', function () {
         detailJabatan.textContent = showUser.jabatan || '-';
         detailRole.textContent = showUser.role || '-';
         detailStatus.textContent = showUser.status || '-';
+        detailHadir.textContent = (showUser.hadir_count !== undefined ? showUser.hadir_count : 0) + ' Hari';
+        detailIzin.textContent = (showUser.izin_count !== undefined ? showUser.izin_count : 0) + ' Hari';
+        detailCuti.textContent = (showUser.cuti_count !== undefined ? showUser.cuti_count : 0) + ' Hari';
+        detailTerlambat.textContent = (showUser.terlambat_count !== undefined ? showUser.terlambat_count : 0) + ' Kali';
         modal.classList.add('show');
     }
     @endif

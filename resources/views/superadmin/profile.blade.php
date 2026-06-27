@@ -32,13 +32,13 @@
                 @method('PUT')
 
                 <!-- Foto Profile -->
-                <div class="avatar-section-superadmin">
-                    <div class="avatar-wrapper-superadmin">
+                <div class="avatar-section-superadmin" style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                    <div class="avatar-wrapper-superadmin" style="margin-bottom: 0;">
                         <img id="foto-profile"
                              src="{{ $user->foto_profile ? asset('storage/'.$user->foto_profile) : asset('default-avatar.png') }}"
                              alt="Foto Profile">
-                        <button type="button" class="btn-avatar-superadmin" onclick="document.getElementById('upload-foto').click()">Ganti Foto</button>
                     </div>
+                    <button type="button" class="btn-avatar-superadmin" style="position: static; margin-top: 4px; display: block;" onclick="document.getElementById('upload-foto').click()">Ganti Foto</button>
                     <input type="file" id="upload-foto" name="foto_profile" accept="image/*" style="display: none;" onchange="previewFoto(this)">
                 </div>
 
@@ -105,7 +105,7 @@
 
             <!-- Logout -->
             <div class="logout-section-superadmin">
-                <form method="POST" action="{{ route('logout') }}" onsubmit="return confirm('Apakah anda yakin ingin keluar?')">
+                <form method="POST" action="{{ route('logout') }}" onsubmit="event.preventDefault(); confirmLogout();">
                     @csrf
                     <button type="submit" class="btn btn-danger btn-small">Logout</button>
                 </form>

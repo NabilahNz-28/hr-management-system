@@ -69,12 +69,13 @@
                         <td>{{ $item->jumlah }} pcs</td>
                         <td style="text-transform: capitalize;">{{ $item->satuan }}</td>
                         <td>
-                            @if($item->status === 'Selesai')
+                            @php $st = !empty($item->status) ? ucfirst($item->status) : 'Selesai'; @endphp
+                            @if($st === 'Selesai')
                                 <span class="status-badge-tf status-selesai">Selesai</span>
-                            @elseif($item->status === 'Dibatalkan')
+                            @elseif($st === 'Dibatalkan')
                                 <span class="status-badge-tf status-batal">Dibatalkan</span>
                             @else
-                                <span class="status-badge-tf status-pending">{{ $item->status }}</span>
+                                <span class="status-badge-tf status-pending">{{ $st }}</span>
                             @endif
                         </td>
                         <td>{{ $item->catatan ?? '-' }}</td>

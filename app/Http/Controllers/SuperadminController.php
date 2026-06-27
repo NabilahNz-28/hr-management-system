@@ -79,7 +79,7 @@ class SuperadminController extends Controller
 
     public function approvalIzinCuti()
     {
-        $pengajuan = \App\Models\Leave::with('karyawan')->orderBy('created_at', 'desc')->get();
+        $pengajuan = \App\Models\Leave::with('karyawan')->orderBy('created_at', 'desc')->paginate(10);
         return view('superadmin.approval.approval-izincuti', compact('pengajuan'));
     }
 

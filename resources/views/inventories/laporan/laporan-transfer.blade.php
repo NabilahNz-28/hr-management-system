@@ -82,7 +82,7 @@
                     <tbody>
                         @forelse($laporan ?? [] as $index => $item)
                         <tr>
-                            <td>{{ $index + 1 }}</td>
+                            <td>{{ ($laporan instanceof \Illuminate\Pagination\LengthAwarePaginator ? $laporan->firstItem() + $index : $index + 1) }}</td>
                             <td>{{ \Carbon\Carbon::parse($item->tanggal)->format('d M Y') }}</td>
                             <td>{{ $item->barang->nama_barang ?? '-' }}</td>
                             <td>
@@ -94,15 +94,16 @@
                                 <span style="text-transform: capitalize;">{{ $item->satuan }}</span>
                             </td>
                             <td>
-                                @if($item->status === 'Selesai')
+                                @php $st = !empty($item->status) ? ucfirst($item->status) : 'Selesai'; @endphp
+                                @if(strtolower($st) === 'selesai')
                                     <span class="badge badge-success"
-                                          style="padding: 5px 10px; border-radius: 20px; background: #dcfce7; color: #16a34a; font-size: 12px;">
-                                        Selesai
+                                          style="padding: 5px 12px; border-radius: 20px; background: #dcfce7; color: #16a34a; font-size: 12px; font-weight: 600; display: inline-block;">
+                                        {{ $st }}
                                     </span>
                                 @else
                                     <span class="badge badge-warning"
-                                          style="padding: 5px 10px; border-radius: 20px; background: #fef9c3; color: #ca8a04; font-size: 12px;">
-                                        {{ $item->status }}
+                                          style="padding: 5px 12px; border-radius: 20px; background: #fef9c3; color: #ca8a04; font-size: 12px; font-weight: 600; display: inline-block;">
+                                        {{ $st }}
                                     </span>
                                 @endif
                             </td>
@@ -118,6 +119,36 @@
                     </tbody>
                 </table>
             </div>
+            @if($laporan instanceof \Illuminate\Pagination\LengthAwarePaginator && $laporan->total() > 0)
+            <div class="pagination-container">
+                <div class="pagination-info">
+                    Menampilkan <strong>{{ $laporan->firstItem() ?? 0 }}</strong>–<strong>{{ $laporan->lastItem() ?? 0 }}</strong>
+                    dari <strong>{{ $laporan->total() }}</strong> laporan transfer
+                </div>
+
+                <nav class="pagination-nav">
+                    @if($laporan->onFirstPage())
+                        <span class="page-btn disabled">‹</span>
+                    @else
+                        <a href="{{ $laporan->previousPageUrl() }}" class="page-btn" rel="prev">‹</a>
+                    @endif
+
+                    @foreach($laporan->getUrlRange(1, $laporan->lastPage()) as $page => $url)
+                        @if($page == $laporan->currentPage())
+                            <span class="page-btn active">{{ $page }}</span>
+                        @else
+                            <a href="{{ $url }}" class="page-btn">{{ $page }}</a>
+                        @endif
+                    @endforeach
+
+                    @if($laporan->hasMorePages())
+                        <a href="{{ $laporan->nextPageUrl() }}" class="page-btn" rel="next">›</a>
+                    @else
+                        <span class="page-btn disabled">›</span>
+                    @endif
+                </nav>
+            </div>
+            @endif
         </div>
     </div>
 

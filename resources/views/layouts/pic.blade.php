@@ -47,22 +47,46 @@
             const mobileMenuBtn = document.getElementById('mobileMenuBtn');
             const sidebarOverlay = document.getElementById('sidebarOverlay');
 
-            if (toggleBtn && sidebar && mainContent) {
-                toggleBtn.addEventListener('click', function() {
-                    sidebar.classList.toggle('collapsed');
-                    mainContent.classList.toggle('expanded');
+            function toggleMobile() {
+                if (sidebar) sidebar.classList.toggle('mobile-open');
+                if (sidebarOverlay) sidebarOverlay.classList.toggle('active');
+            }
+
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (window.innerWidth <= 768) {
+                        toggleMobile();
+                    } else {
+                        if (sidebar) sidebar.classList.toggle('collapsed');
+                        if (mainContent) mainContent.classList.toggle('expanded');
+                    }
                 });
             }
 
-            if (mobileMenuBtn && sidebar && sidebarOverlay) {
-                mobileMenuBtn.addEventListener('click', function() {
-                    sidebar.classList.add('mobile-open');
-                    sidebarOverlay.classList.add('active');
+            if (mobileMenuBtn) {
+                mobileMenuBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    toggleMobile();
                 });
+            }
 
+            if (sidebarOverlay) {
                 sidebarOverlay.addEventListener('click', function() {
-                    sidebar.classList.remove('mobile-open');
+                    if (sidebar) sidebar.classList.remove('mobile-open');
                     sidebarOverlay.classList.remove('active');
+                });
+            }
+
+            if (sidebar) {
+                const links = sidebar.querySelectorAll('a');
+                links.forEach(link => {
+                    link.addEventListener('click', function() {
+                        if (window.innerWidth <= 768) {
+                            sidebar.classList.remove('mobile-open');
+                            if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+                        }
+                    });
                 });
             }
         });

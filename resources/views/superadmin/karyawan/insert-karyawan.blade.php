@@ -166,4 +166,24 @@
         </div>
     </div>
 </div>
+
+<style>
+@media (max-width: 768px) {
+    #insert-karyawan .form-card {
+        padding: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+        background: transparent !important;
+    }
+    #insert-karyawan .form-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    #insert-karyawan .form-actions .btn {
+        width: 100%;
+        text-align: center;
+        margin: 0 !important;
+    }
+}
+</style>
 @endsection

@@ -81,12 +81,8 @@
 
 @section('content')
 <div class="page-content">
-    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+    <div class="mb-4 border-bottom pb-3">
         <h3 class="content-title mb-0 border-0 pb-0">Tambahkan Stok Opname</h3>
-        <div>
-            <a href="{{ route('inventory.stock-opname') }}" class="btn" style="background-color: #e2e8f0; color: #334155; margin-right: 10px;">Batal</a>
-            <button type="submit" form="opname-form" class="btn btn-black" id="save-btn">Simpan</button>
-        </div>
     </div>
 
     @if($errors->any())
@@ -145,6 +141,11 @@
 
         <!-- List Produk yang Sudah Ditambah (berisi hidden input yang dikirim ke server) -->
         <div class="product-list" id="product-list"></div>
+
+        <div class="action-buttons mt-4 pt-3 border-top d-flex gap-2">
+            <button type="submit" class="btn btn-black flex-fill py-2" id="save-btn">Simpan</button>
+            <a href="{{ route('inventory.stock-opname') }}" class="btn flex-fill py-2 text-center" style="background-color: #e2e8f0; color: #334155; text-decoration: none;">Batal</a>
+        </div>
     </form>
 </div>
 @endsection

@@ -210,6 +210,16 @@
     .menu-item.logout-item:hover .menu-icon {
         color: #dc2626;
     }
+
+    @media (max-width: 768px) {
+        #sidebar {
+            left: -280px !important;
+            z-index: 1050 !important;
+        }
+        #sidebar.mobile-open {
+            left: 0 !important;
+        }
+    }
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -294,10 +304,4 @@
     @csrf
 </form>
 
-<script>
-function confirmLogout() {
-    if (confirm('Apakah Anda yakin ingin logout?')) {
-        document.getElementById('logout-form').submit();
-    }
-}
-</script>
+@include('components.logout-modal')

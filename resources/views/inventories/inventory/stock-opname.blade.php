@@ -15,14 +15,13 @@
 
                     <!-- Tombol kategori (kiri) -->
                     <div class="category-buttons">
-                        <button class="category-btn active" data-category="all">Semua Kategori</button>
-                        <button class="category-btn" data-category="eco">Eco</button>
-                        <button class="category-btn" data-category="fragile">Fragile</button>
-                        <button class="category-btn" data-category="plastic">Plastic</button>
-                        <button class="category-btn" data-category="thermal">Thermal</button>
-                        <button class="category-btn" data-category="carton">Carton</button>
-                        <button class="category-btn" data-category="other">Other</button>
-
+                        <a href="{{ route('inventory.stock-opname', ['kategori' => 'all']) }}" class="category-btn {{ request('kategori', 'all') == 'all' ? 'active' : '' }}">Semua Kategori</a>
+                        <a href="{{ route('inventory.stock-opname', ['kategori' => 'eco']) }}" class="category-btn {{ request('kategori') == 'eco' ? 'active' : '' }}">Eco</a>
+                        <a href="{{ route('inventory.stock-opname', ['kategori' => 'fragile']) }}" class="category-btn {{ request('kategori') == 'fragile' ? 'active' : '' }}">Fragile</a>
+                        <a href="{{ route('inventory.stock-opname', ['kategori' => 'plastic']) }}" class="category-btn {{ request('kategori') == 'plastic' ? 'active' : '' }}">Plastic</a>
+                        <a href="{{ route('inventory.stock-opname', ['kategori' => 'thermal']) }}" class="category-btn {{ request('kategori') == 'thermal' ? 'active' : '' }}">Thermal</a>
+                        <a href="{{ route('inventory.stock-opname', ['kategori' => 'carton']) }}" class="category-btn {{ request('kategori') == 'carton' ? 'active' : '' }}">Carton</a>
+                        <a href="{{ route('inventory.stock-opname', ['kategori' => 'other']) }}" class="category-btn {{ request('kategori') == 'other' ? 'active' : '' }}">Other</a>
                     </div>
 
                     <!-- Tombol aksi di kanan: Tambahkan Barang + Input Opname -->
@@ -67,37 +66,38 @@
                         </tbody>
                     </table>
                 </div>
+                @if($barang instanceof \Illuminate\Pagination\LengthAwarePaginator && $barang->total() > 0)
+                <div class="pagination-container">
+                    <div class="pagination-info">
+                        Menampilkan <strong>{{ $barang->firstItem() ?? 0 }}</strong>–<strong>{{ $barang->lastItem() ?? 0 }}</strong>
+                        dari <strong>{{ $barang->total() }}</strong> barang
+                    </div>
+
+                    <nav class="pagination-nav">
+                        @if($barang->onFirstPage())
+                            <span class="page-btn disabled">‹</span>
+                        @else
+                            <a href="{{ $barang->previousPageUrl() }}" class="page-btn" rel="prev">‹</a>
+                        @endif
+
+                        @foreach($barang->getUrlRange(1, $barang->lastPage()) as $page => $url)
+                            @if($page == $barang->currentPage())
+                                <span class="page-btn active">{{ $page }}</span>
+                            @else
+                                <a href="{{ $url }}" class="page-btn">{{ $page }}</a>
+                            @endif
+                        @endforeach
+
+                        @if($barang->hasMorePages())
+                            <a href="{{ $barang->nextPageUrl() }}" class="page-btn" rel="next">›</a>
+                        @else
+                            <span class="page-btn disabled">›</span>
+                        @endif
+                    </nav>
+                </div>
+                @endif
 </div>
 @endsection
 
 @section('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const categoryBtns = document.querySelectorAll('.category-btn');
-    const itemRows = document.querySelectorAll('.item-row');
-
-    categoryBtns.forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            // Remove active class from all buttons
-            categoryBtns.forEach(b => b.classList.remove('active'));
-            
-            // Add active class to clicked button
-            this.classList.add('active');
-            
-            const selectedCategory = this.getAttribute('data-category');
-            
-            // Filter rows
-            itemRows.forEach(row => {
-                if (selectedCategory === 'all' || row.getAttribute('data-category') === selectedCategory) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        });
-    });
-});
-</script>
 @endsection

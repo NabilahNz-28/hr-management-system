@@ -4,40 +4,185 @@
     <meta charset="UTF-8">
     <title>Logout</title>
 </head>
-<body>
-    <form id="logout-form" action="{{ route('logout') }}" method="POST">
+<body style="background: #f8fafc; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding: 0;">
+    <!-- Modal Konfirmasi Logout Formal -->
+    <div id="logoutModal" class="modal-overlay active">
+        <div class="custom-logout-box">
+            <div class="custom-logout-header">
+                <div class="header-title-wrap">
+                    <div class="header-icon-box">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                    </div>
+                    <h3 class="custom-logout-title">Konfirmasi Keluar</h3>
+                </div>
+                <button type="button" class="btn-close-modal" onclick="closeModal()" aria-label="Tutup">&times;</button>
+            </div>
+            <div class="custom-logout-body">
+                <p class="custom-logout-desc">
+                    Apakah Anda yakin ingin keluar dari sistem?
+                </p>
+            </div>
+            <div class="custom-logout-footer">
+                <button type="button" class="btn-formal-cancel" onclick="closeModal()">Batal</button>
+                <button type="button" class="btn-formal-confirm" id="confirmLogoutBtn">Keluar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form tersembunyi untuk proses Laravel -->
+    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
         @csrf
     </form>
 
-    <!-- Modal Konfirmasi Logout -->
-<div id="logoutModal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-icon warning">
-            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                <line x1="12" y1="9" x2="12" y2="13"></line>
-                <line x1="12" y1="17" x2="12.01" y2="17"></line>
-            </svg>
-        </div>
-        <h3 id="modalTitle">Konfirmasi Logout</h3>
-        <p id="modalMessage">Apakah Anda yakin ingin keluar?</p>
-        <div class="modal-actions">
-            <button type="button" class="btn btn-cancel" onclick="closeModal()">Batal</button>
-            <button type="button" class="btn btn-danger" id="confirmLogoutBtn">Ya, Logout</button>
-        </div>
-    </div>
-</div>
+    <style>
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        z-index: 999999;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
 
-<!-- Form tersembunyi untuk proses Laravel -->
-<form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-    @csrf
-</form>
+    .modal-overlay.active {
+        display: flex !important;
+        opacity: 1;
+    }
+
+    .custom-logout-box {
+        background: #ffffff;
+        width: 90%;
+        max-width: 440px;
+        border-radius: 10px;
+        text-align: left;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+        border: 1px solid #cbd5e1;
+        border-top: 4px solid #b91c1c;
+        overflow: hidden;
+    }
+
+    .custom-logout-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 24px 14px;
+    }
+
+    .header-title-wrap {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .header-icon-box {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        background: #fef2f2;
+        border: 1px solid #fee2e2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #b91c1c;
+        flex-shrink: 0;
+    }
+
+    .custom-logout-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0;
+    }
+
+    .btn-close-modal {
+        background: transparent;
+        border: none;
+        font-size: 1.5rem;
+        line-height: 1;
+        color: #94a3b8;
+        cursor: pointer;
+        padding: 0;
+        transition: color 0.15s ease;
+    }
+
+    .btn-close-modal:hover {
+        color: #334155;
+    }
+
+    .custom-logout-body {
+        padding: 0 24px 24px;
+    }
+
+    .custom-logout-desc {
+        font-size: 0.925rem;
+        color: #475569;
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    .custom-logout-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        padding: 16px 24px;
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .btn-formal-cancel, .btn-formal-confirm {
+        padding: 9px 18px;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        font-family: inherit;
+    }
+
+    .btn-formal-cancel {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        color: #334155;
+    }
+
+    .btn-formal-cancel:hover {
+        background: #f1f5f9;
+        border-color: #94a3b8;
+        color: #0f172a;
+    }
+
+    .btn-formal-confirm {
+        background: #b91c1c;
+        border: 1px solid #b91c1c;
+        color: #ffffff;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
+
+    .btn-formal-confirm:hover {
+        background: #991b1b;
+        border-color: #991b1b;
+    }
+    </style>
+
     <script>
-        if (confirm('Apakah Anda yakin ingin logout?')) {
-            document.getElementById('logout-form').submit();
-        } else {
+        function closeModal() {
             window.history.back();
         }
+        document.getElementById('confirmLogoutBtn')?.addEventListener('click', function() {
+            document.getElementById('logout-form').submit();
+        });
     </script>
 </body>
 </html>
