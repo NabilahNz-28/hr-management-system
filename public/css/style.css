@@ -744,43 +744,7 @@ body {
         box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3) !important;
         cursor: pointer !important;
     }
-    
-    /* OVERLAY BACKGROUND - SIDEBAR TERBUKA */
-    .sidebar-overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 999;
-        backdrop-filter: blur(2px);
-    }
-    
-    /* Sidebar untuk mobile */
-    #sidebar {
-        position: fixed !important;
-        left: -280px !important; /* SEMBUNYIKAN DI KIRI */
-        width: 280px !important;
-        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        box-shadow: 5px 0 15px rgba(0,0,0,0.2) !important;
-        z-index: 1000 !important;
-        height: 100vh !important;
-        top: 0 !important;
-    }
-    /* Overlay untuk mobile sidebar */
-    .sidebar-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 999;
-    backdrop-filter: blur(2px);
-}
+
     
     /* SIDEBAR TERBUKA - KELUAR DARI KIRI */
     #sidebar.mobile-open {
@@ -804,10 +768,6 @@ body {
         width: 100% !important;
     }
     
-    /* Hide desktop toggle button di mobile */
-    .toggle-btn {
-        display: none !important;
-    }
     
     /* Topbar fixed di mobile */
     .topbar {
@@ -972,16 +932,53 @@ body {
     }
 }
 
+@media (max-width: 768px) {
+  #sidebarToggle {
+    display: none !important;
+  }
+
+  #mobileMenuBtn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 10001;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  }
+}
+
+@media (max-width: 768px) {
+  #sidebar {
+    z-index: 10002 !important;
+    left: -280px !important;
+    width: 280px !important;
+  }
+
+  #sidebar.mobile-open {
+    left: 0 !important;
+  }
+
+  .sidebar-overlay {
+    z-index: 10001 !important;
+    left: 280px !important;
+    width: calc(100vw - 280px) !important;
+  }
+}
+
 /* =========================================== */
 /* TABLET RESPONSIVE (769px - 1024px) */
 /* =========================================== */
 @media (min-width: 769px) and (max-width: 1024px) {
     .stats-grid {
         grid-template-columns: repeat(2, 1fr) !important;
-    }
-    
-    #sidebar {
-        width: 240px !important;
     }
     
     #sidebar.collapsed {

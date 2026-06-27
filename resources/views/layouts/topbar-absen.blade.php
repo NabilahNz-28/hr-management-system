@@ -11,9 +11,7 @@
     <button class="toggle-btn" id="mobileMenuBtn" type="button" aria-label="Open sidebar">☰</button>
 
     <div class="user-menu">
-        <!-- class="user-avatar" DIHAPUS, langsung pakai wrapper bulat -->
         <div style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background-color: #f1f5f9;">
-            <img src="{{ asset('photos/profile.png') }}" alt="Profile" class="avatar-image">
         </div>
     </div>
 </div>

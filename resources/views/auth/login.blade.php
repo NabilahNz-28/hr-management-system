@@ -83,9 +83,16 @@
                 </div>
 
                 <div class="text-center mt-4 text-muted">
-                   Akun karyawan belum terdaftar? <br>
-                    <a href="{{ route('register') }}" class="fw-bold text-decoration-none">Hubungi HRD di sini</a>
-                </div>
+                Akun karyawan belum terdaftar? <br>
+                <a
+                    href="https://wa.me/6285719466964?text={{ urlencode('Halo HRD, saya ingin menanyakan pendaftaran akun karyawan.') }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="fw-bold text-decoration-none"
+                >
+                    Hubungi HRD di sini
+                </a>
+            </div>
             </form>
         </div>
 

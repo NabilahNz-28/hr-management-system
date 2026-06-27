@@ -35,35 +35,51 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Toggle sidebar - MOBILE (toggle .mobile-open)
-    function toggleMobileSidebar() {
-        sidebar.classList.toggle('mobile-open');
-        overlay.style.display = sidebar.classList.contains('mobile-open') ? 'block' : 'none';
-        
-        // Change icon
-        mobileMenuBtn.innerHTML = sidebar.classList.contains('mobile-open') ? '✕' : '☰';
+    
+    // toggle
+    function openMobileSidebar() {
+    if (window.innerWidth > 768) return;
+    sidebar.classList.add('mobile-open');
+    document.body.classList.add('sidebar-open');
+    overlay.style.display = 'block';
+    mobileMenuBtn.innerHTML = '✕';
+}
+
+function closeMobileSidebar() {
+    sidebar.classList.remove('mobile-open');
+    document.body.classList.remove('sidebar-open');
+    overlay.style.display = 'none';
+    mobileMenuBtn.innerHTML = '☰';
+}
+
+function toggleMobileSidebar(e) {
+    if (e) e.stopPropagation();
+
+    if (sidebar.classList.contains('mobile-open')) {
+        closeMobileSidebar();
+    } else {
+        openMobileSidebar();
     }
-    
-    mobileMenuBtn.addEventListener('click', toggleMobileSidebar);
-    
-    // Close sidebar when overlay clicked
-    overlay.addEventListener('click', function() {
-        sidebar.classList.remove('mobile-open');
-        overlay.style.display = 'none';
-        mobileMenuBtn.innerHTML = '☰';
-    });
-    
-    // Close sidebar when clicking outside on mobile
-    document.addEventListener('click', function(event) {
-        if (window.innerWidth <= 768 && 
-            !sidebar.contains(event.target) && 
-            !mobileMenuBtn.contains(event.target)) {
-            sidebar.classList.remove('mobile-open');
-            overlay.style.display = 'none';
-            mobileMenuBtn.innerHTML = '☰';
-        }
-    });
-    
+}
+
+mobileMenuBtn.addEventListener('click', toggleMobileSidebar);
+
+overlay.addEventListener('click', function() {
+    closeMobileSidebar();
+});
+
+document.addEventListener('click', function(event) {
+    if (
+        window.innerWidth <= 768 &&
+        sidebar.classList.contains('mobile-open') &&
+        !sidebar.contains(event.target) &&
+        !mobileMenuBtn.contains(event.target)
+    ) {
+        closeMobileSidebar();
+    }
+});
+
+
     // Handle menu item clicks
     function handleMenuItemClick(e) {
         const pageId = this.getAttribute('data-page');
@@ -89,25 +105,30 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         this.classList.add('active');
         
-        // Close sidebar on mobile after click
         if (window.innerWidth <= 768) {
-            sidebar.classList.remove('mobile-open');
-            overlay.style.display = 'none';
-            mobileMenuBtn.innerHTML = '☰';
-        }
+    closeMobileSidebar();
+}
         
         // Show page content
         showPageContent(pageId);
     }
     
-    // Attach event listeners to menu items
     menuItems.forEach(item => {
-        item.addEventListener('click', handleMenuItemClick);
-        item.addEventListener('touchstart', function(e) {
-            e.preventDefault();
-            handleMenuItemClick.call(this, e);
-        });
+    item.addEventListener('click', function(e) {
+        const pageId = this.getAttribute('data-page');
+
+        if (window.innerWidth <= 768) {
+            closeMobileSidebar();
+        }
+
+        // Kalau menu Laravel biasa, biarkan href jalan normal
+        if (!pageId) {
+            return;
+        }
+
+        handleMenuItemClick.call(this, e);
     });
+});
     
     // Function to show page content
     function showPageContent(pageId) {
@@ -233,25 +254,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Handle resize
     function handleResize() {
-        if (window.innerWidth <= 768) {
-            // Mobile - show mobile button, hide overlay
-            mobileMenuBtn.style.display = 'block';
-            overlay.style.display = 'none';
-            sidebar.classList.remove('mobile-open');
-            mobileMenuBtn.innerHTML = '☰';
-            
-            // Ensure sidebar uses mobile positioning
-            sidebar.style.left = '-280px';
-        } else {
-            // Desktop - hide mobile button and overlay
-            mobileMenuBtn.style.display = 'none';
-            overlay.style.display = 'none';
-            sidebar.classList.remove('mobile-open');
-            
-            // Reset sidebar position
-            sidebar.style.left = '0';
-        }
+    closeMobileSidebar();
+
+    if (window.innerWidth <= 768) {
+        mobileMenuBtn.style.display = 'flex';
+        sidebar.classList.remove('collapsed');
+    } else {
+        mobileMenuBtn.style.display = 'none';
     }
+}
     
     // Initial check
     handleResize();
