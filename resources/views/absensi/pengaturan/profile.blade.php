@@ -14,6 +14,22 @@
             <p>Anda hanya dapat mengubah alamat dan password</p>
         </div>
 
+        @if(session('success'))
+            <div style="background: #dcfce7; border: 1px solid #86efac; color: #166534; padding: 12px 16px; border-radius: 12px; margin-bottom: 16px; font-size: 14px; font-weight: 500;">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if($errors->any())
+            <div style="background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; padding: 12px 16px; border-radius: 12px; margin-bottom: 16px; font-size: 14px;">
+                <ul style="margin: 0; padding-left: 18px;">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <div class="profile-card">
             <form method="POST" action="{{ route('profile.update') }}" class="profile-form">
                 @csrf

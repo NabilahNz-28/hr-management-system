@@ -183,6 +183,10 @@
 
         document.getElementById('produk').value = '';
         document.getElementById('jumlah').value = '0';
+
+        if (typeof window.showToast === 'function') {
+            window.showToast('Produk berhasil ditambahkan ke daftar', 'success');
+        }
     });
 
     function renderProductList() {

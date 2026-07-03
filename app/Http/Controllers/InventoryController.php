@@ -67,7 +67,7 @@ class InventoryController extends Controller
         ]);
 
         return redirect()->route('inventory.stock-opname')
-            ->with('success', 'Barang berhasil ditambahkan.');
+            ->with('success', 'Produk berhasil ditambahkan.');
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -117,7 +117,7 @@ class InventoryController extends Controller
         }
 
         return redirect()->route('inventory.stock-opname')
-            ->with('success', 'Opname berhasil disimpan.');
+            ->with('success', 'Opname berhasil dibuat.');
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -183,38 +183,194 @@ class InventoryController extends Controller
     // View: laporan-opname
     // Kolom: tanggal, nama_barang, kategori, stok
     // ─────────────────────────────────────────────────────────────
+    // LAPORAN OPNAME (Grouped by Date as 1 Invoice)
+    // ─────────────────────────────────────────────────────────────
     public function laporanOpname(Request $request)
     {
         $this->authorizeOnlyPic();
 
-        $laporan = StockOpname::with('inventory')
+        $raw = StockOpname::with('inventory')
             ->where('user_id', auth()->id())
             ->when($request->filled('start_date'), fn ($q) => $q->whereDate('tanggal', '>=', $request->start_date))
             ->when($request->filled('end_date'), fn ($q) => $q->whereDate('tanggal', '<=', $request->end_date))
             ->when($request->filled('kategori'), fn ($q) => $q->whereHas('inventory', fn ($q2) => $q2->where('kategori', $request->kategori)))
             ->orderBy('tanggal', 'desc')
-            ->paginate(10)->withQueryString();
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $grouped = $raw->groupBy(fn($item) => \Carbon\Carbon::parse($item->tanggal)->format('Y-m-d'))
+            ->map(function ($items, $dateKey) {
+                return [
+                    'invoice_no'    => 'INV-OPN-' . \Carbon\Carbon::parse($dateKey)->format('Ymd'),
+                    'tanggal'       => $dateKey,
+                    'items'         => $items,
+                    'item_count'    => $items->count(),
+                    'produk_names'  => $items->pluck('inventory.nama_barang')->filter()->unique()->implode(', '),
+                    'kategori_list' => $items->pluck('inventory.kategori')->filter()->unique()->map(fn($k) => ucfirst($k))->implode(', '),
+                    'total_selisih' => $items->sum('selisih'),
+                    'catatan'       => $items->pluck('catatan')->filter()->unique()->implode('; '),
+                ];
+            })->values();
+
+        $currentPage = \Illuminate\Pagination\Paginator::resolveCurrentPage();
+        $perPage = 10;
+        $currentPageItems = $grouped->slice(($currentPage - 1) * $perPage, $perPage)->values();
+        $laporan = new \Illuminate\Pagination\LengthAwarePaginator(
+            $currentPageItems,
+            $grouped->count(),
+            $perPage,
+            $currentPage,
+            ['path' => \Illuminate\Pagination\Paginator::resolveCurrentPath(), 'query' => $request->query()]
+        );
 
         return view('inventories.laporan.laporan-opname', compact('laporan'));
     }
 
+    public function batalkanOpname(Request $request)
+    {
+        $this->authorizeOnlyPic();
+        $request->validate(['tanggal' => 'required|date']);
+
+        $items = StockOpname::with('inventory')
+            ->where('user_id', auth()->id())
+            ->whereDate('tanggal', $request->tanggal)
+            ->get();
+
+        foreach ($items as $item) {
+            if ($item->inventory) {
+                $item->inventory->update(['stok_fisik' => $item->stok_sebelum]);
+            }
+            $item->delete();
+        }
+
+        return redirect()->route('inventory.laporan-opname')
+            ->with('success', 'Transaksi opname tanggal ' . \Carbon\Carbon::parse($request->tanggal)->format('d M Y') . ' berhasil dibatalkan dan stok dikembalikan.');
+    }
+
+    public function exportOpnameExcel(Request $request)
+    {
+        $this->authorizeOnlyPic();
+
+        $items = StockOpname::with('inventory')
+            ->where('user_id', auth()->id())
+            ->when($request->filled('start_date'), fn ($q) => $q->whereDate('tanggal', '>=', $request->start_date))
+            ->when($request->filled('end_date'), fn ($q) => $q->whereDate('tanggal', '<=', $request->end_date))
+            ->when($request->filled('kategori'), fn ($q) => $q->whereHas('inventory', fn ($q2) => $q2->where('kategori', $request->kategori)))
+            ->orderBy('tanggal', 'desc')
+            ->get();
+
+        $filename = "Laporan_Stock_Opname_" . date('Y-m-d') . ".xls";
+        headers_sent() || header("Content-Type: application/vnd.ms-excel");
+        headers_sent() || header("Content-Disposition: attachment; filename=\"$filename\"");
+
+        echo '<table border="1">';
+        echo '<tr style="background:#1e293b;color:#ffffff;"><th>No</th><th>Tanggal</th><th>Nama Barang</th><th>Kategori</th><th>Stok Sebelum</th><th>Stok Sesudah</th><th>Selisih</th><th>Catatan</th></tr>';
+        foreach ($items as $index => $row) {
+            $tgl = \Carbon\Carbon::parse($row->tanggal)->format('d-m-Y');
+            $nama = $row->inventory->nama_barang ?? '-';
+            $kat = ucfirst($row->inventory->kategori ?? '-');
+            echo "<tr><td>".($index+1)."</td><td>{$tgl}</td><td>{$nama}</td><td>{$kat}</td><td>{$row->stok_sebelum}</td><td>{$row->stok_sesudah}</td><td>{$row->selisih}</td><td>{$row->catatan}</td></tr>";
+        }
+        echo '</table>';
+        exit;
+    }
+
     // ─────────────────────────────────────────────────────────────
-    // LAPORAN TRANSFER
-    // View: laporan-transfer
-    // Kolom: tanggal, barang, gudang_utama (default), ke_gudang, jumlah_pcs, catatan
+    // LAPORAN TRANSFER (Grouped by Date as 1 Invoice)
     // ─────────────────────────────────────────────────────────────
     public function laporanTransfer(Request $request)
     {
         $this->authorizeOnlyPic();
 
-        $laporan = TransferStock::with('barang')
+        $raw = TransferStock::with('barang')
             ->where('user_id', auth()->id())
             ->when($request->filled('start_date'), fn ($q) => $q->whereDate('tanggal', '>=', $request->start_date))
             ->when($request->filled('end_date'), fn ($q) => $q->whereDate('tanggal', '<=', $request->end_date))
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
             ->orderBy('tanggal', 'desc')
-            ->paginate(10)->withQueryString();
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $grouped = $raw->groupBy(fn($item) => \Carbon\Carbon::parse($item->tanggal)->format('Y-m-d'))
+            ->map(function ($items, $dateKey) {
+                $hasPending = $items->contains('status', 'Pending');
+                $allBatal = $items->every(fn($i) => strtolower($i->status) === 'dibatalkan');
+                $status = $allBatal ? 'Dibatalkan' : ($hasPending ? 'Pending' : 'Selesai');
+
+                return [
+                    'invoice_no'    => 'INV-TRF-' . \Carbon\Carbon::parse($dateKey)->format('Ymd'),
+                    'tanggal'       => $dateKey,
+                    'items'         => $items,
+                    'item_count'    => $items->count(),
+                    'produk_names'  => $items->pluck('barang.nama_barang')->filter()->unique()->implode(', '),
+                    'gudang_tujuan' => $items->pluck('ke_gudang')->filter()->unique()->implode(', '),
+                    'total_jumlah'  => $items->sum('jumlah'),
+                    'status'        => $status,
+                    'catatan'       => $items->pluck('catatan')->filter()->unique()->implode('; '),
+                ];
+            })->values();
+
+        $currentPage = \Illuminate\Pagination\Paginator::resolveCurrentPage();
+        $perPage = 10;
+        $currentPageItems = $grouped->slice(($currentPage - 1) * $perPage, $perPage)->values();
+        $laporan = new \Illuminate\Pagination\LengthAwarePaginator(
+            $currentPageItems,
+            $grouped->count(),
+            $perPage,
+            $currentPage,
+            ['path' => \Illuminate\Pagination\Paginator::resolveCurrentPath(), 'query' => $request->query()]
+        );
 
         return view('inventories.laporan.laporan-transfer', compact('laporan'));
+    }
+
+    public function batalkanTransfer(Request $request)
+    {
+        $this->authorizeOnlyPic();
+        $request->validate(['tanggal' => 'required|date']);
+
+        $items = TransferStock::with('barang')
+            ->where('user_id', auth()->id())
+            ->whereDate('tanggal', $request->tanggal)
+            ->where('status', '!=', 'Dibatalkan')
+            ->get();
+
+        foreach ($items as $item) {
+            if ($item->barang) {
+                $item->barang->increment('stok_fisik', $item->jumlah);
+            }
+            $item->update(['status' => 'Dibatalkan']);
+        }
+
+        return redirect()->route('inventory.laporan-transfer')
+            ->with('success', 'Transaksi transfer tanggal ' . \Carbon\Carbon::parse($request->tanggal)->format('d M Y') . ' berhasil dibatalkan dan stok dikembalikan.');
+    }
+
+    public function exportTransferExcel(Request $request)
+    {
+        $this->authorizeOnlyPic();
+
+        $items = TransferStock::with('barang')
+            ->where('user_id', auth()->id())
+            ->when($request->filled('start_date'), fn ($q) => $q->whereDate('tanggal', '>=', $request->start_date))
+            ->when($request->filled('end_date'), fn ($q) => $q->whereDate('tanggal', '<=', $request->end_date))
+            ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
+            ->orderBy('tanggal', 'desc')
+            ->get();
+
+        $filename = "Laporan_Transfer_Stock_" . date('Y-m-d') . ".xls";
+        headers_sent() || header("Content-Type: application/vnd.ms-excel");
+        headers_sent() || header("Content-Disposition: attachment; filename=\"$filename\"");
+
+        echo '<table border="1">';
+        echo '<tr style="background:#1e293b;color:#ffffff;"><th>No</th><th>Tanggal</th><th>Barang</th><th>Gudang Asal</th><th>Ke Gudang</th><th>Jumlah</th><th>Satuan</th><th>Status</th><th>Catatan</th></tr>';
+        foreach ($items as $index => $row) {
+            $tgl = \Carbon\Carbon::parse($row->tanggal)->format('d-m-Y');
+            $nama = $row->barang->nama_barang ?? '-';
+            $st = ucfirst($row->status ?? 'Selesai');
+            echo "<tr><td>".($index+1)."</td><td>{$tgl}</td><td>{$nama}</td><td>Gudang Utama</td><td>{$row->ke_gudang}</td><td>{$row->jumlah}</td><td>{$row->satuan}</td><td>{$st}</td><td>{$row->catatan}</td></tr>";
+        }
+        echo '</table>';
+        exit;
     }
 }

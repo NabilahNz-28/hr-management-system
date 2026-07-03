@@ -93,8 +93,17 @@ Route::middleware('auth')->group(function () {
     // Inventory superadmin
     Route::get('/superadmin/inventory', [SuperadminController::class, 'inventoryIndex'])
         ->name('superadmin.inventory.index');
+    Route::get('/superadmin/inventory/export', [SuperadminController::class, 'exportInventoryExcel'])
+        ->name('superadmin.inventory.export');
+    Route::delete('/superadmin/inventory/batalkan', [SuperadminController::class, 'batalkanInventory'])
+        ->name('superadmin.inventory.batalkan');
+
     Route::get('/superadmin/transfer', [SuperadminController::class, 'transferIndex'])
         ->name('superadmin.transfer.index');
+    Route::get('/superadmin/transfer/export', [SuperadminController::class, 'exportTransferExcel'])
+        ->name('superadmin.transfer.export');
+    Route::delete('/superadmin/transfer/batalkan', [SuperadminController::class, 'batalkanTransfer'])
+        ->name('superadmin.transfer.batalkan');
 
     // Profile superadmin
     Route::get('/superadmin/profile', [SuperadminController::class, 'profile'])
@@ -156,7 +165,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/transfer-stock', [InventoryController::class, 'simpanTransfer'])->name('transfer-stock.store');
 
         Route::get('/laporan-opname', [InventoryController::class, 'laporanOpname'])->name('laporan-opname');
+        Route::get('/laporan-opname/export', [InventoryController::class, 'exportOpnameExcel'])->name('laporan-opname.export');
+        Route::delete('/laporan-opname/batalkan', [InventoryController::class, 'batalkanOpname'])->name('laporan-opname.batalkan');
+
         Route::get('/laporan-transfer', [InventoryController::class, 'laporanTransfer'])->name('laporan-transfer');
+        Route::get('/laporan-transfer/export', [InventoryController::class, 'exportTransferExcel'])->name('laporan-transfer.export');
+        Route::delete('/laporan-transfer/batalkan', [InventoryController::class, 'batalkanTransfer'])->name('laporan-transfer.batalkan');
     });
 
     // LOGOUT

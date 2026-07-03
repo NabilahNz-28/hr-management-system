@@ -63,7 +63,7 @@
                             <div style="font-size: 12px; color: #64748b; margin-top: 4px;">Surat dokter, surat keterangan, atau dokumen lainnya</div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">Ajukan Cuti</button>
+                        <button type="submit" class="btn" style="background: #1e293b; color: #ffffff; border: none; padding: 12px 28px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(30,41,59,0.1);">Ajukan Cuti</button>
                     </form>
                 </div>
 @endsection

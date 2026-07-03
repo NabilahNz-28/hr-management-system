@@ -199,28 +199,190 @@ class SuperadminController extends Controller
 
     public function inventoryIndex(Request $request)
     {
-        $laporan = \App\Models\StockOpname::with(['inventory', 'user'])
+        $raw = \App\Models\StockOpname::with(['inventory', 'user'])
             ->when($request->filled('start_date'), fn ($q) => $q->whereDate('tanggal', '>=', $request->start_date))
             ->when($request->filled('end_date'), fn ($q) => $q->whereDate('tanggal', '<=', $request->end_date))
             ->when($request->filled('kategori'), fn ($q) => $q->whereHas('inventory', fn ($q2) => $q2->where('kategori', $request->kategori)))
             ->orderBy('tanggal', 'desc')
-            ->paginate(10)
-            ->withQueryString();
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $grouped = $raw->groupBy(fn($item) => \Carbon\Carbon::parse($item->tanggal)->format('Y-m-d') . '_' . ($item->user_id ?? 0))
+            ->map(function ($items, $key) {
+                $first = $items->first();
+                $dateKey = \Carbon\Carbon::parse($first->tanggal)->format('Y-m-d');
+                $userId = $first->user_id ?? 0;
+                return [
+                    'invoice_no'    => 'INV-OPN-' . \Carbon\Carbon::parse($dateKey)->format('Ymd') . ($userId ? '-' . str_pad($userId, 2, '0', STR_PAD_LEFT) : ''),
+                    'tanggal'       => $dateKey,
+                    'user_id'       => $userId,
+                    'petugas_name'  => $first->user->name ?? 'PIC / Unknown',
+                    'items'         => $items,
+                    'item_count'    => $items->count(),
+                    'produk_names'  => $items->pluck('inventory.nama_barang')->filter()->unique()->implode(', '),
+                    'kategori_list' => $items->pluck('inventory.kategori')->filter()->unique()->map(fn($k) => ucfirst($k))->implode(', '),
+                    'total_selisih' => $items->sum('selisih'),
+                    'catatan'       => $items->pluck('catatan')->filter()->unique()->implode('; '),
+                ];
+            })->values();
+
+        $currentPage = \Illuminate\Pagination\Paginator::resolveCurrentPage();
+        $perPage = 10;
+        $currentPageItems = $grouped->slice(($currentPage - 1) * $perPage, $perPage)->values();
+        $laporan = new \Illuminate\Pagination\LengthAwarePaginator(
+            $currentPageItems,
+            $grouped->count(),
+            $perPage,
+            $currentPage,
+            ['path' => \Illuminate\Pagination\Paginator::resolveCurrentPath(), 'query' => $request->query()]
+        );
 
         return view('superadmin.inventory.data-inventory', compact('laporan'));
     }
 
+    public function batalkanInventory(Request $request)
+    {
+        $request->validate(['tanggal' => 'required|date']);
+        $userId = $request->user_id;
+
+        $query = \App\Models\StockOpname::with('inventory')->whereDate('tanggal', $request->tanggal);
+        if ($userId) {
+            $query->where('user_id', $userId);
+        }
+        $items = $query->get();
+
+        foreach ($items as $item) {
+            if ($item->inventory) {
+                $item->inventory->update(['stok_fisik' => $item->stok_sebelum]);
+            }
+            $item->delete();
+        }
+
+        return redirect()->route('superadmin.inventory.index')
+            ->with('success', 'Transaksi opname tanggal ' . \Carbon\Carbon::parse($request->tanggal)->format('d M Y') . ' berhasil dibatalkan dan stok dikembalikan.');
+    }
+
+    public function exportInventoryExcel(Request $request)
+    {
+        $items = \App\Models\StockOpname::with(['inventory', 'user'])
+            ->when($request->filled('start_date'), fn ($q) => $q->whereDate('tanggal', '>=', $request->start_date))
+            ->when($request->filled('end_date'), fn ($q) => $q->whereDate('tanggal', '<=', $request->end_date))
+            ->when($request->filled('kategori'), fn ($q) => $q->whereHas('inventory', fn ($q2) => $q2->where('kategori', $request->kategori)))
+            ->orderBy('tanggal', 'desc')
+            ->get();
+
+        header('Content-Type: application/vnd.ms-excel');
+        header('Content-Disposition: attachment; filename="Rekap_Stock_Opname_Superadmin_' . date('Ymd_His') . '.xls"');
+
+        echo '<table border="1">';
+        echo '<tr><th>No</th><th>Tanggal</th><th>Petugas</th><th>Nama Barang</th><th>Kategori</th><th>Stok Sebelum</th><th>Stok Sesudah</th><th>Selisih</th><th>Catatan</th></tr>';
+        foreach ($items as $index => $row) {
+            $tgl = \Carbon\Carbon::parse($row->tanggal)->format('Y-m-d');
+            $petugas = $row->user->name ?? '-';
+            $nama = $row->inventory->nama_barang ?? '-';
+            $kat = ucfirst($row->inventory->kategori ?? '-');
+            echo "<tr><td>".($index+1)."</td><td>{$tgl}</td><td>{$petugas}</td><td>{$nama}</td><td>{$kat}</td><td>{$row->stok_sebelum}</td><td>{$row->stok_sesudah}</td><td>{$row->selisih}</td><td>{$row->catatan}</td></tr>";
+        }
+        echo '</table>';
+        exit;
+    }
+
     public function transferIndex(Request $request)
     {
-        $laporan = \App\Models\TransferStock::with(['barang', 'user'])
+        $raw = \App\Models\TransferStock::with(['barang', 'user'])
             ->when($request->filled('start_date'), fn ($q) => $q->whereDate('tanggal', '>=', $request->start_date))
             ->when($request->filled('end_date'), fn ($q) => $q->whereDate('tanggal', '<=', $request->end_date))
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
             ->orderBy('tanggal', 'desc')
-            ->paginate(10)
-            ->withQueryString();
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $grouped = $raw->groupBy(fn($item) => \Carbon\Carbon::parse($item->tanggal)->format('Y-m-d') . '_' . ($item->user_id ?? 0))
+            ->map(function ($items, $key) {
+                $first = $items->first();
+                $dateKey = \Carbon\Carbon::parse($first->tanggal)->format('Y-m-d');
+                $userId = $first->user_id ?? 0;
+                $hasPending = $items->contains('status', 'Pending');
+                $allBatal = $items->every(fn($i) => strtolower($i->status) === 'dibatalkan');
+                $status = $allBatal ? 'Dibatalkan' : ($hasPending ? 'Pending' : 'Selesai');
+
+                return [
+                    'invoice_no'    => 'INV-TRF-' . \Carbon\Carbon::parse($dateKey)->format('Ymd') . ($userId ? '-' . str_pad($userId, 2, '0', STR_PAD_LEFT) : ''),
+                    'tanggal'       => $dateKey,
+                    'user_id'       => $userId,
+                    'petugas_name'  => $first->user->name ?? 'PIC / Unknown',
+                    'items'         => $items,
+                    'item_count'    => $items->count(),
+                    'produk_names'  => $items->pluck('barang.nama_barang')->filter()->unique()->implode(', '),
+                    'gudang_tujuan' => $items->pluck('ke_gudang')->filter()->unique()->implode(', '),
+                    'total_jumlah'  => $items->sum('jumlah'),
+                    'status'        => $status,
+                    'catatan'       => $items->pluck('catatan')->filter()->unique()->implode('; '),
+                ];
+            })->values();
+
+        $currentPage = \Illuminate\Pagination\Paginator::resolveCurrentPage();
+        $perPage = 10;
+        $currentPageItems = $grouped->slice(($currentPage - 1) * $perPage, $perPage)->values();
+        $laporan = new \Illuminate\Pagination\LengthAwarePaginator(
+            $currentPageItems,
+            $grouped->count(),
+            $perPage,
+            $currentPage,
+            ['path' => \Illuminate\Pagination\Paginator::resolveCurrentPath(), 'query' => $request->query()]
+        );
 
         return view('superadmin.inventory.transfer-stock', compact('laporan'));
+    }
+
+    public function batalkanTransfer(Request $request)
+    {
+        $request->validate(['tanggal' => 'required|date']);
+        $userId = $request->user_id;
+
+        $query = \App\Models\TransferStock::with('barang')
+            ->whereDate('tanggal', $request->tanggal)
+            ->where('status', '!=', 'Dibatalkan');
+        if ($userId) {
+            $query->where('user_id', $userId);
+        }
+        $items = $query->get();
+
+        foreach ($items as $item) {
+            if ($item->barang) {
+                $item->barang->increment('stok_fisik', $item->jumlah);
+            }
+            $item->update(['status' => 'Dibatalkan']);
+        }
+
+        return redirect()->route('superadmin.transfer.index')
+            ->with('success', 'Transaksi transfer tanggal ' . \Carbon\Carbon::parse($request->tanggal)->format('d M Y') . ' berhasil dibatalkan dan stok dikembalikan.');
+    }
+
+    public function exportTransferExcel(Request $request)
+    {
+        $items = \App\Models\TransferStock::with(['barang', 'user'])
+            ->when($request->filled('start_date'), fn ($q) => $q->whereDate('tanggal', '>=', $request->start_date))
+            ->when($request->filled('end_date'), fn ($q) => $q->whereDate('tanggal', '<=', $request->end_date))
+            ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
+            ->orderBy('tanggal', 'desc')
+            ->get();
+
+        header('Content-Type: application/vnd.ms-excel');
+        header('Content-Disposition: attachment; filename="Rekap_Transfer_Stock_Superadmin_' . date('Ymd_His') . '.xls"');
+
+        echo '<table border="1">';
+        echo '<tr><th>No</th><th>Tanggal</th><th>Petugas</th><th>Barang</th><th>Gudang Asal</th><th>Ke Gudang</th><th>Jumlah</th><th>Satuan</th><th>Status</th><th>Catatan</th></tr>';
+        foreach ($items as $index => $row) {
+            $tgl = \Carbon\Carbon::parse($row->tanggal)->format('Y-m-d');
+            $petugas = $row->user->name ?? '-';
+            $nama = $row->barang->nama_barang ?? '-';
+            $tujuan = $row->ke_gudang ?? '-';
+            $st = ucfirst($row->status ?? 'Selesai');
+            echo "<tr><td>".($index+1)."</td><td>{$tgl}</td><td>{$petugas}</td><td>{$nama}</td><td>Gudang Utama</td><td>{$tujuan}</td><td>{$row->jumlah}</td><td>{$row->satuan}</td><td>{$st}</td><td>{$row->catatan}</td></tr>";
+        }
+        echo '</table>';
+        exit;
     }
 
     // ===== PROFILE =====
