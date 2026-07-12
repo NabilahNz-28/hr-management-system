@@ -30,17 +30,6 @@
                     <p class="mb-0">Join HR Management System</p>
                 </div>
                 <div class="card-body p-4">
-                    @if($errors->any())
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <ul class="mb-0">
-                                @foreach($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    @endif
-                    
                     <form method="POST" action="{{ route('register') }}">
                         @csrf
                         <div class="mb-3">
@@ -106,5 +95,26 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        @if($errors->any())
+          if (typeof Swal !== 'undefined') {
+            let errorList = [
+              @foreach($errors->all() as $err)
+                {!! json_encode(preg_replace('/[\x{1F600}-\x{1F64F}\x{1F300}-\x{1F5FF}\x{1F680}-\x{1F6FF}\x{1F700}-\x{1F77F}\x{1F780}-\x{1F7FF}\x{1F800}-\x{1F8FF}\x{1F900}-\x{1F9FF}\x{1FA00}-\x{1FA6F}\x{1FA70}-\x{1FAFF}\x{2600}-\x{26FF}\x{2700}-\x{27BF}]/u', '', $err)) !!},
+              @endforeach
+            ];
+            Swal.fire({
+              title: 'Peringatan',
+              html: '<div style="text-align: center; margin: 0; padding: 0;">' + errorList.join('<br>') + '</div>',
+              icon: 'warning',
+              confirmButtonText: 'Tutup',
+              confirmButtonColor: '#0f172a'
+            });
+          }
+        @endif
+      });
+    </script>
 </body>
 </html>

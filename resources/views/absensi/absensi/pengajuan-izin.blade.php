@@ -9,24 +9,6 @@
       Ajukan izin tidak masuk kerja dengan alasan yang jelas
     </p>
 
-    @if(session('success'))
-      <div class="success-message" style="background:#dcfce7;border:1px solid #86efac;color:#166534;padding:12px 16px;border-radius:8px;margin-bottom:16px;">
-        {{ session('success') }}
-      </div>
-    @endif
-    @if(session('error'))
-      <div class="success-message" style="background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;padding:12px 16px;border-radius:8px;margin-bottom:16px;">
-        {{ session('error') }}
-      </div>
-    @endif
-    @if($errors->any())
-      <div class="success-message" style="background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;padding:12px 16px;border-radius:8px;margin-bottom:16px;">
-        <ul style="margin:0;padding-left:18px;">
-          @foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach
-        </ul>
-      </div>
-    @endif
-
     <form id="formIzin" method="POST" action="{{ route('absensi.cuti.post') }}" enctype="multipart/form-data">
       @csrf
       <input type="hidden" name="jenis" value="izin">
@@ -58,7 +40,7 @@
         <label class="form-label">Upload Bukti (Opsional)</label>
         <input type="file" class="form-control" name="document" accept="image/*,.pdf">
         <div style="font-size:12px; color:#64748b; margin-top:4px;">
-          Surat dokter, foto, atau dokumen pendukung
+          Surat dokter, foto, atau dokumen pendukung (Maks. 5 MB)
         </div>
       </div>
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 
 class ProfileController extends Controller
 {
@@ -31,7 +32,16 @@ class ProfileController extends Controller
     {
         $request->validate([
             'current_password' => ['required'],
-            'password' => ['required', 'confirmed', 'min:6'],
+            'password' => ['required', 'confirmed', Password::min(6)->letters()->mixedCase()->numbers()->symbols()],
+        ], [
+            'current_password.required' => 'Password saat ini wajib diisi.',
+            'password.required'         => 'Password baru wajib diisi.',
+            'password.confirmed'        => 'Konfirmasi password baru tidak cocok.',
+            'password.min'              => 'Password minimal 6 karakter.',
+            'password.letters'          => 'Password wajib mengandung huruf.',
+            'password.mixed'            => 'Password wajib mengandung minimal 1 huruf kapital (besar) dan 1 huruf kecil.',
+            'password.numbers'          => 'Password wajib mengandung minimal 1 angka.',
+            'password.symbols'          => 'Password wajib mengandung minimal 1 simbol.'
         ]);
 
         $user = Auth::user();

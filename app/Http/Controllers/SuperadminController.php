@@ -124,9 +124,20 @@ class SuperadminController extends Controller
             'nik'      => 'nullable|string|max:50',
             'email'    => 'required|email|unique:users,email',
             'no_hp'    => 'nullable|string|max:20',
-            'password' => ['required', 'confirmed', Password::min(8)->letters()->mixedCase()->numbers()->symbols()],
+            'password' => ['required', 'confirmed', Password::min(6)->letters()->mixedCase()->numbers()->symbols()],
             'role'     => 'required|in:karyawan,pic,superadmin',
             'status'   => 'nullable|in:aktif,nonaktif',
+        ], [
+            'name.required'      => 'Nama karyawan wajib diisi.',
+            'email.required'     => 'Email wajib diisi.',
+            'email.unique'       => 'Email sudah digunakan.',
+            'password.required'  => 'Password wajib diisi.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
+            'password.min'       => 'Password minimal 6 karakter.',
+            'password.letters'   => 'Password wajib mengandung huruf.',
+            'password.mixed'     => 'Password wajib mengandung minimal 1 huruf kapital (besar) dan 1 huruf kecil.',
+            'password.numbers'   => 'Password wajib mengandung minimal 1 angka.',
+            'password.symbols'   => 'Password wajib mengandung minimal 1 simbol.',
         ]);
 
         User::create([
@@ -168,7 +179,17 @@ class SuperadminController extends Controller
             'email'    => 'required|email|unique:users,email,' . $user->id,
             'role'     => 'required|in:karyawan,pic,superadmin',
             // Password opsional saat edit; jika diisi wajib kuat
-            'password' => ['nullable', 'confirmed', Password::min(8)->letters()->mixedCase()->numbers()->symbols()],
+            'password' => ['nullable', 'confirmed', Password::min(6)->letters()->mixedCase()->numbers()->symbols()],
+        ], [
+            'name.required'      => 'Nama karyawan wajib diisi.',
+            'email.required'     => 'Email wajib diisi.',
+            'email.unique'       => 'Email sudah digunakan karyawan lain.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
+            'password.min'       => 'Password minimal 6 karakter.',
+            'password.letters'   => 'Password wajib mengandung huruf.',
+            'password.mixed'     => 'Password wajib mengandung minimal 1 huruf kapital (besar) dan 1 huruf kecil.',
+            'password.numbers'   => 'Password wajib mengandung minimal 1 angka.',
+            'password.symbols'   => 'Password wajib mengandung minimal 1 simbol.',
         ]);
 
         $data = $request->only([
@@ -193,6 +214,79 @@ class SuperadminController extends Controller
 
         return redirect()->route('superadmin.karyawan.index')
             ->with('success', 'Karyawan berhasil dihapus.');
+    }
+
+    public function karyawanAttendanceData($id, Request $request)
+    {
+        $user = User::findOrFail($id);
+
+        // Default: bulan ini. Format parameter: YYYY-MM
+        try {
+            $bulan = $request->input('bulan', Carbon::now()->format('Y-m'));
+            $awal  = Carbon::createFromFormat('Y-m', $bulan)->startOfMonth();
+            $akhir = Carbon::createFromFormat('Y-m', $bulan)->endOfMonth();
+        } catch (\Exception $e) {
+            $awal  = Carbon::now()->startOfMonth();
+            $akhir = Carbon::now()->endOfMonth();
+        }
+
+        // Hitung hari masuk
+        $hadir = $user->attendances()
+            ->where('attendance_type', 'masuk')
+            ->whereBetween('attendance_time', [$awal, $akhir])
+            ->get()
+            ->groupBy(fn ($a) => Carbon::parse($a->attendance_time)->toDateString())
+            ->count();
+
+        // Hitung terlambat (logika keterlambatan dihapus)
+        $terlambat = 0;
+
+        // Hitung izin
+        $izinLeaves = $user->leaves()
+            ->where('status', 'approved')
+            ->where('jenis', 'izin')
+            ->whereDate('start_date', '<=', $akhir->toDateString())
+            ->where(function ($q) use ($awal) {
+                $q->whereDate('end_date', '>=', $awal->toDateString())
+                  ->orWhere(function ($q2) use ($awal) {
+                      $q2->whereNull('end_date')
+                         ->whereDate('start_date', '>=', $awal->toDateString());
+                  });
+            })
+            ->get();
+
+        $izin = $izinLeaves->sum(function ($item) use ($awal, $akhir) {
+            $start = Carbon::parse($item->start_date)->max($awal);
+            $end = $item->end_date ? Carbon::parse($item->end_date)->min($akhir) : $start;
+            return max(1, $start->diffInDays($end) + 1);
+        });
+
+        // Hitung cuti
+        $cutiLeaves = $user->leaves()
+            ->where('status', 'approved')
+            ->where('jenis', 'cuti')
+            ->whereDate('start_date', '<=', $akhir->toDateString())
+            ->where(function ($q) use ($awal) {
+                $q->whereDate('end_date', '>=', $awal->toDateString())
+                  ->orWhere(function ($q2) use ($awal) {
+                      $q2->whereNull('end_date')
+                         ->whereDate('start_date', '>=', $awal->toDateString());
+                  });
+            })
+            ->get();
+
+        $cuti = $cutiLeaves->sum(function ($item) use ($awal, $akhir) {
+            $start = Carbon::parse($item->start_date)->max($awal);
+            $end = $item->end_date ? Carbon::parse($item->end_date)->min($akhir) : $start;
+            return max(1, $start->diffInDays($end) + 1);
+        });
+
+        return response()->json([
+            'hadir'     => $hadir,
+            'izin'      => $izin,
+            'cuti'      => $cuti,
+            'terlambat' => $terlambat,
+        ]);
     }
 
     // ===== INVENTORY =====
@@ -419,8 +513,17 @@ class SuperadminController extends Controller
     public function updatePassword(Request $request)
     {
         $request->validate([
-            'current_password' => 'required',
-            'password'         => 'required|min:6|confirmed',
+            'current_password' => ['required'],
+            'password'         => ['required', 'confirmed', Password::min(6)->letters()->mixedCase()->numbers()->symbols()],
+        ], [
+            'current_password.required' => 'Password saat ini wajib diisi.',
+            'password.required'         => 'Password baru wajib diisi.',
+            'password.confirmed'        => 'Konfirmasi password baru tidak cocok.',
+            'password.min'              => 'Password minimal 6 karakter.',
+            'password.letters'          => 'Password wajib mengandung huruf.',
+            'password.mixed'            => 'Password wajib mengandung minimal 1 huruf kapital (besar) dan 1 huruf kecil.',
+            'password.numbers'          => 'Password wajib mengandung minimal 1 angka.',
+            'password.symbols'          => 'Password wajib mengandung minimal 1 simbol.',
         ]);
 
         $user = auth()->user();

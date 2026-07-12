@@ -46,12 +46,12 @@
     // Data dummy absensi karyawan
     const dataAbsensi = [
         { nama: 'Ahmad Wijaya', nik: '001', departemen: 'OUTGOING ', jam_masuk: '07:55', jam_pulang: '16:30', status: 'Hadir', foto: 'ahmad.jpg' },
-        { nama: 'Siti Rahma', nik: '002', departemen: 'OUTGOING', jam_masuk: '08:15', jam_pulang: '16:45', status: 'Terlambat', foto: 'siti.jpg' },
-        { nama: 'Budi Santoso', nik: '003', departemen: 'ADMIN CC', jam_masuk: '08:30', jam_pulang: '17:00', status: 'Terlambat', foto: 'budi.jpg' },
+        { nama: 'Siti Rahma', nik: '002', departemen: 'OUTGOING', jam_masuk: '08:15', jam_pulang: '16:45', status: 'Hadir', foto: 'siti.jpg' },
+        { nama: 'Budi Santoso', nik: '003', departemen: 'ADMIN CC', jam_masuk: '08:30', jam_pulang: '17:00', status: 'Hadir', foto: 'budi.jpg' },
         { nama: 'Dewi Anggraini', nik: '004', departemen: 'INCOMING', jam_masuk: '07:50', jam_pulang: '16:20', status: 'Hadir', foto: 'dewi.jpg' },
         { nama: 'Rudi Hartono', nik: '005', departemen: 'ADMIN RESI', jam_masuk: '-', jam_pulang: '-', status: 'Absen', foto: 'rudi.jpg' },
         { nama: 'Maya Sari', nik: '006', departemen: 'ADMIN RESI', jam_masuk: '08:05', jam_pulang: '16:35', status: 'Hadir', foto: 'maya.jpg' },
-        { nama: 'Joko Widodo', nik: '007', departemen: 'INCOMING', jam_masuk: '08:20', jam_pulang: '16:50', status: 'Terlambat', foto: 'joko.jpg' },
+        { nama: 'Joko Widodo', nik: '007', departemen: 'INCOMING', jam_masuk: '08:20', jam_pulang: '16:50', status: 'Hadir', foto: 'joko.jpg' },
         { nama: 'Linda Cahyani', nik: '008', departemen: 'ADMIN CC', jam_masuk: '07:45', jam_pulang: '16:15', status: 'Hadir', foto: 'linda.jpg' },
         { nama: 'Agus Salim', nik: '009', departemen: 'RETUR', jam_masuk: '-', jam_pulang: '-', status: 'Cuti', foto: 'agus.jpg' },
         { nama: 'Nina Kartika', nik: '010', departemen: 'RETUR', jam_masuk: '08:10', jam_pulang: '16:40', status: 'Hadir', foto: 'nina.jpg' }
@@ -62,8 +62,6 @@
         switch(status) {
             case 'Hadir':
                 return '<span class="status-badge status-present">Hadir</span>';
-            case 'Terlambat':
-                return '<span class="status-badge status-late">Terlambat</span>';
             case 'Absen':
                 return '<span class="status-badge status-absent">Absen</span>';
             case 'Izin':
@@ -132,7 +130,6 @@
             <div class="info-summary" style="margin-top: 20px; justify-content: center;">
                 <p>Total Karyawan: <strong>${data.length}</strong> orang</p>
                 <p>Hadir: <strong>${data.filter(d => d.status === 'Hadir').length}</strong></p>
-                <p>Terlambat: <strong>${data.filter(d => d.status === 'Terlambat').length}</strong></p>
                 <p>Absen: <strong>${data.filter(d => d.status === 'Absen').length}</strong></p>
                 <p>Cuti / Izin: <strong>${data.filter(d => d.status === 'Cuti' || d.status === 'Izin').length}</strong></p>
             </div>
@@ -173,7 +170,6 @@
         
         // Hitung statistik
         const totalHadir = filteredData.filter(d => d.status === 'Hadir').length;
-        const totalTerlambat = filteredData.filter(d => d.status === 'Terlambat').length;
         const totalAbsen = filteredData.filter(d => d.status === 'Absen').length;
         const totalCutiIzin = filteredData.filter(d => d.status === 'Cuti' || d.status === 'Izin').length;
         
@@ -227,7 +223,6 @@
                 <p><strong>Ringkasan:</strong></p>
                 <p>Total Karyawan: ${filteredData.length}</p>
                 <p>Hadir: ${totalHadir}</p>
-                <p>Terlambat: ${totalTerlambat}</p>
                 <p>Absen: ${totalAbsen}</p>
                 <p>Cuti / Izin: ${totalCutiIzin}</p>
             </body>
@@ -247,7 +242,7 @@
 
     // Fungsi show photo (placeholder)
     function showPhoto(nama) {
-        alert(`Menampilkan foto ${nama}\n(Fitur ini akan terhubung dengan database)`);
+        window.showFormalAlert(`Menampilkan foto absensi ${nama}.`, 'info', 'Informasi Foto');
     }
 
     // Event listener

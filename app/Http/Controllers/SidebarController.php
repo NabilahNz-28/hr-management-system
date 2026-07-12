@@ -78,13 +78,6 @@ class SidebarController extends Controller
                             'routeIs' => 'laporan.laporan.absensi',
                             'icon' => 'file',
                         ],
-                        [
-                            'text' => 'Laporan Keterlambatan',
-                            'route' => 'absensi.laporan.laporan-terlambat',
-                            'routeIs' => 'laporan.laporan-terlambat',
-                            'icon' => 'clock',
-                        ],
-                        
                     ],
                 ],
                 [

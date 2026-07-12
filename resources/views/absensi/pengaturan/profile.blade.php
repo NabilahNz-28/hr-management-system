@@ -14,22 +14,6 @@
             <p>Anda hanya dapat mengubah alamat dan password</p>
         </div>
 
-        @if(session('success'))
-            <div style="background: #dcfce7; border: 1px solid #86efac; color: #166534; padding: 12px 16px; border-radius: 12px; margin-bottom: 16px; font-size: 14px; font-weight: 500;">
-                {{ session('success') }}
-            </div>
-        @endif
-
-        @if($errors->any())
-            <div style="background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; padding: 12px 16px; border-radius: 12px; margin-bottom: 16px; font-size: 14px;">
-                <ul style="margin: 0; padding-left: 18px;">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
         <div class="profile-card">
             <form method="POST" action="{{ route('profile.update') }}" class="profile-form">
                 @csrf
@@ -90,9 +74,24 @@
                     @csrf
                     @method('PUT')
 
-                    <input type="password" name="current_password" class="form-control" placeholder="Password lama" required>
-                    <input type="password" name="password" class="form-control" placeholder="Password baru" required>
-                    <input type="password" name="password_confirmation" class="form-control" placeholder="Konfirmasi password baru" required>
+                    <div class="password-input-group">
+                        <input type="password" id="absen_current_password" name="current_password" class="form-control" placeholder="Password lama" required>
+                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('absen_current_password', this)" title="Tampilkan/Sembunyikan Password">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                    <div class="password-input-group">
+                        <input type="password" id="absen_password" name="password" class="form-control" placeholder="Password baru" required>
+                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('absen_password', this)" title="Tampilkan/Sembunyikan Password">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                    <div class="password-input-group">
+                        <input type="password" id="absen_password_confirmation" name="password_confirmation" class="form-control" placeholder="Konfirmasi password baru" required>
+                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('absen_password_confirmation', this)" title="Tampilkan/Sembunyikan Password">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
 
                     <button type="submit" class="btn btn-primary btn-small">Ubah Password</button>
                 </form>

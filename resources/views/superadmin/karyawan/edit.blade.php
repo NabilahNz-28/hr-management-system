@@ -8,23 +8,6 @@
         <div class="content-title">Edit Data Karyawan</div>
         <p class="content-description">Ubah data karyawan perusahaan</p>
 
-        @if(session('success'))
-            <div class="alert alert-success">
-                {{ session('success') }}
-            </div>
-        @endif
-
-        @if ($errors->any())
-            <div class="alert alert-danger">
-                <strong>Terjadi kesalahan:</strong>
-                <ul style="margin: 10px 0 0 20px;">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
         <div class="form-container-karyawan">
             <form action="{{ route('superadmin.karyawan.update', $karyawan->id) }}" method="POST">
                 @csrf
@@ -93,8 +76,13 @@
 
                     <div class="form-group">
                         <label for="password">Password Baru</label>
-                        <input type="password" id="password" name="password" class="form-control"
-                               placeholder="Kosongkan jika tidak ingin ganti password">
+                        <div class="password-input-group">
+                            <input type="password" id="password" name="password" class="form-control"
+                                   placeholder="Kosongkan jika tidak ingin ganti password">
+                            <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('password', this)" title="Tampilkan/Sembunyikan Password">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
                         <small class="text-muted">Isi hanya jika ingin mengganti password. Min. 8 karakter, kombinasi huruf besar &amp; kecil, angka, dan simbol.</small>
                         @error('password')
                             <div class="text-danger small mt-1">{{ $message }}</div>
@@ -103,8 +91,13 @@
 
                     <div class="form-group">
                         <label for="password_confirmation">Konfirmasi Password Baru</label>
-                        <input type="password" id="password_confirmation" name="password_confirmation" class="form-control"
-                               placeholder="Ulangi password baru">
+                        <div class="password-input-group">
+                            <input type="password" id="password_confirmation" name="password_confirmation" class="form-control"
+                                   placeholder="Ulangi password baru">
+                            <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('password_confirmation', this)" title="Tampilkan/Sembunyikan Password">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
 

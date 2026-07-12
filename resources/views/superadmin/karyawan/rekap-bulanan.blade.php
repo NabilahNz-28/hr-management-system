@@ -67,16 +67,16 @@
 <script>
     // Data dummy rekap absensi bulanan
     const dataRekapBulanan = [
-        { nama: 'Ahmad Wijaya', nik: '001', departemen: 'OUTGOING', hadir: 21, terlambat: 2, izin: 1, cuti: 0, alpha: 0 },
-        { nama: 'Siti Rahma', nik: '002', departemen: 'OUTGOING', hadir: 20, terlambat: 1, izin: 2, cuti: 0, alpha: 1 },
-        { nama: 'Budi Santoso', nik: '003', departemen: 'ADMIN CC', hadir: 18, terlambat: 5, izin: 1, cuti: 1, alpha: 0 },
-        { nama: 'Dewi Anggraini', nik: '004', departemen: 'INCOMING', hadir: 22, terlambat: 0, izin: 0, cuti: 0, alpha: 0 },
-        { nama: 'Rudi Hartono', nik: '005', departemen: 'ADMIN RESI', hadir: 17, terlambat: 3, izin: 2, cuti: 0, alpha: 1 },
-        { nama: 'Maya Sari', nik: '006', departemen: 'ADMIN RESI', hadir: 20, terlambat: 2, izin: 1, cuti: 1, alpha: 0 },
-        { nama: 'Joko Widodo', nik: '007', departemen: 'INCOMING', hadir: 19, terlambat: 4, izin: 0, cuti: 0, alpha: 1 },
-        { nama: 'Linda Cahyani', nik: '008', departemen: 'ADMIN CC', hadir: 21, terlambat: 0, izin: 2, cuti: 0, alpha: 0 },
-        { nama: 'Agus Salim', nik: '009', departemen: 'RETUR', hadir: 20, terlambat: 1, izin: 1, cuti: 1, alpha: 0 },
-        { nama: 'Nina Kartika', nik: '010', departemen: 'RETUR', hadir: 22, terlambat: 0, izin: 0, cuti: 0, alpha: 0 }
+        { nama: 'Ahmad Wijaya', nik: '001', departemen: 'OUTGOING', hadir: 21, izin: 1, cuti: 0, alpha: 0 },
+        { nama: 'Siti Rahma', nik: '002', departemen: 'OUTGOING', hadir: 20, izin: 2, cuti: 0, alpha: 1 },
+        { nama: 'Budi Santoso', nik: '003', departemen: 'ADMIN CC', hadir: 18, izin: 1, cuti: 1, alpha: 0 },
+        { nama: 'Dewi Anggraini', nik: '004', departemen: 'INCOMING', hadir: 22, izin: 0, cuti: 0, alpha: 0 },
+        { nama: 'Rudi Hartono', nik: '005', departemen: 'ADMIN RESI', hadir: 17, izin: 2, cuti: 0, alpha: 1 },
+        { nama: 'Maya Sari', nik: '006', departemen: 'ADMIN RESI', hadir: 20, izin: 1, cuti: 1, alpha: 0 },
+        { nama: 'Joko Widodo', nik: '007', departemen: 'INCOMING', hadir: 19, izin: 0, cuti: 0, alpha: 1 },
+        { nama: 'Linda Cahyani', nik: '008', departemen: 'ADMIN CC', hadir: 21, izin: 2, cuti: 0, alpha: 0 },
+        { nama: 'Agus Salim', nik: '009', departemen: 'RETUR', hadir: 20, izin: 1, cuti: 1, alpha: 0 },
+        { nama: 'Nina Kartika', nik: '010', departemen: 'RETUR', hadir: 22, izin: 0, cuti: 0, alpha: 0 }
     ];
 
     // Nama bulan
@@ -99,7 +99,6 @@
         
         // Hitung total keseluruhan
         const totalHadir = data.reduce((sum, item) => sum + item.hadir, 0);
-        const totalTerlambat = data.reduce((sum, item) => sum + item.terlambat, 0);
         const totalIzin = data.reduce((sum, item) => sum + item.izin, 0);
         const totalCuti = data.reduce((sum, item) => sum + item.cuti, 0);
         const totalAlpha = data.reduce((sum, item) => sum + item.alpha, 0);
@@ -119,7 +118,6 @@
                             <th>Nama</th>
                             <th>Departemen</th>
                             <th class="text-center">Hadir</th>
-                            <th class="text-center">Terlambat</th>
                             <th class="text-center">Izin</th>
                             <th class="text-center">Cuti</th>
                             <th class="text-center">Alpha</th>
@@ -130,7 +128,7 @@
         `;
         
         data.forEach((item, index) => {
-            const totalHari = item.hadir + item.terlambat + item.izin + item.cuti + item.alpha;
+            const totalHari = item.hadir + item.izin + item.cuti + item.alpha;
             const persentase = Math.round((item.hadir / totalHari) * 100) || 0;
             let progressColor = persentase >= 80 ? '#10b981' : (persentase >= 60 ? '#f59e0b' : '#ef4444');
             
@@ -141,7 +139,6 @@
                     <td>${item.nama}</td>
                     <td>${item.departemen}</td>
                     <td class="text-center"><strong>${item.hadir}</strong></td>
-                    <td class="text-center">${item.terlambat}</td>
                     <td class="text-center">${item.izin}</td>
                     <td class="text-center">${item.cuti}</td>
                     <td class="text-center">${item.alpha}</td>
@@ -161,7 +158,6 @@
                         <tr style="background: #f1f5f9; font-weight: 600;">
                             <td colspan="4" class="text-right"><strong>TOTAL</strong></td>
                             <td class="text-center">${totalHadir}</td>
-                            <td class="text-center">${totalTerlambat}</td>
                             <td class="text-center">${totalIzin}</td>
                             <td class="text-center">${totalCuti}</td>
                             <td class="text-center">${totalAlpha}</td>
@@ -204,7 +200,6 @@
         }
         
         const totalHadir = filteredData.reduce((sum, item) => sum + item.hadir, 0);
-        const totalTerlambat = filteredData.reduce((sum, item) => sum + item.terlambat, 0);
         const totalIzin = filteredData.reduce((sum, item) => sum + item.izin, 0);
         const totalCuti = filteredData.reduce((sum, item) => sum + item.cuti, 0);
         const totalAlpha = filteredData.reduce((sum, item) => sum + item.alpha, 0);
@@ -230,7 +225,6 @@
                             <th>Nama</th>
                             <th>Departemen</th>
                             <th>Hadir</th>
-                            <th>Terlambat</th>
                             <th>Izin</th>
                             <th>Cuti</th>
                             <th>Alpha</th>
@@ -247,7 +241,6 @@
                     <td>${item.nama}</td>
                     <td>${item.departemen}</td>
                     <td align="center">${item.hadir}</td>
-                    <td align="center">${item.terlambat}</td>
                     <td align="center">${item.izin}</td>
                     <td align="center">${item.cuti}</td>
                     <td align="center">${item.alpha}</td>
@@ -261,7 +254,6 @@
                         <tr>
                             <td colspan="4"><strong>TOTAL</strong></td>
                             <td align="center"><strong>${totalHadir}</strong></td>
-                            <td align="center"><strong>${totalTerlambat}</strong></td>
                             <td align="center"><strong>${totalIzin}</strong></td>
                             <td align="center"><strong>${totalCuti}</strong></td>
                             <td align="center"><strong>${totalAlpha}</strong></td>

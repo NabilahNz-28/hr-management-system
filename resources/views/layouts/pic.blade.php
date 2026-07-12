@@ -13,42 +13,7 @@
     @yield('styles')
 </head>
 <body>
-    <style>
-        @keyframes slideInRight {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        .toast-notification {
-            transition: opacity 0.3s ease;
-        }
-    </style>
-    <!-- Floating Top-Right Notification Toast -->
-    <div id="toast-container" style="position: fixed; top: 24px; right: 24px; z-index: 99998; display: flex; flex-direction: column; gap: 10px;">
-        @if(session('success'))
-            <div class="toast-notification" style="background: #ffffff; border-left: 4px solid #10b981; box-shadow: 0 10px 25px rgba(0,0,0,0.12); padding: 14px 20px; border-radius: 8px; display: flex; align-items: center; gap: 12px; min-width: 280px; max-width: 380px; animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
-                <div style="background: #d1fae5; color: #059669; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                </div>
-                <div style="flex: 1;">
-                    <div style="font-size: 13px; font-weight: 600; color: #1e293b;">Berhasil</div>
-                    <div style="font-size: 12px; color: #64748b; margin-top: 2px;">{{ session('success') }}</div>
-                </div>
-                <button onclick="this.parentElement.remove()" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 4px; font-size: 16px; line-height: 1;">&times;</button>
-            </div>
-        @endif
-        @if(session('error'))
-            <div class="toast-notification" style="background: #ffffff; border-left: 4px solid #ef4444; box-shadow: 0 10px 25px rgba(0,0,0,0.12); padding: 14px 20px; border-radius: 8px; display: flex; align-items: center; gap: 12px; min-width: 280px; max-width: 380px; animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
-                <div style="background: #fee2e2; color: #dc2626; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </div>
-                <div style="flex: 1;">
-                    <div style="font-size: 13px; font-weight: 600; color: #1e293b;">Gagal</div>
-                    <div style="font-size: 12px; color: #64748b; margin-top: 2px;">{{ session('error') }}</div>
-                </div>
-                <button onclick="this.parentElement.remove()" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 4px; font-size: 16px; line-height: 1;">&times;</button>
-            </div>
-        @endif
-    </div>
+
 
     <!-- Mobile Menu Button -->
     <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
@@ -137,39 +102,304 @@
                 });
             }, 4000);
         });
+    </script>
+    <style>
+        /* Styling agar notifikasi & konfirmasi SweetAlert berukuran kompak, rapi, dan tidak terlalu besar */
+        .swal2-popup.compact-swal-popup {
+            border-radius: 12px !important;
+            padding: 1.2rem !important;
+            width: 360px !important;
+            max-width: 90% !important;
+        }
+        .swal2-title.compact-swal-title {
+            font-size: 1.05rem !important;
+            font-weight: 600 !important;
+            color: #1e293b !important;
+            margin-bottom: 0.25rem !important;
+            line-height: 1.3 !important;
+        }
+        .swal2-html-container.compact-swal-text {
+            font-size: 0.825rem !important;
+            line-height: 1.55 !important;
+            color: #475569 !important;
+            margin: 0.5rem 0 1rem 0 !important;
+            white-space: pre-line !important;
+            text-align: left !important;
+        }
+        .swal2-actions {
+            margin-top: 0.5rem !important;
+        }
+        .swal2-confirm.compact-swal-btn, .swal2-cancel.compact-swal-btn {
+            font-size: 0.8rem !important;
+            font-weight: 600 !important;
+            padding: 7px 16px !important;
+            border-radius: 6px !important;
+        }
 
-        // Global Helper untuk memunculkan toast secara dinamis lewat JS
-        window.showToast = function(message, type = 'success') {
-            let container = document.getElementById('toast-container');
+        /* Styling Container & Mini Toast Formal Kanan Atas (Role PIC/Inventory) */
+        #pic-toast-container {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 9999999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+            max-width: 360px;
+            width: calc(100% - 48px);
+        }
+        .pic-mini-toast {
+            pointer-events: auto;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-left: 4px solid #0f172a;
+            border-radius: 10px;
+            box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.1), 0 4px 6px -4px rgba(15, 23, 42, 0.05);
+            padding: 12px 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            opacity: 0;
+            transform: translateX(30px);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .pic-mini-toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .pic-mini-toast.hide {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+        .pic-toast-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .pic-toast-icon.success {
+            background: #f0fdf4;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+        }
+        .pic-toast-icon.error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+        .pic-toast-icon.warning {
+            background: #fffbeb;
+            color: #d97706;
+            border: 1px solid #fde68a;
+        }
+        .pic-toast-icon.info {
+            background: #f0f9ff;
+            color: #0284c7;
+            border: 1px solid #bae6fd;
+        }
+        .pic-toast-content {
+            flex: 1;
+            min-width: 0;
+        }
+        .pic-toast-title {
+            font-weight: 600;
+            font-size: 13.5px;
+            color: #0f172a;
+            margin-bottom: 2px;
+            line-height: 1.3;
+        }
+        .pic-toast-message {
+            font-size: 12.5px;
+            color: #475569;
+            line-height: 1.45;
+            word-wrap: break-word;
+        }
+        .pic-toast-close {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 16px;
+            line-height: 1;
+            padding: 2px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: all 0.15s ease;
+            margin-left: 4px;
+        }
+        .pic-toast-close:hover {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        .pic-toast-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 2.5px;
+            background: #0f172a;
+            width: 100%;
+            opacity: 0.15;
+        }
+        .pic-toast-bar.success { background: #16a34a; opacity: 0.8; }
+        .pic-toast-bar.error { background: #dc2626; opacity: 0.8; }
+        .pic-toast-bar.warning { background: #d97706; opacity: 0.8; }
+        .pic-toast-bar.info { background: #0284c7; opacity: 0.8; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Container creation helper untuk Mini Toast Kanan Atas
+        function getToastContainer() {
+            let container = document.getElementById('pic-toast-container');
             if (!container) {
                 container = document.createElement('div');
-                container.id = 'toast-container';
-                container.style.cssText = 'position: fixed; top: 24px; right: 24px; z-index: 99998; display: flex; flex-direction: column; gap: 10px;';
+                container.id = 'pic-toast-container';
                 document.body.appendChild(container);
             }
-            const color = type === 'success' ? '#10b981' : '#ef4444';
-            const bgColor = type === 'success' ? '#d1fae5' : '#fee2e2';
-            const iconColor = type === 'success' ? '#059669' : '#dc2626';
-            const title = type === 'success' ? 'Berhasil' : 'Pemberitahuan';
+            return container;
+        }
+
+        // Global Helper untuk Mini Toast formal di kanan atas (role PIC & Inventory)
+        window.showFormalToast = function(message, type = 'info', title = null) {
+            const cleanMessage = String(message).replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, '').trim();
+            if (!title) {
+                title = type === 'success' ? 'Berhasil' : (type === 'error' ? 'Gagal' : (type === 'warning' ? 'Peringatan' : 'Pemberitahuan'));
+            }
+
+            const container = getToastContainer();
             const toast = document.createElement('div');
-            toast.className = 'toast-notification';
-            toast.style.cssText = `background: #ffffff; border-left: 4px solid ${color}; box-shadow: 0 10px 25px rgba(0,0,0,0.12); padding: 14px 20px; border-radius: 8px; display: flex; align-items: center; gap: 12px; min-width: 280px; max-width: 380px; animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1); transition: opacity 0.3s;`;
+            toast.className = 'pic-mini-toast';
+
+            let iconClass = 'bi-info-circle';
+            if (type === 'success') iconClass = 'bi-check-lg';
+            if (type === 'error') iconClass = 'bi-exclamation-triangle';
+            if (type === 'warning') iconClass = 'bi-exclamation-circle';
+
             toast.innerHTML = `
-                <div style="background: ${bgColor}; color: ${iconColor}; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <div class="pic-toast-icon ${type}">
+                    <i class="bi ${iconClass}"></i>
                 </div>
-                <div style="flex: 1;">
-                    <div style="font-size: 13px; font-weight: 600; color: #1e293b;">${title}</div>
-                    <div style="font-size: 12px; color: #64748b; margin-top: 2px;">${message}</div>
+                <div class="pic-toast-content">
+                    <div class="pic-toast-title">${title}</div>
+                    <div class="pic-toast-message">${cleanMessage}</div>
                 </div>
-                <button onclick="this.parentElement.remove()" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 4px; font-size: 16px; line-height: 1;">&times;</button>
+                <button type="button" class="pic-toast-close" onclick="dismissPicToast(this)">
+                    <i class="bi bi-x"></i>
+                </button>
+                <div class="pic-toast-bar ${type}"></div>
             `;
+
             container.appendChild(toast);
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                setTimeout(() => toast.remove(), 300);
-            }, 4000);
+
+            // Animate in
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    toast.classList.add('show');
+                }, 10);
+            });
+
+            // Auto dismiss setelah 3.8 detik
+            const timer = setTimeout(() => {
+                dismissPicToastElement(toast);
+            }, 3800);
+
+            toast.dataset.timer = timer;
         };
+
+        window.dismissPicToast = function(btn) {
+            const toast = btn.closest('.pic-mini-toast');
+            if (toast) dismissPicToastElement(toast);
+        };
+
+        function dismissPicToastElement(toast) {
+            if (toast.dataset.timer) clearTimeout(toast.dataset.timer);
+            toast.classList.remove('show');
+            toast.classList.add('hide');
+            setTimeout(() => {
+                if (toast && toast.parentNode) {
+                    toast.remove();
+                }
+            }, 250);
+        }
+
+        // SEMUA notifikasi JADIKAN TOAST mini formal di kanan atas (kecuali konfirmasi & logout)
+        window.showFormalAlert = window.showFormalToast;
+        window.showToast = window.showFormalToast;
+
+        // Untuk konfirmasi tindakan (pertanyaan Yes/No seperti Hapus atau Simpan form penting), tetap konfirmasi kompak
+        window.showFormalConfirm = function(message, title = 'Konfirmasi Tindakan', confirmText = 'Ya, Lanjutkan', cancelText = 'Batal') {
+            const cleanMessage = String(message).replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, '').trim();
+            return new Promise((resolve) => {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: title,
+                        text: cleanMessage,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: confirmText,
+                        cancelButtonText: cancelText,
+                        confirmButtonColor: '#0f172a',
+                        cancelButtonColor: '#64748b',
+                        reverseButtons: true,
+                        customClass: {
+                            popup: 'compact-swal-popup',
+                            title: 'compact-swal-title',
+                            htmlContainer: 'compact-swal-text',
+                            confirmButton: 'compact-swal-btn',
+                            cancelButton: 'compact-swal-btn'
+                        }
+                    }).then((result) => {
+                        resolve(result.isConfirmed);
+                    });
+                } else {
+                    resolve(confirm(cleanMessage));
+                }
+            });
+        };
+
+        window.confirmFormSubmit = async function(event, message, title = 'Konfirmasi Tindakan') {
+            event.preventDefault();
+            const form = event.target;
+            const confirmed = await window.showFormalConfirm(message, title, 'Ya, Lanjutkan', 'Batal');
+            if (confirmed) {
+                form.submit();
+            }
+            return false;
+        };
+    </script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        @if(session('success'))
+          window.showFormalToast({!! json_encode(preg_replace('/[\x{1F600}-\x{1F64F}\x{1F300}-\x{1F5FF}\x{1F680}-\x{1F6FF}\x{1F700}-\x{1F77F}\x{1F780}-\x{1F7FF}\x{1F800}-\x{1F8FF}\x{1F900}-\x{1F9FF}\x{1FA00}-\x{1FA6F}\x{1FA70}-\x{1FAFF}\x{2600}-\x{26FF}\x{2700}-\x{27BF}]/u', '', session('success'))) !!}, 'success');
+        @endif
+
+        @if(session('error'))
+          window.showFormalToast({!! json_encode(preg_replace('/[\x{1F600}-\x{1F64F}\x{1F300}-\x{1F5FF}\x{1F680}-\x{1F6FF}\x{1F700}-\x{1F77F}\x{1F780}-\x{1F7FF}\x{1F800}-\x{1F8FF}\x{1F900}-\x{1F9FF}\x{1FA00}-\x{1FA6F}\x{1FA70}-\x{1FAFF}\x{2600}-\x{26FF}\x{2700}-\x{27BF}]/u', '', session('error'))) !!}, 'error');
+        @endif
+
+        @if(session('warning'))
+          window.showFormalToast({!! json_encode(preg_replace('/[\x{1F600}-\x{1F64F}\x{1F300}-\x{1F5FF}\x{1F680}-\x{1F6FF}\x{1F700}-\x{1F77F}\x{1F780}-\x{1F7FF}\x{1F800}-\x{1F8FF}\x{1F900}-\x{1F9FF}\x{1FA00}-\x{1FA6F}\x{1FA70}-\x{1FAFF}\x{2600}-\x{26FF}\x{2700}-\x{27BF}]/u', '', session('warning'))) !!}, 'warning');
+        @endif
+
+        @if(session('info'))
+          window.showFormalToast({!! json_encode(preg_replace('/[\x{1F600}-\x{1F64F}\x{1F300}-\x{1F5FF}\x{1F680}-\x{1F6FF}\x{1F700}-\x{1F77F}\x{1F780}-\x{1F7FF}\x{1F800}-\x{1F8FF}\x{1F900}-\x{1F9FF}\x{1FA00}-\x{1FA6F}\x{1FA70}-\x{1FAFF}\x{2600}-\x{26FF}\x{2700}-\x{27BF}]/u', '', session('info'))) !!}, 'info');
+        @endif
+
+        @if($errors->any())
+          @foreach($errors->all() as $err)
+            window.showFormalToast({!! json_encode(preg_replace('/[\x{1F600}-\x{1F64F}\x{1F300}-\x{1F5FF}\x{1F680}-\x{1F6FF}\x{1F700}-\x{1F77F}\x{1F780}-\x{1F7FF}\x{1F800}-\x{1F8FF}\x{1F900}-\x{1F9FF}\x{1FA00}-\x{1FA6F}\x{1FA70}-\x{1FAFF}\x{2600}-\x{26FF}\x{2700}-\x{27BF}]/u', '', $err)) !!}, 'warning', 'Peringatan');
+          @endforeach
+        @endif
+      });
     </script>
 </body>
 </html>

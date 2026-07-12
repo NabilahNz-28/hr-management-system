@@ -12,7 +12,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Auto-delete foto absensi yang berusia lebih dari 1 tahun setiap hari jam 01:00
+        $schedule->command('absensi:clean-photos')->dailyAt('01:00');
     }
 
     /**

@@ -209,13 +209,10 @@
 
         <!-- Alert Box -->
         <div class="alert-box alert-success">
-            <div style="font-size: 24px;">✅</div>
+            <i class="bi bi-check-circle-fill text-success" style="font-size: 24px;"></i>
             <div>
                 <div style="font-weight: 500;">Mode Uji Coba Aktif</div>
                 <div style="font-size: 13px;">Anda dapat melakukan absensi pulang dari lokasi mana pun.</div>
-                <div style="font-size: 13px; margin-top: 4px; color: #6b7280;">
-                    Waktu kerja normal: 08:00 - 17:00 | Absen pulang mulai 16:30
-                </div>
             </div>
         </div>
 
@@ -224,6 +221,12 @@
             <!-- Kolom Kiri: Kamera -->
             <div>
                 <div class="content-title" style="font-size: 16px;">Foto Wajah</div>
+
+                <div id="alreadyAttendedBoxPulang" style="display: none; margin-bottom: 16px; padding: 16px; background: #ecfdf5; border: 1.5px solid #10b981; border-radius: 12px; color: #065f46; text-align: center; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);">
+                    <div id="alreadyAttendedIconPulang"><i class="bi bi-check-circle-fill text-success" style="font-size: 28px; display: inline-block; margin-bottom: 4px;"></i></div>
+                    <div style="font-weight: 700; font-size: 15px;" id="alreadyAttendedTitlePulang">Anda sudah melakukan Absensi Pulang hari ini</div>
+                    <div style="font-size: 13px; margin-top: 4px; color: #047857;" id="alreadyAttendedTextPulang">Tidak dapat melakukan absen pulang kembali di hari yang sama.</div>
+                </div>
 
                 <div class="camera-container">
                     <div id="webcamContainerPulang">
@@ -238,7 +241,7 @@
                 </div>
 
                 <!-- Face status -->
-                <div id="faceStatusPulang">⏳ Menyiapkan face detector...</div>
+                <div id="faceStatusPulang">Menyiapkan pendeteksi wajah...</div>
 
                 <!-- Photo Preview -->
                 <div id="photoPreviewPulang" style="display: none; margin-top: 16px;">
@@ -273,21 +276,19 @@
                 <div class="gps-status" id="gpsStatusPulang">
                     <div>⏳</div>
                     <div>
-                        <div style="font-weight: 500;">Memuat GPS...</div>
-                        <div style="font-size: 12px;">Harap tunggu</div>
+                        <div style="font-weight: 500;">Mencari Lokasi GPS Anda...</div>
+                        <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">Pastikan Anda mengizinkan akses lokasi pada browser</div>
                     </div>
                 </div>
 
-                <!-- Location Info -->
-                <div class="location-info">
-                    <div style="font-weight: 500; margin-bottom: 8px;">Detail Lokasi:</div>
-                    <div style="font-size: 14px;">
-                        <div>📍 <span id="locationAddressPulang">Mendeteksi alamat...</span></div>
-                        <div style="margin-top: 8px;">📍 Koordinat: <span id="locationCoordsPulang">-</span></div>
-                        <div style="margin-top: 8px;">📍 Status: <span id="locationDistancePulang" style="color: #10b981;">Mode Uji Coba</span></div>
-                    </div>
+                <!-- GPS Success Info -->
+                <div id="gpsSuccessInfoPulang" style="display: none; margin-bottom: 16px; padding: 12px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; font-size: 13px; color: #166534;">
+                    <div style="font-weight: 600; margin-bottom: 4px;">Informasi Lokasi:</div>
+                    <div>Lokasi: <span id="locationAddressPulang">Mendeteksi alamat...</span></div>
+                    <div style="margin-top: 8px;">Koordinat: <span id="locationCoordsPulang">-</span></div>
+                    <div style="margin-top: 8px;">Status: <span id="locationDistancePulang" style="color: #10b981;">Mode Uji Coba</span></div>
                     <button onclick="refreshGPS('pulang')" style="margin-top: 15px; padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; width: 100%; transition: background 0.2s;">
-                        🔄 Refresh Lokasi GPS
+                        Refresh Lokasi GPS
                     </button>
                 </div>
             </div>
@@ -303,16 +304,9 @@
 @endsection
 
 @section('scripts')
-<!-- MediaPipe Face Detection -->
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js"></script>
 
 <script>
-/**
- * ===================== GUARD MULTI-USER =====================
- * Data absensi disimpan di browser (sessionStorage/localStorage). Pastikan data
- * tsb milik user yang sedang login. Jika user berbeda (mis. ganti akun di
- * browser yang sama), bersihkan agar status absensi tidak bocor antar akun.
- */
 (function() {
     const currentUserId = String(@json(auth()->id()));
     const ATT_KEYS = ['waktu_masuk_iso', 'waktu_masuk', 'absensi_pulang_done',
@@ -324,16 +318,10 @@
     }
 })();
 
-/**
- * ===================== KONFIGURASI =====================
- */
-const TIMEOUT = 30; // detik
+const TIMEOUT = 30;
 const KANTOR_LAT = -6.058908;
 const KANTOR_LNG = 106.653040;
 
-/**
- * ===================== VARIABEL =====================
- */
 let kameraPulang = null;
 let lokasiPulang = null;
 let petaPulang = null;
@@ -341,20 +329,11 @@ let timerPulang = null;
 let hitungDetikPulang = 0;
 let fotoDiambilPulang = false;
 let markerPulang = null;
-
-// Data absensi masuk hari ini (dari session/localStorage)
 let absensiMasukHariIni = null;
-
-// Interval info card
 let attendanceInterval = null;
-
-// Face detection
 let faceDetector = null;
 let faceDetectorReady = false;
 
-/**
- * ===================== UTIL DURASI =====================
- */
 function pad2(n) { return String(n).padStart(2, '0'); }
 function formatHHMMSS(ms) {
   const total = Math.floor(ms / 1000);
@@ -364,14 +343,10 @@ function formatHHMMSS(ms) {
   return `${pad2(h)}:${pad2(m)}:${pad2(s)}`;
 }
 
-/**
- * ===================== FACE DETECTION =====================
- */
 function setFaceStatus(text, ok = null) {
   const el = document.getElementById('faceStatusPulang');
   if (!el) return;
   el.textContent = text;
-
   if (ok === true) {
     el.style.background = '#f0fdf4';
     el.style.borderColor = '#bbf7d0';
@@ -389,363 +364,214 @@ function setFaceStatus(text, ok = null) {
 
 async function initFaceDetector() {
   try {
-    setFaceStatus('⏳ Menyiapkan face detector...', null);
-
+    setFaceStatus('Menyiapkan pendeteksi wajah...', null);
     if (typeof FaceDetection === 'undefined') {
-      setFaceStatus('❌ Library FaceDetection tidak termuat (cek koneksi/CDN).', false);
+      setFaceStatus('Library FaceDetection tidak termuat (cek koneksi/CDN).', false);
       faceDetectorReady = false;
       return;
     }
-
     faceDetector = new FaceDetection({
       locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`,
     });
-
-    faceDetector.setOptions({
-      model: 'short', // 'short' lebih cepat; ganti 'full' kalau butuh lebih akurat
-      minDetectionConfidence: 0.6,
-    });
-
+    faceDetector.setOptions({ model: 'short', minDetectionConfidence: 0.6 });
     faceDetector.onResults(() => {});
     faceDetectorReady = true;
-
-    setFaceStatus('✅ Face detector siap. Ambil foto dengan wajah terlihat jelas.', true);
+    setFaceStatus('Pendeteksi wajah siap. Ambil foto dengan wajah terlihat jelas.', true);
   } catch (e) {
     console.error('initFaceDetector error:', e);
     faceDetectorReady = false;
-    setFaceStatus('❌ Gagal inisialisasi face detector.', false);
+    setFaceStatus('Gagal inisialisasi pendeteksi wajah.', false);
   }
 }
 
 function detectFaceFromCanvas(canvas) {
   return new Promise(async (resolve) => {
     if (!faceDetectorReady || !faceDetector) {
-      setFaceStatus('⚠️ Face detector belum siap. Coba refresh halaman.', false);
+      setFaceStatus('Pendeteksi wajah belum siap. Coba refresh halaman.', false);
       return resolve(false);
     }
-
     const prev = faceDetector.onResults;
     faceDetector.onResults((results) => {
       const hasFace = !!(results && results.detections && results.detections.length > 0);
-      setFaceStatus(hasFace ? '✅ Wajah terdeteksi.' : '❌ Wajah tidak terdeteksi. Dekatkan wajah & perbaiki pencahayaan.', hasFace);
+      setFaceStatus(hasFace ? 'Wajah terdeteksi.' : 'Wajah tidak terdeteksi. Dekatkan wajah & perbaiki pencahayaan.', hasFace);
       faceDetector.onResults = prev;
       resolve(hasFace);
     });
-
     try {
       await faceDetector.send({ image: canvas });
     } catch (e) {
       console.error('detectFaceFromCanvas error:', e);
       faceDetector.onResults = prev;
-      setFaceStatus('❌ Error saat deteksi wajah.', false);
+      setFaceStatus('Error saat deteksi wajah.', false);
       resolve(false);
     }
   });
 }
 
-/**
- * ===================== INISIALISASI =====================
- */
 document.addEventListener('DOMContentLoaded', async function() {
-  console.log('Sistem Absensi Pulang dimulai...');
-
   await initFaceDetector();
-
-  // Load data absensi masuk (dari server/DB, per user yang login)
   await loadAbsensiMasukData();
-
-  // Update info absensi masuk setiap detik
   if (attendanceInterval) clearInterval(attendanceInterval);
   attendanceInterval = setInterval(updateAttendanceInfo, 1000);
   updateAttendanceInfo();
-
-  // Setup kamera
   startKamera('pulang');
-
-  // Setup peta
   initPetaPulang();
-
-  // Auto refresh GPS setiap 30 detik
   setInterval(() => updateGPS('pulang'), 30000);
 });
 
-/**
- * ===================== LOAD DATA ABSENSI MASUK (DARI SERVER) =====================
- * Sumber kebenaran = database (per user yang login), bukan storage browser.
- * Ini mencegah data absensi bocor/hilang saat ganti akun di browser yang sama.
- */
 async function loadAbsensiMasukData() {
   try {
     const res = await fetch("{{ route('absensi.cek') }}?attendance_type=masuk", {
       headers: { 'Accept': 'application/json' }
     });
     const data = await res.json();
-
     const elWaktu  = document.getElementById('displayWaktuMasuk');
     const elLama   = document.getElementById('displayLamaKerja');
     const elStatus = document.getElementById('displayStatusMasuk');
-
-    // Sudah absen pulang hari ini → absensi lengkap
     if (data.has_pulang) {
       absensiMasukHariIni = null;
       sessionStorage.setItem('absensi_pulang_done', 'true');
       elWaktu.textContent  = data.masuk_time || '—';
       elLama.textContent   = '00:00:00';
-      elStatus.innerHTML   = '<span style="color: #10b981;">✓ Absensi selesai hari ini</span>';
+      elStatus.innerHTML   = 'Absensi selesai hari ini';
+      const btn = document.getElementById('captureBtnPulang');
+      if (btn) btn.style.display = 'none';
+      const box = document.getElementById('alreadyAttendedBoxPulang');
+      if (box) box.style.display = 'block';
       return;
     }
-
-    // Sudah absen masuk & belum pulang → tampilkan & hitung lama kerja
     if (data.has_masuk && data.masuk_iso) {
       absensiMasukHariIni = { created_at: data.masuk_iso, type: 'masuk' };
       sessionStorage.setItem('waktu_masuk_iso', data.masuk_iso);
       sessionStorage.removeItem('absensi_pulang_done');
-
       const t = new Date(data.masuk_iso);
       elWaktu.textContent  = t.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
       elStatus.textContent = 'Sudah Absen';
       return;
     }
-
-    // Belum absen masuk hari ini
     absensiMasukHariIni = null;
     sessionStorage.removeItem('waktu_masuk_iso');
     sessionStorage.removeItem('absensi_pulang_done');
     elWaktu.textContent  = 'Belum absen masuk';
     elLama.textContent   = '00:00:00';
-    elStatus.innerHTML   = '<span style="color: #ef4444;">⚠ Belum absen masuk</span>';
+    elStatus.innerHTML   = 'Belum absen masuk';
+    const btn = document.getElementById('captureBtnPulang');
+    if (btn) btn.style.display = 'none';
+    const box = document.getElementById('alreadyAttendedBoxPulang');
+    if (box) {
+      box.style.display = 'block';
+      box.style.background = '#fef2f2';
+      box.style.borderColor = '#ef4444';
+      box.style.color = '#991b1b';
+      document.getElementById('alreadyAttendedTitlePulang').textContent = 'Anda belum melakukan Absensi Masuk hari ini';
+      document.getElementById('alreadyAttendedTextPulang').textContent = 'Silakan lakukan absen masuk terlebih dahulu sebelum absen pulang.';
+    }
   } catch (error) {
     console.error('Error loading attendance data:', error);
   }
 }
 
-/**
- * ===================== UPDATE INFO ABSENSI (DINAMIS) =====================
- */
 function updateAttendanceInfo() {
   const now = new Date();
-
-  // Waktu sekarang
   document.getElementById('displayWaktuSekarang').textContent =
     now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
-  // Lama kerja + status
   if (absensiMasukHariIni) {
     const masukTime = new Date(absensiMasukHariIni.created_at);
     const diffMs = Math.max(0, now - masukTime);
     document.getElementById('displayLamaKerja').textContent = formatHHMMSS(diffMs);
-
-    // Rule absen pulang mulai 16:30 (logika benar)
     const bisaAbsenPulang = (now.getHours() > 16) || (now.getHours() === 16 && now.getMinutes() >= 30);
-
-    // kalau sudah absen pulang hari ini, tampilkan lengkap
     const pulangDone = sessionStorage.getItem('absensi_pulang_done') === 'true';
     if (pulangDone) {
-      document.getElementById('displayStatusMasuk').innerHTML =
-        '<span style="color: #10b981;">✓ Absensi lengkap hari ini</span>';
+      document.getElementById('displayStatusMasuk').innerHTML = 'Absensi lengkap hari ini';
       return;
     }
-
     document.getElementById('displayStatusMasuk').innerHTML = bisaAbsenPulang
-      ? '<span style="color: #10b981;">✓ Bisa absen pulang</span>'
-      : '<span style="color: #f59e0b;">⚠ Tunggu sampai 16:30</span>';
+      ? 'Bisa absen pulang'
+      : 'Tunggu sampai 16:30';
   }
 }
 
-/**
- * ===================== KAMERA =====================
- */
 async function startKamera(tipe) {
   const video = document.getElementById('webcamPulang');
   const status = document.getElementById('cameraStatusPulang');
   if (!video) return;
-
   try {
     if (status) status.textContent = 'Mengakses kamera...';
-
-    if (kameraPulang) {
-      kameraPulang.getTracks().forEach(track => track.stop());
-    }
-
+    if (kameraPulang) kameraPulang.getTracks().forEach(track => track.stop());
     const stream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
       audio: false
     });
-
     video.srcObject = stream;
     kameraPulang = stream;
-
     if (status) {
-      status.textContent = '✅ Kamera siap';
+      status.textContent = 'Kamera siap';
       status.style.color = '#10b981';
     }
   } catch (error) {
-    console.error('Gagal mengakses kamera:', error);
     if (status) {
-      status.textContent = '❌ Gagal mengakses kamera';
+      status.textContent = 'Gagal mengakses kamera';
       status.style.color = '#ef4444';
-    }
-
-    if (error.name === 'NotAllowedError') {
-      alert('Izin kamera ditolak. Silakan berikan izin kamera di pengaturan browser Anda.');
-    } else if (error.name === 'NotFoundError') {
-      alert('Kamera tidak ditemukan. Pastikan perangkat memiliki kamera.');
-    } else {
-      alert('Gagal mengakses kamera. Pastikan izin diberikan dan kamera berfungsi.');
     }
   }
 }
 
-/**
- * ===================== PETA =====================
- */
 function initPetaPulang() {
   if (typeof L === 'undefined') {
-    console.log('Leaflet belum dimuat, menunggu...');
     setTimeout(initPetaPulang, 500);
     return;
   }
-
   try {
     petaPulang = L.map('mapPulang').setView([KANTOR_LAT, KANTOR_LNG], 13);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-      maxZoom: 19
-    }).addTo(petaPulang);
-
-    L.marker([KANTOR_LAT, KANTOR_LNG])
-      .addTo(petaPulang)
-      .bindPopup('<b>📍 Lokasi Kantor</b><br>Kawasan Multi Guna Estate')
-      .openPopup();
-
-    L.circle([KANTOR_LAT, KANTOR_LNG], {
-      color: '#3b82f6',
-      fillColor: '#3b82f6',
-      fillOpacity: 0.1,
-      radius: 100
-    }).addTo(petaPulang);
-
-    console.log('Peta pulang berhasil diinisialisasi');
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors' }).addTo(petaPulang);
     setTimeout(() => updateGPS('pulang'), 1000);
   } catch (error) {
     console.error('Error inisialisasi peta pulang:', error);
-    document.getElementById('mapPulang').innerHTML = `
-      <div style="text-align: center; padding: 50px 20px; color: #6b7280;">
-        <div style="font-size: 48px;">❌</div>
-        <div style="font-weight: 500; margin-top: 12px;">Gagal memuat peta</div>
-        <button onclick="initPetaPulang()" style="margin-top: 15px; padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;">
-          🔄 Coba Lagi
-        </button>
-      </div>
-    `;
   }
 }
 
-/**
- * ===================== GPS & LOKASI =====================
- */
 function updateGPS(tipe) {
   if (!navigator.geolocation) {
     updateGPSStatus(tipe, false, 'Browser tidak mendukung GPS');
-    updateLokasiFallback(tipe);
     return;
   }
-
-  updateGPSStatus(tipe, false, 'Mendeteksi lokasi...');
-
   navigator.geolocation.getCurrentPosition(
     (pos) => successGPS(pos, tipe),
     (err) => errorGPS(err, tipe),
-    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    { enableHighAccuracy: true, timeout: 10000 }
   );
 }
 
 function refreshGPS(tipe) {
-  const status = document.getElementById('gpsStatusPulang');
-  if (status) {
-    status.innerHTML = `
-      <div>🔄</div>
-      <div>
-        <div style="font-weight: 500;">Memuat ulang GPS...</div>
-        <div style="font-size: 12px;">Harap tunggu</div>
-      </div>
-    `;
-    status.style.background = '#fef3c7';
-  }
   updateGPS(tipe);
 }
 
 function successGPS(pos, tipe) {
   const lat = pos.coords.latitude;
   const lng = pos.coords.longitude;
-  const accuracy = pos.coords.accuracy;
-
-  lokasiPulang = { lat, lng, accuracy };
+  lokasiPulang = { lat, lng };
   updatePetaPulang(lat, lng);
   updateInfoLokasi(tipe, lat, lng);
-  updateGPSStatus(tipe, true, `Akurasi: ±${Math.round(accuracy)}m`);
+  updateGPSStatus(tipe, true, `Akurasi: ±${Math.round(pos.coords.accuracy)}m`);
   cekValidasiSubmit(tipe);
 }
 
 function errorGPS(err, tipe) {
-  console.error('GPS Error:', err.code, err.message);
-
-  let errorMessage = 'Gagal mendapatkan lokasi';
-  switch (err.code) {
-    case err.PERMISSION_DENIED: errorMessage = 'Izin lokasi ditolak'; break;
-    case err.POSITION_UNAVAILABLE: errorMessage = 'Informasi lokasi tidak tersedia'; break;
-    case err.TIMEOUT: errorMessage = 'Timeout mendapatkan lokasi'; break;
-  }
-
-  updateGPSStatus(tipe, false, errorMessage);
-  updateLokasiFallback(tipe);
-}
-
-function updateLokasiFallback(tipe) {
-  const fallbackLat = -6.2088 + (Math.random() * 0.1 - 0.05);
-  const fallbackLng = 106.8456 + (Math.random() * 0.1 - 0.05);
-
-  lokasiPulang = { lat: fallbackLat, lng: fallbackLng, accuracy: 1000 };
-  updatePetaPulang(fallbackLat, fallbackLng);
-  updateInfoLokasi(tipe, fallbackLat, fallbackLng);
-  cekValidasiSubmit(tipe);
+  updateGPSStatus(tipe, false, 'Gagal mendapatkan lokasi');
 }
 
 function updatePetaPulang(lat, lng) {
   if (!petaPulang) return;
-
-  try {
-    petaPulang.setView([lat, lng], 15);
-
-    if (markerPulang) petaPulang.removeLayer(markerPulang);
-
-    markerPulang = L.marker([lat, lng], {
-      title: 'Lokasi Anda',
-      icon: L.icon({
-        iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34]
-      })
-    }).addTo(petaPulang);
-
-    markerPulang.bindPopup(`
-      <b>📍 Lokasi Anda</b><br>
-      Lat: ${lat.toFixed(6)}<br>
-      Lng: ${lng.toFixed(6)}<br>
-      <small>${new Date().toLocaleTimeString('id-ID')}</small>
-    `);
-
-    markerPulang.openPopup();
-  } catch (error) {
-    console.error('Error update peta pulang:', error);
-  }
+  petaPulang.setView([lat, lng], 15);
+  if (markerPulang) petaPulang.removeLayer(markerPulang);
+  markerPulang = L.marker([lat, lng]).addTo(petaPulang);
 }
 
 function updateInfoLokasi(tipe, lat, lng) {
   document.getElementById('locationCoordsPulang').textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-  document.getElementById('locationDistancePulang').innerHTML = `<span style="color:#10b981;">✅ Mode Uji Coba - Bisa absen di mana saja</span>`;
+  document.getElementById('locationDistancePulang').innerHTML = `Mode Uji Coba - Bisa absen di mana saja`;
+  document.getElementById('gpsSuccessInfoPulang').style.display = 'block';
+  document.getElementById('gpsStatusPulang').style.display = 'none';
   getAddressFromCoordinates(lat, lng);
 }
 
@@ -753,119 +579,34 @@ function getAddressFromCoordinates(lat, lng) {
   fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`)
     .then(r => r.json())
     .then(data => {
-      if (data.display_name) {
-        const addressParts = [];
-        if (data.address.road) addressParts.push(data.address.road);
-        if (data.address.suburb) addressParts.push(data.address.suburb);
-        if (data.address.city_district) addressParts.push(data.address.city_district);
-        if (data.address.city) addressParts.push(data.address.city);
-        if (data.address.state) addressParts.push(data.address.state);
-
-        const formattedAddress = addressParts.join(', ') || data.display_name;
-        document.getElementById('locationAddressPulang').textContent = formattedAddress;
-      }
-    })
-    .catch(err => {
-      console.error('Error reverse geocoding:', err);
-      document.getElementById('locationAddressPulang').textContent = `Koordinat: ${lat.toFixed(4)}°, ${lng.toFixed(4)}°`;
+      if (data.display_name) document.getElementById('locationAddressPulang').textContent = data.display_name;
     });
 }
 
 function updateGPSStatus(tipe, sukses, pesan) {
   const status = document.getElementById('gpsStatusPulang');
-  if (!status) return;
-
-  if (sukses) {
-    status.innerHTML = `
-      <div>✅</div>
-      <div>
-        <div style="font-weight: 500;">GPS Aktif</div>
-        <div style="font-size: 12px;">${pesan}</div>
-      </div>
-    `;
-    status.style.background = '#f0fdf4';
-    status.style.borderColor = '#bbf7d0';
-  } else {
-    status.innerHTML = `
-      <div>⚠️</div>
-      <div>
-        <div style="font-weight: 500;">Mode Simulasi</div>
-        <div style="font-size: 12px;">${pesan}</div>
-      </div>
-    `;
-    status.style.background = '#fef3c7';
-    status.style.borderColor = '#fde68a';
-  }
+  if (status) status.innerHTML = `<div>${pesan}</div>`;
 }
 
-/**
- * ===================== AMBIL FOTO (FACE DETECTION) =====================
- */
 async function ambilFoto(tipe) {
   const video = document.getElementById('webcamPulang');
-  const status = document.getElementById('cameraStatusPulang');
-
-  if (!video || !video.srcObject) {
-    alert('Kamera belum siap! Silakan refresh halaman jika kamera tidak muncul.');
-    return;
-  }
-
-  // Optional: kalau belum ada absen masuk, konfirmasi
-  if (!absensiMasukHariIni) {
-    const konfirm = confirm(
-      'Anda belum melakukan absensi masuk hari ini.\n' +
-      'Apakah Anda ingin tetap melanjutkan absensi pulang?'
-    );
-    if (!konfirm) return;
-  }
-
-  if (!faceDetectorReady) {
-    alert('Face detector belum siap. Tunggu sebentar atau refresh halaman.');
-    return;
-  }
-
-  // Capture ke canvas
   const canvas = document.createElement('canvas');
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
   const ctx = canvas.getContext('2d');
-
-  // Mirror effect
   ctx.translate(canvas.width, 0);
   ctx.scale(-1, 1);
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-  // Face detect (beneran)
-  setFaceStatus('⏳ Mengecek wajah...', null);
   const wajahTerdeteksi = await detectFaceFromCanvas(canvas);
-  if (!wajahTerdeteksi) {
-    alert('Wajah tidak terdeteksi! Pastikan wajah terlihat jelas, dekatkan kamera, dan pencahayaan cukup.');
-    return;
-  }
-
+  if (!wajahTerdeteksi) return;
   fotoDiambilPulang = true;
-
-  // Watermark
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-  ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
-  ctx.fillStyle = 'white';
-  ctx.font = '14px Arial, sans-serif';
-
-  const now = new Date();
-  const waktu = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-  const tanggal = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-  ctx.fillText(`Absensi Pulang - ${tanggal} ${waktu}`, 10, canvas.height - 20);
-
-  // Preview
   document.getElementById('photoPreviewPulang').style.display = 'block';
   document.getElementById('capturedPhotoPulang').src = canvas.toDataURL('image/jpeg', 0.9);
-
+  const status = document.getElementById('cameraStatusPulang');
   if (status) {
-    status.textContent = '✅ Foto berhasil diambil';
+    status.textContent = 'Foto berhasil diambil';
     status.style.color = '#10b981';
   }
-
   mulaiTimer(tipe);
   cekValidasiSubmit(tipe);
 }
@@ -885,7 +626,7 @@ function mulaiTimer(tipe) {
 
     if (hitungDetikPulang >= TIMEOUT) {
       clearInterval(timerPulang);
-      alert('⏰ Waktu habis! Foto akan kadaluarsa dalam 30 detik. Silakan ambil foto ulang.');
+      window.showFormalAlert('Waktu pengambilan foto telah habis (kadaluarsa dalam 30 detik). Silakan ambil foto ulang.', 'warning', 'Waktu Habis');
       retakePhoto(tipe);
     }
   }, 1000);
@@ -904,7 +645,7 @@ function cekValidasiSubmit(tipe) {
 
 async function submitAbsensi(tipe) {
   if (!fotoDiambilPulang) {
-    alert('Silakan ambil foto terlebih dahulu!');
+    window.showFormalAlert('Silakan ambil foto terlebih dahulu sebelum submit absensi.', 'warning', 'Foto Belum Ada');
     return;
   }
 
@@ -915,12 +656,12 @@ async function submitAbsensi(tipe) {
     });
     const cek = await cekResp.json().catch(() => ({}));
     if (!cek.has_attended) {
-      alert('⚠️ Anda belum absen masuk hari ini.\n\nSilakan absen masuk terlebih dahulu sebelum absen pulang.');
+      window.showFormalAlert('Anda belum melakukan absen masuk hari ini. Silakan absen masuk terlebih dahulu sebelum absen pulang.', 'warning', 'Belum Absen Masuk');
       return;
     }
   } catch (e) {
     console.error('Gagal memeriksa absen masuk:', e);
-    alert('Gagal memeriksa status absen masuk. Periksa koneksi Anda lalu coba lagi.');
+    window.showFormalAlert('Gagal memeriksa status absen masuk. Periksa koneksi Anda lalu coba lagi.', 'error', 'Kesalahan Koneksi');
     return;
   }
 
@@ -929,8 +670,6 @@ async function submitAbsensi(tipe) {
   const bisaAbsenPulang = (now.getHours() > 16) || (now.getHours() === 16 && now.getMinutes() >= 30);
   // Kalau mau strict:
   // if (!bisaAbsenPulang) { alert('Belum bisa absen pulang. Tunggu sampai 16:30.'); return; }
-
-  showLoading('Menyimpan absensi...');
 
   try {
     const photoBase64 = document.getElementById('capturedPhotoPulang').src;
@@ -948,31 +687,28 @@ async function submitAbsensi(tipe) {
       lamaKerja = formatHHMMSS(Math.max(0, new Date() - masukTime));
     }
 
-    const konfirmasi = confirm(
-      `Konfirmasi Absensi PULANG?\n\n` +
-      `📅 Tanggal: ${tanggal}\n` +
-      `⏰ Waktu: ${waktu}\n` +
-      `📍 Lokasi: ${coordinates}\n` +
-      `🏠 Alamat: ${address}\n` +
-      `⏱️ Waktu Masuk: ${waktuMasuk}\n` +
-      `⏳ Lama Bekerja: ${lamaKerja}\n\n` +
-      `Mode: Uji Coba`
+    const konfirmasi = await window.showFormalConfirm(
+      `Tanggal: ${tanggal}\nWaktu: ${waktu}\nLokasi: ${coordinates}\nAlamat: ${address}\nWaktu Masuk: ${waktuMasuk}\nLama Bekerja: ${lamaKerja}\n\nMode: Uji Coba`,
+      'Konfirmasi Absensi Pulang',
+      'Ya, Simpan Absensi',
+      'Batal'
     );
 
     if (!konfirmasi) {
-      hideLoading();
       return;
     }
 
+    showLoading('Menyimpan absensi...');
+
     const submitBtn = document.getElementById('submitBtnPulang');
-    submitBtn.innerHTML = '⏳ Menyimpan...';
+    submitBtn.innerHTML = 'Menyimpan...';
     submitBtn.disabled = true;
 
     await simpanKeDatabase(tipe, {
-      photo: photoBase64,
-      latitude: lokasiPulang?.lat,
-      longitude: lokasiPulang?.lng,
-      address: address,
+      photo: photoBase64 || '',
+      latitude: (lokasiPulang && typeof lokasiPulang.lat === 'number') ? lokasiPulang.lat : null,
+      longitude: (lokasiPulang && typeof lokasiPulang.lng === 'number') ? lokasiPulang.lng : null,
+      address: address || 'Alamat tidak diketahui',
       timestamp: new Date().toISOString(),
       waktu_masuk_iso: absensiMasukHariIni?.created_at || null,
       waktu_masuk: waktuMasuk,
@@ -982,14 +718,15 @@ async function submitAbsensi(tipe) {
     if (timerPulang) clearInterval(timerPulang);
 
     hideLoading();
-    alert('✅ Absensi pulang berhasil disimpan!');
+    window.showFormalAlert('Absensi pulang berhasil disimpan.', 'success', 'Berhasil');
 
     retakePhoto(tipe);
     updateUIAfterSubmit();
   } catch (error) {
     console.error('Error submit absensi pulang:', error);
     hideLoading();
-    alert('❌ ' + (error?.message || 'Gagal menyimpan absensi. Silakan coba lagi.'));
+    const errMsg = String(error?.message || 'Gagal menyimpan absensi. Silakan coba lagi.').replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, '').trim();
+    window.showFormalAlert(errMsg, 'error', 'Gagal');
 
     const submitBtn = document.getElementById('submitBtnPulang');
     submitBtn.innerHTML = 'Submit Absensi Pulang';
@@ -1055,14 +792,7 @@ function updateUIAfterSubmit() {
     '<span style="color: #10b981;">✓ Absensi lengkap hari ini</span>';
 
   // notif sukses
-  const successDiv = document.createElement('div');
-  successDiv.innerHTML = `
-    <div style="position: fixed; top: 20px; right: 20px; background: #10b981; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 1000;">
-      ✅ Absensi pulang berhasil! Selamat beristirahat.
-    </div>
-  `;
-  document.body.appendChild(successDiv);
-  setTimeout(() => successDiv.remove(), 3000);
+  window.showFormalAlert('Absensi pulang berhasil! Selamat beristirahat.', 'success', 'Absensi Berhasil');
 }
 
 /**

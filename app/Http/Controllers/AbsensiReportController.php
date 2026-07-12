@@ -32,9 +32,7 @@ class AbsensiReportController extends Controller
         $jamPulang = $pulang ? $pulang->attendance_time->format('H:i') : '-';
 
         if ($masuk) {
-            $status = $masuk->attendance_time->format('H:i:s') > self::JAM_BATAS_MASUK
-                ? 'Terlambat'
-                : 'Hadir';
+            $status = 'Hadir';
         } else {
             $status = 'Tidak Hadir';
         }
@@ -87,45 +85,6 @@ class AbsensiReportController extends Controller
     }
 
     /**
-     * Riwayat keterlambatan personal per bulan (jam masuk melewati batas).
-     */
-    public function keterlambatan(Request $request)
-    {
-        $user  = Auth::user();
-        $bulan = (int) $request->input('bulan', now()->month);
-        $tahun = (int) $request->input('tahun', now()->year);
-
-        $awal  = Carbon::create($tahun, $bulan, 1)->startOfMonth();
-        $akhir = $awal->copy()->endOfMonth();
-
-        $masuk = Attendance::where('user_id', $user->id)
-            ->where('attendance_type', 'masuk')
-            ->whereBetween('attendance_time', [$awal, $akhir->copy()->endOfDay()])
-            ->orderBy('attendance_time')
-            ->get();
-
-        $terlambat = $masuk
-            ->filter(fn ($a) => $a->attendance_time->format('H:i:s') > self::JAM_BATAS_MASUK)
-            ->map(function ($a) {
-                $batas = $a->attendance_time->copy()->setTimeFromTimeString(self::JAM_BATAS_MASUK);
-                return [
-                    'tanggal'   => $a->attendance_time->toDateString(),
-                    'jam_masuk' => $a->attendance_time->format('H:i'),
-                    'menit'     => $batas->diffInMinutes($a->attendance_time),
-                ];
-            })
-            ->values();
-
-        return view('absensi.laporan.laporan-terlambat', [
-            'user'      => $user,
-            'bulan'     => $bulan,
-            'tahun'     => $tahun,
-            'terlambat' => $terlambat,
-            'total'     => $terlambat->count(),
-        ]);
-    }
-
-    /**
      * Hitung statistik kehadiran satu bulan dari tabel attendances + leaves.
      *
      * @return array{hadir:int,terlambat:int,izin:int,cuti:int,libur:int,totalHari:int}
@@ -134,6 +93,7 @@ class AbsensiReportController extends Controller
     {
         $awal  = Carbon::create($tahun, $bulan, 1)->startOfMonth();
         $akhir = $awal->copy()->endOfMonth();
+        $totalHari = $awal->daysInMonth;
 
         // Ambil semua absensi masuk pada bulan tsb, dikelompokkan per tanggal.
         $masukPerHari = Attendance::where('user_id', $userId)
@@ -143,14 +103,9 @@ class AbsensiReportController extends Controller
             ->groupBy(fn ($a) => $a->attendance_time->toDateString());
 
         $hadir = $masukPerHari->count();
-
-        $terlambat = $masukPerHari->filter(function ($items) {
-            $pertama = $items->sortBy('attendance_time')->first();
-            return $pertama->attendance_time->format('H:i:s') > self::JAM_BATAS_MASUK;
-        })->count();
+        $terlambat = 0; // Logika keterlambatan dihapus
 
         // Izin & cuti yang sudah disetujui dan benar-benar beririsan dengan bulan ini.
-        // end_date kosong (izin 1 hari) diperlakukan sebagai sama dengan start_date.
         $leaves = Leave::where('karyawan_id', $userId)
             ->where('status', 'approved')
             ->whereDate('start_date', '<=', $akhir->toDateString())
@@ -163,16 +118,23 @@ class AbsensiReportController extends Controller
             })
             ->get();
 
-        $izin = $leaves->where('jenis', 'izin')->count();
-        $cuti = $leaves->where('jenis', 'cuti')->count();
-
-        // Libur = jumlah hari Sabtu/Minggu dalam bulan tsb.
-        $libur = 0;
-        for ($d = $awal->copy(); $d->lte($akhir); $d->addDay()) {
-            if ($d->isWeekend()) {
-                $libur++;
+        $izin = 0;
+        $cuti = 0;
+        foreach ($leaves as $lv) {
+            $s = Carbon::parse($lv->start_date)->max($awal);
+            $e = $lv->end_date ? Carbon::parse($lv->end_date)->min($akhir) : $s->copy();
+            $hari = (int) $s->diffInDays($e) + 1;
+            if ($hari > 0) {
+                if ($lv->jenis === 'izin') {
+                    $izin += $hari;
+                } else {
+                    $cuti += $hari;
+                }
             }
         }
+
+        // Libur: jika tidak ada data absensi dalam 1 bulan maka dihitung jumlah hari libur (max dari sisa hari dalam bulan)
+        $libur = max(0, $totalHari - $hadir - $cuti - $izin);
 
         return [
             'hadir'     => $hadir,
@@ -180,7 +142,7 @@ class AbsensiReportController extends Controller
             'izin'      => $izin,
             'cuti'      => $cuti,
             'libur'     => $libur,
-            'totalHari' => $awal->daysInMonth,
+            'totalHari' => $totalHari,
         ];
     }
 }

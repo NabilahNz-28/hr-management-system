@@ -6,14 +6,6 @@
 <div class="page-content">
     <h3 class="content-title">Form Tambah Barang Stock Opname</h3>
     
-    @if($errors->any())
-        <div class="success-message" style="background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;padding:12px 16px;border-radius:8px;margin-bottom:16px;">
-            <ul style="margin:0;padding-left:18px;">
-                @foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach
-            </ul>
-        </div>
-    @endif
-
     <form id="item-form" action="{{ route('inventory.tambah-barang.store') }}" method="POST">
         @csrf
         <div class="form-row">

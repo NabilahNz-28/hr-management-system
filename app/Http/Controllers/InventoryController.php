@@ -175,7 +175,7 @@ class InventoryController extends Controller
         ]);
 
         return redirect()->route('inventory.transfer-stock')
-            ->with('success', 'Transfer berhasil disimpan.');
+            ->with('success', 'Transfer stock berhasil dibuat.');
     }
 
     // ─────────────────────────────────────────────────────────────

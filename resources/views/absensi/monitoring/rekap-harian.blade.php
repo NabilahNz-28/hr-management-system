@@ -6,7 +6,6 @@
 @php
     $badgeMap = [
         'Hadir'       => 'background: #dcfce7; color: #166534; border: 1px solid #86efac;',
-        'Terlambat'   => 'background: #fef3c7; color: #92400e; border: 1px solid #fde047;',
         'Tidak Hadir' => 'background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5;',
         'Izin'        => 'background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe;',
         'Cuti'        => 'background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe;',
@@ -122,7 +121,7 @@
 <script>
     document.getElementById('btnExportExcel').addEventListener('click', function () {
         @if(!$adaData)
-            alert('Tidak ada data absensi untuk tanggal yang dipilih.');
+            window.showFormalAlert('Tidak ada data absensi untuk tanggal yang dipilih.', 'info', 'Informasi');
             return;
         @else
             const excelContent = `

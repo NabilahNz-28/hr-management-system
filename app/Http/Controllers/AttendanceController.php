@@ -37,29 +37,65 @@ class AttendanceController extends Controller
 
             $user = Auth::user();
 
-            // Cek record TERAKHIR user hari ini untuk menentukan status sesi kerja
-            $lastToday = Attendance::where('user_id', $user?->id)
-                ->whereDate('attendance_time', now()->toDateString())
+            // 1. Cek apakah ada absen masuk aktif dalam 36 jam terakhir yang BELUM dipulangkan (sesi kerja terbuka)
+            $activeMasuk = Attendance::where('user_id', $user?->id)
+                ->where('attendance_time', '>=', now()->subHours(36))
+                ->where('attendance_type', 'masuk')
                 ->orderByDesc('attendance_time')
-                ->orderByDesc('id')
                 ->first();
 
-            $sedangBekerja = $lastToday && $lastToday->attendance_type === 'masuk';
-
-            // Pulang hanya boleh jika sedang dalam sesi kerja (record terakhir = masuk)
-            if ($request->attendance_type === 'pulang' && !$sedangBekerja) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Anda belum absen masuk (atau sudah absen pulang), jadi tidak bisa absen pulang.',
-                ], 422);
+            $activePulang = null;
+            if ($activeMasuk) {
+                $activePulang = Attendance::where('user_id', $user?->id)
+                    ->where('attendance_time', '>', $activeMasuk->attendance_time)
+                    ->where('attendance_type', 'pulang')
+                    ->orderByDesc('attendance_time')
+                    ->first();
             }
 
-            // Masuk hanya boleh jika belum dalam sesi kerja (hindari double masuk)
-            if ($request->attendance_type === 'masuk' && $sedangBekerja) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Anda sudah absen masuk dan belum absen pulang.',
-                ], 422);
+            $isCurrentlyWorking = !is_null($activeMasuk) && is_null($activePulang);
+
+            // 2. Cek absensi khusus untuk tanggal hari ini
+            $hasMasukToday = Attendance::where('user_id', $user?->id)
+                ->whereDate('attendance_time', now()->toDateString())
+                ->where('attendance_type', 'masuk')
+                ->exists();
+
+            $hasPulangToday = Attendance::where('user_id', $user?->id)
+                ->whereDate('attendance_time', now()->toDateString())
+                ->where('attendance_type', 'pulang')
+                ->exists();
+
+            // Masuk hanya boleh jika tidak sedang bekerja DAN belum pernah absen masuk/pulang hari ini
+            if ($request->attendance_type === 'masuk') {
+                if ($isCurrentlyWorking) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Anda masih memiliki sesi absen masuk yang belum dipulangkan. Silakan absen pulang terlebih dahulu.',
+                    ], 422);
+                }
+                if ($hasMasukToday || $hasPulangToday) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Anda sudah melakukan absensi hari ini dan tidak bisa absen masuk kembali.',
+                    ], 422);
+                }
+            }
+
+            // Pulang hanya boleh jika sedang dalam sesi kerja aktif (atau jika ada absen masuk hari ini yang belum dipulangkan)
+            if ($request->attendance_type === 'pulang') {
+                if (!$isCurrentlyWorking) {
+                    if ($hasPulangToday || (!is_null($activeMasuk) && !is_null($activePulang))) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Anda sudah absen pulang untuk sesi kerja Anda. Tidak bisa melakukan absen pulang kembali.',
+                        ], 422);
+                    }
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Anda belum absen masuk, jadi tidak bisa absen pulang.',
+                    ], 422);
+                }
             }
 
             // Generate nama file unik
@@ -161,29 +197,59 @@ class AttendanceController extends Controller
     // - belum absen      : tidak ada record hari ini
     public function checkTodayAttendance(Request $request)
     {
+        $this->autoCleanOldPhotosIfNeeded();
+
         $userId = Auth::id();
         $today  = now()->toDateString();
 
-        $last = Attendance::where('user_id', $userId)
-            ->whereDate('attendance_time', $today)
+        // 1. Cek sesi kerja terbuka dari 36 jam terakhir (misalnya shift malam/overnight yang belum dipulangkan)
+        $activeMasuk = Attendance::where('user_id', $userId)
+            ->where('attendance_time', '>=', now()->subHours(36))
+            ->where('attendance_type', 'masuk')
             ->orderByDesc('attendance_time')
-            ->orderByDesc('id')
             ->first();
 
-        $working = $last && $last->attendance_type === 'masuk';
-        $done    = $last && $last->attendance_type === 'pulang';
+        $activePulang = null;
+        if ($activeMasuk) {
+            $activePulang = Attendance::where('user_id', $userId)
+                ->where('attendance_time', '>', $activeMasuk->attendance_time)
+                ->where('attendance_type', 'pulang')
+                ->orderByDesc('attendance_time')
+                ->first();
+        }
+
+        $working = !is_null($activeMasuk) && is_null($activePulang);
+
+        // 2. Cek absensi khusus untuk tanggal hari ini
+        $masukToday = Attendance::where('user_id', $userId)
+            ->whereDate('attendance_time', $today)
+            ->where('attendance_type', 'masuk')
+            ->orderByDesc('attendance_time')
+            ->first();
+
+        $pulangToday = Attendance::where('user_id', $userId)
+            ->whereDate('attendance_time', $today)
+            ->where('attendance_type', 'pulang')
+            ->orderByDesc('attendance_time')
+            ->first();
+
+        // status has_masuk: true jika sedang dalam sesi kerja terbuka ($working) ATAU sudah absen masuk hari ini
+        $hasMasuk  = $working || !is_null($masukToday) || !is_null($pulangToday);
+
+        // status has_pulang: true jika hari ini sudah selesai absen pulang dan tidak sedang bekerja
+        $hasPulang = !$working && (!is_null($pulangToday) || (!is_null($masukToday) && !is_null($pulangToday) && $pulangToday->attendance_time > $masukToday->attendance_time));
+
+        // Tentukan record referensi waktu masuk
+        $refMasuk = $working ? $activeMasuk : $masukToday;
 
         return response()->json([
-            // status utama
             'working'      => $working,
-            'masuk_iso'    => $working ? $last->attendance_time->toIso8601String() : null,
-            'masuk_time'   => $working ? $last->attendance_time->format('H:i:s') : null,
-            // dipakai frontend: tampilkan jam kerja jika has_masuk && !has_pulang
-            'has_masuk'    => $working,
-            'has_pulang'   => $done,
-            // kompatibilitas lama (boleh absen pulang hanya jika sedang bekerja)
-            'has_attended' => $working,
-            'time'         => $working ? $last->attendance_time->format('H:i:s') : null,
+            'masuk_iso'    => $refMasuk ? $refMasuk->attendance_time->toIso8601String() : null,
+            'masuk_time'   => $refMasuk ? $refMasuk->attendance_time->format('H:i:s') : null,
+            'has_masuk'    => $hasMasuk,
+            'has_pulang'   => $hasPulang,
+            'has_attended' => $working || !is_null($masukToday),
+            'time'         => $refMasuk ? $refMasuk->attendance_time->format('H:i:s') : null,
         ]);
     }
 
@@ -194,11 +260,28 @@ class AttendanceController extends Controller
 
     public function getRiwayat()
     {
+        $this->autoCleanOldPhotosIfNeeded();
+
         $attendances = Attendance::orderBy('created_at', 'desc')->get();
 
         return response()->json([
             'success' => true,
             'data' => $attendances
         ]);
+    }
+
+    /**
+     * Otomatis membersihkan foto absensi > 1 tahun (maksimal jalan 1x sehari via cache)
+     */
+    private function autoCleanOldPhotosIfNeeded()
+    {
+        try {
+            if (!\Illuminate\Support\Facades\Cache::has('absensi_old_photos_cleaned')) {
+                \Illuminate\Support\Facades\Artisan::call('absensi:clean-photos');
+                \Illuminate\Support\Facades\Cache::put('absensi_old_photos_cleaned', true, now()->addHours(24));
+            }
+        } catch (\Exception $e) {
+            // Abaikan jika error cache/artisan saat background check
+        }
     }
 }

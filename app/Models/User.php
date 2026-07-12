@@ -87,19 +87,7 @@ class User extends Authenticatable
 
     public function getTerlambatCountAttribute()
     {
-        $awal  = \Carbon\Carbon::now()->startOfMonth();
-        $akhir = \Carbon\Carbon::now()->endOfMonth();
-
-        return $this->attendances()
-            ->where('attendance_type', 'masuk')
-            ->whereBetween('attendance_time', [$awal, $akhir])
-            ->get()
-            ->groupBy(fn ($a) => \Carbon\Carbon::parse($a->attendance_time)->toDateString())
-            ->filter(function ($items) {
-                $pertama = $items->sortBy('attendance_time')->first();
-                return \Carbon\Carbon::parse($pertama->attendance_time)->format('H:i:s') > '08:00:00';
-            })
-            ->count();
+        return 0; // Logika keterlambatan dihapus
     }
 
     public function getIzinCountAttribute()

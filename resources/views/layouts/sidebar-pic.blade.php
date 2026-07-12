@@ -46,13 +46,40 @@
     }
 
     .sidebar-header {
-        height: var(--header-height);
-        padding: 0 24px;
+        min-height: var(--header-height);
+        height: auto;
+        padding: 16px 24px;
         display: flex;
-        align-items: center;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
         border-bottom: 1px solid var(--sidebar-border);
-        gap: 12px;
+        gap: 6px;
         background-color: white;
+    }
+
+    .btn-beralih-sidebar {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 11px;
+        background-color: #f8fafc;
+        color: #334155;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        font-size: 11.5px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-left: 20px;
+    }
+
+    .btn-beralih-sidebar:hover {
+        background-color: #0f172a;
+        color: #ffffff;
+        border-color: #0f172a;
+        transform: translateX(2px);
+        text-decoration: none;
     }
 
     .logo {
@@ -229,7 +256,13 @@
 
 <div id="sidebar">
     <div class="sidebar-header">
-        <div class="brand-text">Dashboard PIC </div>
+        <div class="brand-text" style="line-height: 1.2;">Dashboard PIC </div>
+        @if(auth()->check() && (auth()->user()->role === 'pic' || auth()->user()->role === 'superadmin'))
+        <a href="{{ route('dashboard.absensi') }}" class="btn-beralih-sidebar" title="Beralih ke Absensi Karyawan">
+            <span>Beralih</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+        </a>
+        @endif
     </div>
 
     <div class="sidebar-menu">

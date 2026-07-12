@@ -7,9 +7,8 @@
     $namaBulan = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
                   'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
     $persentaseHadir = $totalHari > 0 ? round(($hadir / $totalHari) * 100) : 0;
-    $persentaseTerlambat = $totalHari > 0 ? round(($terlambat / $totalHari) * 100) : 0;
     $progressColor = $persentaseHadir >= 80 ? '#10b981' : ($persentaseHadir >= 60 ? '#f59e0b' : '#ef4444');
-    $kedisiplinan = $persentaseTerlambat <= 5 ? 'Sangat Disiplin (Baik)' : ($persentaseTerlambat <= 10 ? 'Cukup Disiplin' : 'Perlu Evaluasi');
+    $kedisiplinan = $persentaseHadir >= 80 ? 'Disiplin (Baik)' : ($persentaseHadir >= 50 ? 'Cukup Disiplin' : 'Perlu Evaluasi');
 @endphp
 <div class="dashboard-content">
     <!-- Page Header Formal -->
@@ -94,17 +93,6 @@
 
         <div class="stat-card">
             <div class="stat-header">
-                <span class="stat-title">Keterlambatan</span>
-                <div class="stat-icon icon-late">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                </div>
-            </div>
-            <div class="stat-value" style="color: #f59e0b;">{{ $terlambat }} <span style="font-size: 14px; font-weight: 500; color: #64748b;">kali</span></div>
-            <div class="stat-change warning">Total Terlambat</div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-header">
                 <span class="stat-title">Izin Kerja</span>
                 <div class="stat-icon icon-online">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
@@ -133,7 +121,7 @@
                 </div>
             </div>
             <div class="stat-value" style="color: #64748b;">{{ $libur }} <span style="font-size: 14px; font-weight: 500; color: #64748b;">hari</span></div>
-            <div class="stat-change">Akhir Pekan / Libur</div>
+            <div class="stat-change">Hari Libur Kerja</div>
         </div>
     </div>
 
@@ -163,7 +151,7 @@
                 <span style="font-size: 14px; font-weight: 700; color: #1e293b;">{{ $hadir }} / {{ $totalHari }} Hari</span>
             </div>
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #f8fafc; border-radius: 8px;">
-                <span style="font-size: 13px; font-weight: 500; color: #64748b;">Evaluasi Kedisiplinan</span>
+                <span style="font-size: 13px; font-weight: 500; color: #64748b;">Evaluasi Kehadiran</span>
                 <span style="font-size: 14px; font-weight: 700; color: #1e293b;">{{ $kedisiplinan }}</span>
             </div>
         </div>
@@ -190,10 +178,9 @@
                     <tbody>
                         <tr><td>Total Hari Periode</td><td>{{ $totalHari }} Hari</td></tr>
                         <tr><td>Total Kehadiran (Hadir)</td><td>{{ $hadir }} Hari</td></tr>
-                        <tr><td>Frekuensi Keterlambatan</td><td>{{ $terlambat }} Kali</td></tr>
                         <tr><td>Izin Disetujui</td><td>{{ $izin }} Hari</td></tr>
                         <tr><td>Cuti Disetujui</td><td>{{ $cuti }} Hari</td></tr>
-                        <tr><td>Hari Libur / Akhir Pekan</td><td>{{ $libur }} Hari</td></tr>
+                        <tr><td>Hari Libur Kerja</td><td>{{ $libur }} Hari</td></tr>
                         <tr><td>Tingkat Kehadiran Efektif</td><td>{{ $persentaseHadir }}%</td></tr>
                     </tbody>
                 </table>

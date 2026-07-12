@@ -33,7 +33,7 @@ class LeaveController extends Controller
             'jenis' => 'required|in:izin,cuti',
             'jenis_detail' => 'required|string',
             'keterangan' => 'required|string|min:10|max:2000',
-            'document' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048'
+            'document' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120'
         ]);
 
         try {

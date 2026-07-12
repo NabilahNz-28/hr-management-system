@@ -5,13 +5,6 @@
 @section('content')
 <div class="dashboard-content">
 
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert" style="border-radius: 10px; background-color: #dcfce7; border-color: #bbf7d0; color: #166534;">
-            <i class="bi bi-check-circle-fill me-2"></i> {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 style="font-weight: 700; color: #1e293b; margin-bottom: 4px;">Transfer Stock</h4>
@@ -41,14 +34,14 @@
                             <option value="Dibatalkan" {{ request('status') == 'Dibatalkan' ? 'selected' : '' }}>Dibatalkan</option>
                         </select>
                     </div>
-                    <div class="col-xl-4 col-lg-12 col-md-6 d-flex align-items-end gap-2">
-                        <button type="submit" class="btn btn-primary d-inline-flex align-items-center justify-content-center" style="padding: 0 16px; min-height: 42px; border-radius: 8px; font-size: 13.5px; font-weight: 500; white-space: nowrap; background-color: #1e293b; border: none;">
+                    <div class="col-xl-4 col-lg-12 col-md-6 d-flex flex-wrap align-items-end gap-2">
+                        <button type="submit" class="btn btn-primary d-inline-flex align-items-center justify-content-center flex-fill flex-sm-grow-0" style="padding: 0 16px; min-height: 42px; border-radius: 8px; font-size: 13.5px; font-weight: 500; white-space: nowrap; background-color: #1e293b; border: none;">
                             <i class="bi bi-search me-1"></i> Filter
                         </button>
-                        <a href="{{ route('superadmin.transfer.index') }}" class="btn btn-secondary d-inline-flex align-items-center justify-content-center" style="padding: 0 16px; min-height: 42px; border-radius: 8px; background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; font-size: 13.5px; font-weight: 500; white-space: nowrap; text-decoration: none;">
+                        <a href="{{ route('superadmin.transfer.index') }}" class="btn btn-secondary d-inline-flex align-items-center justify-content-center flex-fill flex-sm-grow-0" style="padding: 0 16px; min-height: 42px; border-radius: 8px; background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; font-size: 13.5px; font-weight: 500; white-space: nowrap; text-decoration: none;">
                             <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
                         </a>
-                        <a href="{{ route('superadmin.transfer.export', request()->query()) }}" class="btn btn-success d-inline-flex align-items-center justify-content-center shadow-sm" style="padding: 0 18px; min-height: 42px; border-radius: 8px; background-color: #10b981; color: #ffffff; border: none; font-size: 13.5px; font-weight: 600; white-space: nowrap; text-decoration: none;">
+                        <a href="{{ route('superadmin.transfer.export', request()->query()) }}" class="btn btn-success d-inline-flex align-items-center justify-content-center shadow-sm flex-fill flex-sm-grow-0" style="padding: 0 18px; min-height: 42px; border-radius: 8px; background-color: #10b981; color: #ffffff; border: none; font-size: 13.5px; font-weight: 600; white-space: nowrap; text-decoration: none;">
                             <i class="bi bi-file-earmark-excel me-1"></i> Ekspor Excel
                         </a>
                     </div>
@@ -58,13 +51,13 @@
     </div>
 
     {{-- Tabel Laporan --}}
-    <div class="card shadow mb-4" style="border: 1px solid #e2e8f0; border-radius: 12px;">
-        <div class="card-header py-3 d-flex justify-content-between align-items-center" style="background: #ffffff; border-bottom: 1px solid #e2e8f0; border-radius: 12px 12px 0 0;">
+    <div class="card shadow mb-4" style="border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center" style="background: #ffffff; border-bottom: 1px solid #e2e8f0;">
             <h6 class="m-0 font-weight-bold" style="color: #1e293b; font-size: 15px;">Riwayat Invoice Transfer Stock</h6>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive" style="overflow-visible;">
-                <table class="table table-hover mb-0" width="100%" cellspacing="0" style="font-size: 13.5px;">
+                <table class="data-table table table-hover mb-0" width="100%" cellspacing="0" style="font-size: 13.5px;">
                     <thead style="background: #f8fafc; color: #475569; border-bottom: 1px solid #e2e8f0;">
                         <tr>
                             <th class="py-3 px-3">No</th>
@@ -83,17 +76,17 @@
                     <tbody>
                         @forelse($laporan ?? [] as $index => $inv)
                         <tr style="border-bottom: 1px solid #f1f5f9; vertical-align: middle;">
-                            <td class="px-3">{{ ($laporan instanceof \Illuminate\Pagination\LengthAwarePaginator ? $laporan->firstItem() + $index : $index + 1) }}</td>
-                            <td class="px-3">
+                            <td class="px-3 py-3" data-label="No">{{ ($laporan instanceof \Illuminate\Pagination\LengthAwarePaginator ? $laporan->firstItem() + $index : $index + 1) }}</td>
+                            <td class="px-3 py-3" data-label="No. Invoice">
                                 <span style="font-weight: 600; color: #1e293b;">{{ $inv['invoice_no'] }}</span>
                             </td>
-                            <td class="px-3">{{ \Carbon\Carbon::parse($inv['tanggal'])->format('d M Y') }}</td>
-                            <td class="px-3">
+                            <td class="px-3 py-3" data-label="Tanggal">{{ \Carbon\Carbon::parse($inv['tanggal'])->format('d M Y') }}</td>
+                            <td class="px-3 py-3" data-label="Petugas (PIC)">
                                 <span class="badge" style="background: #e0f2fe; color: #0369a1; padding: 5px 10px; border-radius: 6px; font-weight: 600; font-size: 12px;">
                                     <i class="bi bi-person me-1"></i> {{ $inv['petugas_name'] }}
                                 </span>
                             </td>
-                            <td class="px-3">
+                            <td class="px-3 py-3" data-label="Produk">
                                 <div style="font-weight: 600; color: #1e293b;">
                                     <span class="badge" style="background:#f1f5f9; color:#334155; padding: 4px 8px; border-radius: 6px; font-size:12px;">{{ $inv['item_count'] }} Produk</span>
                                 </div>
@@ -101,12 +94,12 @@
                                     {{ $inv['produk_names'] }}
                                 </div>
                             </td>
-                            <td class="px-3"><span style="font-weight: 500; color: #1e293b;">Gudang Utama</span></td>
-                            <td class="px-3">
+                            <td class="px-3 py-3" data-label="Gudang Asal"><span style="font-weight: 500; color: #1e293b;">Gudang Utama</span></td>
+                            <td class="px-3 py-3" data-label="Ke Gudang">
                                 <span style="font-size: 13px; color: #475569;">{{ $inv['gudang_tujuan'] ?: '-' }}</span>
                             </td>
-                            <td class="px-3" style="font-weight: 600; color: #1e293b;">{{ $inv['total_jumlah'] }} pcs</td>
-                            <td class="px-3">
+                            <td class="px-3 py-3" data-label="Total Jumlah" style="font-weight: 600; color: #1e293b;">{{ $inv['total_jumlah'] }} pcs</td>
+                            <td class="px-3 py-3" data-label="Status">
                                 @if($inv['status'] === 'Selesai')
                                     <span class="badge" style="background: #dcfce7; color: #16a34a; padding: 6px 12px; border-radius: 20px; font-weight: 600;">Selesai</span>
                                 @elseif($inv['status'] === 'Dibatalkan')
@@ -115,8 +108,8 @@
                                     <span class="badge" style="background: #fef9c3; color: #ca8a04; padding: 6px 12px; border-radius: 20px; font-weight: 600;">{{ $inv['status'] }}</span>
                                 @endif
                             </td>
-                            <td class="px-3">{{ $inv['catatan'] ?: '-' }}</td>
-                            <td class="px-3 text-center">
+                            <td class="px-3 py-3" data-label="Catatan">{{ $inv['catatan'] ?: '-' }}</td>
+                            <td class="px-3 py-3 text-center" data-label="Aksi">
                                 <button type="button" class="btn btn-sm btn-light d-inline-flex align-items-center justify-content-center shadow-sm" data-bs-toggle="modal" data-bs-target="#modalTransferDetail{{ $index }}" style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px 14px; background: #ffffff; color: #1e293b; font-weight: 600; font-size: 13px; white-space: nowrap;">
                                     <i class="bi bi-eye text-primary me-1"></i> Lihat
                                 </button>

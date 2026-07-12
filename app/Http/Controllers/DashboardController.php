@@ -83,11 +83,7 @@ class DashboardController extends Controller
             ->groupBy(fn ($a) => \Carbon\Carbon::parse($a->attendance_time)->toDateString());
 
         $hadir = $masukPerHari->count();
-
-        $terlambat = $masukPerHari->filter(function ($items) {
-            $pertama = $items->sortBy('attendance_time')->first();
-            return \Carbon\Carbon::parse($pertama->attendance_time)->format('H:i:s') > '08:00:00';
-        })->count();
+        $terlambat = 0; // Logika keterlambatan dihapus
 
         // Izin & cuti dari tabel leaves yang sudah disetujui dan beririsan dengan bulan ini.
         $leaves = \App\Models\Leave::where('karyawan_id', $user->id)
@@ -102,13 +98,8 @@ class DashboardController extends Controller
         $izin = $leaves->where('jenis', 'izin')->count();
         $cuti = $leaves->where('jenis', 'cuti')->count();
 
-        // Libur = jumlah hari Sabtu/Minggu dalam bulan tsb.
-        $libur = 0;
-        for ($d = $awal->copy(); $d->lte($akhir); $d->addDay()) {
-            if ($d->isWeekend()) {
-                $libur++;
-            }
-        }
+        // Libur: jika tidak ada data absensi dalam 1 bulan maka dihitung jumlah hari libur (sisa hari dalam bulan)
+        $libur = max(0, $awal->daysInMonth - $hadir - $cuti - $izin);
 
         $stats = [
             'hadir'     => $hadir,

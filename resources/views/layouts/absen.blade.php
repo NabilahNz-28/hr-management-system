@@ -6,7 +6,11 @@
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>@yield('title', 'Absensi')</title>
 
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
   <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+  <!-- Leaflet Map Library -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   @yield('styles')
 </head>
 <body>
@@ -27,7 +31,188 @@
     </div>
   </div>
 
+  <style>
+    /* Styling agar notifikasi & konfirmasi SweetAlert berukuran kompak, rapi, dan tidak terlalu besar */
+    .swal2-popup.compact-swal-popup {
+      border-radius: 12px !important;
+      padding: 1.2rem !important;
+      width: 360px !important;
+      max-width: 90% !important;
+    }
+    .swal2-title.compact-swal-title {
+      font-size: 1.05rem !important;
+      font-weight: 600 !important;
+      color: #1e293b !important;
+      margin-bottom: 0.25rem !important;
+      line-height: 1.3 !important;
+    }
+    .swal2-html-container.compact-swal-text {
+      font-size: 0.825rem !important;
+      line-height: 1.55 !important;
+      color: #475569 !important;
+      margin: 0.5rem 0 1rem 0 !important;
+      white-space: pre-line !important;
+      text-align: left !important;
+    }
+    .swal2-actions {
+      margin-top: 0.5rem !important;
+    }
+    .swal2-confirm.compact-swal-btn, .swal2-cancel.compact-swal-btn {
+      font-size: 0.8rem !important;
+      font-weight: 600 !important;
+      padding: 7px 16px !important;
+      border-radius: 6px !important;
+      border: none !important;
+    }
+    .swal2-confirm:focus, .swal2-cancel:focus, .swal2-close:focus {
+      box-shadow: none !important;
+      outline: none !important;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="{{ asset('js/script.js') }}"></script>
+  <script>
+    window.showFormalAlert = function(message, icon = 'info', title = null) {
+        const cleanMessage = String(message).replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, '').trim();
+        if (!title) {
+            title = icon === 'success' ? 'Berhasil' : (icon === 'error' ? 'Gagal' : (icon === 'warning' ? 'Peringatan' : 'Pemberitahuan'));
+        }
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: title,
+                text: cleanMessage,
+                icon: icon,
+                confirmButtonText: 'Tutup',
+                confirmButtonColor: '#0f172a',
+                customClass: {
+                    popup: 'compact-swal-popup',
+                    title: 'compact-swal-title',
+                    htmlContainer: 'compact-swal-text',
+                    confirmButton: 'compact-swal-btn'
+                }
+            });
+        } else {
+            alert(cleanMessage);
+        }
+    };
+    window.showToast = window.showFormalAlert;
+
+    window.showFormalConfirm = function(message, title = 'Konfirmasi Tindakan', confirmText = 'Ya, Lanjutkan', cancelText = 'Batal') {
+        const cleanMessage = String(message).replace(/[\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, '').trim();
+        return new Promise((resolve) => {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: title,
+                    text: cleanMessage,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: confirmText,
+                    cancelButtonText: cancelText,
+                    confirmButtonColor: '#0f172a',
+                    cancelButtonColor: '#64748b',
+                    reverseButtons: true,
+                    customClass: {
+                        popup: 'compact-swal-popup',
+                        title: 'compact-swal-title',
+                        htmlContainer: 'compact-swal-text',
+                        confirmButton: 'compact-swal-btn',
+                        cancelButton: 'compact-swal-btn'
+                    }
+                }).then((result) => {
+                    resolve(result.isConfirmed);
+                });
+            } else {
+                resolve(confirm(cleanMessage));
+            }
+        });
+    };
+
+    window.confirmFormSubmit = async function(event, message, title = 'Konfirmasi Tindakan') {
+        event.preventDefault();
+        const form = event.target;
+        const confirmed = await window.showFormalConfirm(message, title, 'Ya, Lanjutkan', 'Batal');
+        if (confirmed) {
+            form.submit();
+        }
+        return false;
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+      @if(session('success'))
+        if (typeof Swal !== 'undefined') {
+          const successMsg = {!! json_encode(preg_replace('/[\x{1F600}-\x{1F64F}\x{1F300}-\x{1F5FF}\x{1F680}-\x{1F6FF}\x{1F700}-\x{1F77F}\x{1F780}-\x{1F7FF}\x{1F800}-\x{1F8FF}\x{1F900}-\x{1F9FF}\x{1FA00}-\x{1FA6F}\x{1FA70}-\x{1FAFF}\x{2600}-\x{26FF}\x{2700}-\x{27BF}]/u', '', session('success'))) !!};
+          const isToast = {!! json_encode(session('is_toast') || false) !!};
+
+          if (isToast) {
+            Swal.fire({
+              toast: true,
+              position: 'top-end',
+              icon: 'success',
+              title: successMsg,
+              showConfirmButton: false,
+              timer: 3500,
+              timerProgressBar: true
+            });
+          } else {
+            Swal.fire({
+              title: 'Berhasil',
+              text: successMsg,
+              icon: 'success',
+              confirmButtonText: 'Tutup',
+              confirmButtonColor: '#0f172a',
+              customClass: {
+                popup: 'compact-swal-popup',
+                title: 'compact-swal-title',
+                htmlContainer: 'compact-swal-text',
+                confirmButton: 'compact-swal-btn'
+              }
+            });
+          }
+        }
+      @endif
+
+      @if(session('error'))
+        if (typeof Swal !== 'undefined') {
+          Swal.fire({
+            title: 'Gagal',
+            text: {!! json_encode(preg_replace('/[\x{1F600}-\x{1F64F}\x{1F300}-\x{1F5FF}\x{1F680}-\x{1F6FF}\x{1F700}-\x{1F77F}\x{1F780}-\x{1F7FF}\x{1F800}-\x{1F8FF}\x{1F900}-\x{1F9FF}\x{1FA00}-\x{1FA6F}\x{1FA70}-\x{1FAFF}\x{2600}-\x{26FF}\x{2700}-\x{27BF}]/u', '', session('error'))) !!},
+            icon: 'error',
+            confirmButtonText: 'Tutup',
+            confirmButtonColor: '#0f172a',
+            customClass: {
+              popup: 'compact-swal-popup',
+              title: 'compact-swal-title',
+              htmlContainer: 'compact-swal-text',
+              confirmButton: 'compact-swal-btn'
+            }
+          });
+        }
+      @endif
+
+      @if($errors->any())
+        if (typeof Swal !== 'undefined') {
+          let errorList = [
+            @foreach($errors->all() as $err)
+              {!! json_encode(preg_replace('/[\x{1F600}-\x{1F64F}\x{1F300}-\x{1F5FF}\x{1F680}-\x{1F6FF}\x{1F700}-\x{1F77F}\x{1F780}-\x{1F7FF}\x{1F800}-\x{1F8FF}\x{1F900}-\x{1F9FF}\x{1FA00}-\x{1FA6F}\x{1FA70}-\x{1FAFF}\x{2600}-\x{26FF}\x{2700}-\x{27BF}]/u', '', $err)) !!},
+            @endforeach
+          ];
+          Swal.fire({
+            title: 'Peringatan',
+            html: '<div style="text-align: center; margin: 0; padding: 0;">' + errorList.join('<br>') + '</div>',
+            icon: 'warning',
+            confirmButtonText: 'Tutup',
+            confirmButtonColor: '#0f172a',
+            customClass: {
+              popup: 'compact-swal-popup',
+              title: 'compact-swal-title',
+              htmlContainer: 'compact-swal-text',
+              confirmButton: 'compact-swal-btn'
+            }
+          });
+        }
+      @endif
+    });
+  </script>
   @yield('scripts')
 </body>
 </html>

@@ -1477,6 +1477,46 @@ body {
     max-width: 360px;
 }
 
+/* Password Input Group & Eye Toggle */
+.password-input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+.password-input-group .form-control {
+    width: 100%;
+    padding-right: 42px !important;
+}
+.password-toggle-btn {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 4px 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: color 0.2s ease, background-color 0.2s ease;
+    z-index: 5;
+}
+.password-toggle-btn:hover {
+    color: #0f172a;
+    background-color: #f1f5f9;
+}
+.password-toggle-btn:focus {
+    outline: none;
+    color: #0f172a;
+}
+.password-toggle-btn i {
+    font-size: 1.1rem;
+}
+
 /* Logout Section Superadmin */
 .logout-section-superadmin {
     border-top: 1px solid #eef2f8;
@@ -2118,5 +2158,18 @@ body {
     .stat-change {
         font-size: 0.8rem !important;
         line-height: 1.3 !important;
+    }
+
+    /* ===== Superadmin Transfer Stock & Filter Mobile Adjustments ===== */
+    .row.g-3.align-items-end .col-xl-4.d-flex,
+    .row.g-3.align-items-end .d-flex.flex-wrap.gap-2 {
+        flex-direction: column !important;
+        width: 100% !important;
+    }
+
+    .row.g-3.align-items-end .d-flex.flex-wrap.gap-2 > .btn,
+    .row.g-3.align-items-end .d-flex.flex-wrap.gap-2 > a.btn {
+        width: 100% !important;
+        justify-content: center !important;
     }
 }

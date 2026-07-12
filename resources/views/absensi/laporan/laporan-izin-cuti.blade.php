@@ -10,12 +10,6 @@
         <p class="page-subtitle" style="font-size: 14px; color: #64748b; margin: 0;">Monitoring status persetujuan atas pengajuan izin tidak masuk kerja dan cuti karyawan</p>
     </div>
 
-    @if(session('success'))
-        <div style="background: #dcfce7; border: 1px solid #86efac; color: #166534; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; font-weight: 500;">
-            {{ session('success') }}
-        </div>
-    @endif
-
     <div class="content-card">
         <div class="content-card-header" style="border-bottom: 1px solid #f1f5f9; padding-bottom: 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
             <div>
@@ -25,7 +19,7 @@
                 <a href="{{ route('absensi.cuti') }}" style="background: #1e293b; color: #ffffff; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
                     + Buat Pengajuan Cuti
                 </a>
-                <a href="{{ route('absensi.pengajuan-izin') }}" style="background: #334155; color: #ffffff; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; margin-left: 6px;">
+                <a href="{{ route('absensi.pengajuan-izin') }}" style="background: #1e293b; color: #ffffff; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; margin-left: 6px;">
                     + Buat Pengajuan Izin
                 </a>
             </div>

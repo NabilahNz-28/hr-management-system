@@ -5,13 +5,6 @@
 @section('content')
 <div class="dashboard-content">
 
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert" style="border-radius: 10px; background-color: #dcfce7; border-color: #bbf7d0; color: #166534;">
-            <i class="bi bi-check-circle-fill me-2"></i> {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 style="font-weight: 700; color: #1e293b; margin-bottom: 4px;">Data Inventory</h4>

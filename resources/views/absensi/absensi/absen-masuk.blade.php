@@ -195,7 +195,7 @@
 
         <!-- Alert Info -->
         <div class="alert-box alert-info">
-            <div style="font-size: 24px;">📍</div>
+            <i class="bi bi-geo-alt-fill text-primary" style="font-size: 24px;"></i>
             <div>
                 <div style="font-weight: 500;">Mode Uji Coba Aktif</div>
                 <div style="font-size: 13px;">Untuk tahap pengembangan, absensi dapat dilakukan dari lokasi mana pun.</div>
@@ -211,6 +211,12 @@
             <div>
                 <div class="content-title" style="font-size: 16px;">Foto Wajah</div>
 
+                <div id="alreadyAttendedBoxMasuk" style="display: none; margin-bottom: 16px; padding: 16px; background: #ecfdf5; border: 1.5px solid #10b981; border-radius: 12px; color: #065f46; text-align: center; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);">
+                    <i class="bi bi-check-circle-fill text-success" style="font-size: 28px; display: inline-block; margin-bottom: 4px;"></i>
+                    <div style="font-weight: 700; font-size: 15px;">Anda sudah melakukan Absensi Masuk hari ini</div>
+                    <div style="font-size: 13px; margin-top: 4px; color: #047857;" id="alreadyAttendedTextMasuk">Tidak dapat melakukan absen masuk kembali di hari yang sama.</div>
+                </div>
+
                 <div class="camera-container">
                     <div id="webcamContainer">
                         <video id="webcam" autoplay playsinline></video>
@@ -224,7 +230,7 @@
                 </div>
 
                 <!-- Face status -->
-                <div id="faceStatus">⏳ Menyiapkan face detector...</div>
+                <div id="faceStatus">Menyiapkan pendeteksi wajah...</div>
 
                 <!-- Waktu Kerja -->
                 <div id="workClockBox" style="margin-top:12px; padding:12px; border:1px solid #e5e7eb; border-radius:8px; background:#f8fafc; display:none;">
@@ -279,12 +285,12 @@
                 <div class="location-info">
                     <div style="font-weight: 500; margin-bottom: 8px;">Detail Lokasi:</div>
                     <div style="font-size: 14px;">
-                        <div>📍 <span id="locationAddressMasuk">Mendeteksi alamat...</span></div>
-                        <div style="margin-top: 8px;">📍 Koordinat: <span id="locationCoordsMasuk">-</span></div>
-                        <div style="margin-top: 8px;">📍 Status: <span id="locationDistanceMasuk" style="color: #10b981;">Mode Uji Coba</span></div>
+                        <div>Lokasi: <span id="locationAddressMasuk">Mendeteksi alamat...</span></div>
+                        <div style="margin-top: 8px;">Koordinat: <span id="locationCoordsMasuk">-</span></div>
+                        <div style="margin-top: 8px;">Status: <span id="locationDistanceMasuk" style="color: #10b981;">Mode Uji Coba</span></div>
                     </div>
                     <button onclick="refreshGPS('masuk')" style="margin-top: 15px; padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; width: 100%; transition: background 0.2s;">
-                        🔄 Refresh Lokasi GPS
+                        Refresh Lokasi GPS
                     </button>
                 </div>
             </div>
@@ -378,15 +384,7 @@ function updateUIAfterSubmit() {
   // nyalakan jam kerja berjalan
   startWorkClock(startIso);
 
-  // notifikasi sukses tetap boleh
-  const successDiv = document.createElement('div');
-  successDiv.innerHTML = `
-    <div style="position: fixed; top: 20px; right: 20px; background: #10b981; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 1000;">
-      ✅ Absensi masuk berhasil dicatat!
-    </div>
-  `;
-  document.body.appendChild(successDiv);
-  setTimeout(() => successDiv.remove(), 3000);
+  window.showFormalAlert('Absensi masuk berhasil dicatat!', 'success', 'Absensi Berhasil');
 }
 
 /**
@@ -442,6 +440,18 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (workInterval) clearInterval(workInterval);
             if (box) box.style.display = 'none';
         }
+
+        // Cek jika sudah absen masuk hari ini → blokir tombol foto & tampilkan banner
+        if (data.has_masuk || data.has_pulang) {
+            const btn = document.getElementById('captureBtn');
+            if (btn) btn.style.display = 'none';
+            const alertBox = document.getElementById('alreadyAttendedBoxMasuk');
+            if (alertBox) alertBox.style.display = 'block';
+            const txt = document.getElementById('alreadyAttendedTextMasuk');
+            if (txt && data.masuk_time) {
+                txt.textContent = `Absen masuk tercatat pukul ${data.masuk_time}. Tidak dapat absen masuk lagi hari ini.`;
+            }
+        }
     } catch (e) {
         console.warn('Gagal cek status absensi hari ini:', e);
     }
@@ -474,11 +484,11 @@ function setFaceStatus(text, ok = null) {
 
 async function initFaceDetector() {
     try {
-        setFaceStatus('⏳ Menyiapkan face detector...', null);
+        setFaceStatus('Menyiapkan face detector...', null);
 
         // Pastikan library termuat
         if (typeof FaceDetection === 'undefined') {
-            setFaceStatus('❌ Library FaceDetection tidak termuat (cek koneksi/CDN).', false);
+            setFaceStatus('Library FaceDetection tidak termuat (cek koneksi/CDN).', false);
             faceDetectorReady = false;
             return;
         }
@@ -497,18 +507,18 @@ async function initFaceDetector() {
         faceDetector.onResults(() => { /* no-op */ });
 
         faceDetectorReady = true;
-        setFaceStatus('✅ Face detector siap. Ambil foto dengan wajah terlihat jelas.', true);
+        setFaceStatus('Face detector siap. Ambil foto dengan wajah terlihat jelas.', true);
     } catch (e) {
         console.error('initFaceDetector error:', e);
         faceDetectorReady = false;
-        setFaceStatus('❌ Gagal inisialisasi face detector.', false);
+        setFaceStatus('Gagal inisialisasi face detector.', false);
     }
 }
 
 function detectFaceFromCanvas(canvas) {
     return new Promise(async (resolve) => {
         if (!faceDetectorReady || !faceDetector) {
-            setFaceStatus('⚠️ Face detector belum siap. Coba refresh halaman.', false);
+            setFaceStatus('Face detector belum siap. Coba refresh halaman.', false);
             return resolve(false);
         }
 
@@ -518,9 +528,9 @@ function detectFaceFromCanvas(canvas) {
             const hasFace = !!(results && results.detections && results.detections.length > 0);
 
             if (hasFace) {
-                setFaceStatus('✅ Wajah terdeteksi.', true);
+                setFaceStatus('Wajah terdeteksi.', true);
             } else {
-                setFaceStatus('❌ Wajah tidak terdeteksi. Dekatkan wajah & perbaiki pencahayaan.', false);
+                setFaceStatus('Wajah tidak terdeteksi. Dekatkan wajah & perbaiki pencahayaan.', false);
             }
 
             // restore handler (biar aman)
@@ -532,7 +542,7 @@ function detectFaceFromCanvas(canvas) {
             await faceDetector.send({ image: canvas });
         } catch (e) {
             console.error('detectFaceFromCanvas error:', e);
-            setFaceStatus('❌ Error saat deteksi wajah.', false);
+            setFaceStatus('Error saat deteksi wajah.', false);
             // restore handler
             faceDetector.onResults = previousOnResults;
             resolve(false);
@@ -571,23 +581,23 @@ async function startKamera(tipe) {
         kameraMasuk = stream;
 
         if (status) {
-            status.textContent = '✅ Kamera siap';
+            status.textContent = 'Kamera siap';
             status.style.color = '#10b981';
         }
 
     } catch (error) {
         console.error('Gagal mengakses kamera:', error);
         if (status) {
-            status.textContent = '❌ Gagal mengakses kamera';
+            status.textContent = 'Gagal mengakses kamera';
             status.style.color = '#ef4444';
         }
 
         if (error.name === 'NotAllowedError') {
-            alert('Izin kamera ditolak. Silakan berikan izin kamera di pengaturan browser Anda.');
+            window.showFormalAlert('Izin kamera ditolak. Silakan berikan izin kamera di pengaturan browser Anda.', 'error', 'Kamera Ditolak');
         } else if (error.name === 'NotFoundError') {
-            alert('Kamera tidak ditemukan. Pastikan perangkat memiliki kamera.');
+            window.showFormalAlert('Kamera tidak ditemukan. Pastikan perangkat memiliki kamera.', 'error', 'Kamera Tidak Ditemukan');
         } else {
-            alert('Gagal mengakses kamera. Pastikan izin diberikan dan kamera berfungsi.');
+            window.showFormalAlert('Gagal mengakses kamera. Pastikan izin diberikan dan kamera berfungsi.', 'error', 'Kesalahan Kamera');
         }
     }
 }
@@ -630,11 +640,11 @@ function initPetaMasuk() {
         console.error('Error inisialisasi peta:', error);
         document.getElementById('mapMasuk').innerHTML = `
             <div style="text-align: center; padding: 50px 20px; color: #6b7280;">
-                <div style="font-size: 48px;">❌</div>
+                <div style="font-size: 48px;">Gagal memuat peta</div>
                 <div style="font-weight: 500; margin-top: 12px;">Gagal memuat peta</div>
                 <div style="margin-top: 8px; font-size: 14px;">${error.message}</div>
                 <button onclick="initPetaMasuk()" style="margin-top: 15px; padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                    🔄 Coba Lagi
+                    Refresh
                 </button>
             </div>
         `;
@@ -670,7 +680,7 @@ function refreshGPS(tipe) {
 
     if (status) {
         status.innerHTML = `
-            <div>🔄</div>
+            <div>Memuat ulang GPS...</div>
             <div>
                 <div style="font-weight: 500;">Memuat ulang GPS...</div>
                 <div style="font-size: 12px;">Harap tunggu</div>
@@ -748,7 +758,7 @@ function updatePetaMasuk(lat, lng) {
         }).addTo(petaMasuk);
 
         markerMasuk.bindPopup(`
-            <b>📍 Lokasi Anda</b><br>
+            <b>Lokasi Anda</b><br>
             Lat: ${lat.toFixed(6)}<br>
             Lng: ${lng.toFixed(6)}<br>
             <small>${new Date().toLocaleTimeString('id-ID')}</small>
@@ -763,7 +773,7 @@ function updatePetaMasuk(lat, lng) {
 
 function updateInfoLokasi(tipe, lat, lng) {
     document.getElementById('locationCoordsMasuk').textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-    document.getElementById('locationDistanceMasuk').innerHTML = `<span style="color:#10b981;">✅ Mode Uji Coba - Bisa absen di mana saja</span>`;
+    document.getElementById('locationDistanceMasuk').innerHTML = `<span style="color:#10b981;">Mode Uji Coba - Bisa absen di mana saja</span>`;
     getAddressFromCoordinates(lat, lng);
 }
 
@@ -825,13 +835,13 @@ async function ambilFoto(tipe) {
     const status = document.getElementById('cameraStatus');
 
     if (!video || !video.srcObject) {
-        alert('Kamera belum siap! Silakan refresh halaman jika kamera tidak muncul.');
+        window.showFormalAlert('Kamera belum siap. Silakan refresh halaman jika kamera tidak muncul.', 'warning', 'Peringatan');
         return;
     }
 
     // Pastikan detector siap
     if (!faceDetectorReady) {
-        alert('Face detector belum siap. Tunggu sebentar atau refresh halaman.');
+        window.showFormalAlert('Pendeteksi wajah belum siap. Tunggu sebentar atau refresh halaman.', 'warning', 'Peringatan');
         return;
     }
 
@@ -847,11 +857,11 @@ async function ambilFoto(tipe) {
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
     // Deteksi wajah (beneran)
-    setFaceStatus('⏳ Mengecek wajah...', null);
+    setFaceStatus('Mengecek wajah...', null);
     const wajahTerdeteksi = await detectFaceFromCanvas(canvas);
 
     if (!wajahTerdeteksi) {
-        alert('Wajah tidak terdeteksi! Pastikan wajah terlihat jelas, dekatkan kamera, dan pencahayaan cukup.');
+        window.showFormalAlert('Wajah tidak terdeteksi. Pastikan wajah terlihat jelas, dekatkan kamera, dan pencahayaan cukup.', 'warning', 'Wajah Tidak Terdeteksi');
         return;
     }
 
@@ -886,7 +896,7 @@ async function ambilFoto(tipe) {
 
     // Update status kamera
     if (status) {
-        status.textContent = '✅ Foto berhasil diambil';
+        status.textContent = 'Foto berhasil diambil';
         status.style.color = '#10b981';
     }
 
@@ -914,7 +924,7 @@ function mulaiTimer(tipe) {
 
         if (hitungDetikMasuk >= TIMEOUT) {
             clearInterval(timerMasuk);
-            alert('⏰ Waktu habis! Foto akan kadaluarsa dalam 30 detik. Silakan ambil foto ulang.');
+            window.showFormalAlert('Waktu pengambilan foto telah habis (kadaluarsa dalam 30 detik). Silakan ambil foto ulang.', 'warning', 'Waktu Habis');
             retakePhoto(tipe);
         }
     }, 1000);
@@ -938,11 +948,9 @@ function cekValidasiSubmit(tipe) {
 
 async function submitAbsensi(tipe) {
     if (!fotoDiambilMasuk) {
-        alert('Silakan ambil foto terlebih dahulu!');
+        window.showFormalAlert('Silakan ambil foto terlebih dahulu sebelum submit absensi.', 'warning', 'Foto Belum Ada');
         return;
     }
-
-    showLoading('Menyimpan absensi...');
 
     try {
         const photoBase64 = document.getElementById('capturedPhoto').src;
@@ -954,29 +962,28 @@ async function submitAbsensi(tipe) {
         const waktu = new Date().toLocaleTimeString('id-ID');
         const tanggal = new Date().toLocaleDateString('id-ID');
 
-        const konfirmasi = confirm(
-            `Konfirmasi Absensi MASUK?\n\n` +
-            `📅 Tanggal: ${tanggal}\n` +
-            `⏰ Waktu: ${waktu}\n` +
-            `📍 Lokasi: ${coordinates}\n` +
-            `🏠 Alamat: ${address}\n\n` +
-            `Mode: Uji Coba`
+        const konfirmasi = await window.showFormalConfirm(
+            `Tanggal: ${tanggal}\nWaktu: ${waktu}\nLokasi: ${coordinates}\nAlamat: ${address}\n\nMode: Uji Coba`,
+            'Konfirmasi Absensi Masuk',
+            'Ya, Simpan Absensi',
+            'Batal'
         );
 
         if (!konfirmasi) {
-            hideLoading();
             return;
         }
 
+        showLoading('Menyimpan absensi...');
+
         const submitBtn = document.getElementById('submitBtnMasuk');
-        submitBtn.innerHTML = '⏳ Menyimpan...';
+        submitBtn.innerHTML = 'Menyimpan...';
         submitBtn.disabled = true;
 
         await simpanKeDatabase(tipe, {
-            photo: photoBase64,
-            latitude: lokasiMasuk?.lat,
-            longitude: lokasiMasuk?.lng,
-            address: address,
+            photo: photoBase64 || '',
+            latitude: (lokasiMasuk && typeof lokasiMasuk.lat === 'number') ? lokasiMasuk.lat : null,
+            longitude: (lokasiMasuk && typeof lokasiMasuk.lng === 'number') ? lokasiMasuk.lng : null,
+            address: address || 'Alamat tidak diketahui',
             timestamp: new Date().toISOString()
         });
 
@@ -985,7 +992,7 @@ async function submitAbsensi(tipe) {
         }
 
         hideLoading();
-        alert('✅ Absensi masuk berhasil disimpan!');
+        window.showFormalAlert('Absensi masuk berhasil disimpan.', 'success', 'Berhasil');
 
         retakePhoto(tipe);
         updateUIAfterSubmit();
@@ -993,7 +1000,7 @@ async function submitAbsensi(tipe) {
     } catch (error) {
         console.error('Error submit absensi:', error);
         hideLoading();
-        alert('❌ Gagal menyimpan absensi. Silakan coba lagi.');
+        window.showFormalAlert('Gagal menyimpan absensi. Silakan coba lagi.', 'error', 'Gagal');
 
         const submitBtn = document.getElementById('submitBtnMasuk');
         submitBtn.innerHTML = 'Submit Absensi Masuk';
@@ -1040,21 +1047,9 @@ function updateUIAfterSubmit() {
     
     sessionStorage.setItem('waktu_masuk_iso', startIso);
 
-    startWorkClock(startIso)
+    startWorkClock(startIso);
 
-    const successDiv = document.createElement('div');
-    successDiv.innerHTML = `
-        <div style="position: fixed; top: 20px; right: 20px; background: #10b981; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 1000; animation: slideIn 0.3s ease-out;">
-            ✅ Absensi masuk berhasil dicatat!
-        </div>
-    `;
-    document.body.appendChild(successDiv);
-
-    setTimeout(() => {
-        if (successDiv.parentNode) {
-            successDiv.parentNode.removeChild(successDiv);
-        }
-    }, 3000);
+    window.showFormalAlert('Absensi masuk berhasil dicatat!', 'success', 'Absensi Berhasil');
 }
 
 /**
@@ -1073,7 +1068,7 @@ function retakePhoto(tipe) {
 
     const status = document.getElementById('cameraStatus');
     if (status) {
-        status.textContent = '✅ Kamera siap';
+        status.textContent = 'Kamera siap';
         status.style.color = '#10b981';
     }
 

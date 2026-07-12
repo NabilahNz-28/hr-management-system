@@ -27,7 +27,7 @@ class AuthController extends Controller
         return [
             'required',
             'confirmed',
-            PasswordRule::min(8)   // minimal 8 karakter
+            PasswordRule::min(6)   // minimal 6 karakter
                 ->letters()        // wajib ada huruf
                 ->mixedCase()      // wajib ada huruf besar & kecil
                 ->numbers()        // wajib ada angka
@@ -145,6 +145,16 @@ class AuthController extends Controller
             'token'    => 'required',
             'email'    => 'required|email',
             'password' => $this->passwordRules(),
+        ], [
+            'token.required'     => 'Token wajib ada.',
+            'email.required'     => 'Email wajib diisi.',
+            'password.required'  => 'Password baru wajib diisi.',
+            'password.confirmed' => 'Konfirmasi password baru tidak cocok.',
+            'password.min'       => 'Password minimal 6 karakter.',
+            'password.letters'   => 'Password wajib mengandung huruf.',
+            'password.mixed'     => 'Password wajib mengandung minimal 1 huruf kapital (besar) dan 1 huruf kecil.',
+            'password.numbers'   => 'Password wajib mengandung minimal 1 angka.',
+            'password.symbols'   => 'Password wajib mengandung minimal 1 simbol.',
         ]);
 
         $status = Password::reset(

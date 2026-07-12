@@ -13,15 +13,7 @@
         </div>
     </div>
 
-    {{-- Alert sukses --}}
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="close" data-dismiss="alert">
-                <span>&times;</span>
-            </button>
-        </div>
-    @endif
+
 
     {{-- Filter --}}
     <div class="card shadow mb-4" style="border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05) !important;">
@@ -86,12 +78,12 @@
                     <tbody>
                         @forelse($laporan ?? [] as $index => $inv)
                         <tr>
-                            <td>{{ ($laporan instanceof \Illuminate\Pagination\LengthAwarePaginator ? $laporan->firstItem() + $index : $index + 1) }}</td>
-                            <td>
+                            <td data-label="No">{{ ($laporan instanceof \Illuminate\Pagination\LengthAwarePaginator ? $laporan->firstItem() + $index : $index + 1) }}</td>
+                            <td data-label="No. Invoice">
                                 <span style="font-weight: 600; color: #1e293b;">{{ $inv['invoice_no'] }}</span>
                             </td>
-                            <td>{{ \Carbon\Carbon::parse($inv['tanggal'])->format('d M Y') }}</td>
-                            <td>
+                            <td data-label="Tanggal">{{ \Carbon\Carbon::parse($inv['tanggal'])->format('d M Y') }}</td>
+                            <td data-label="Produk">
                                 <div style="font-weight: 600; color: #1e293b;">
                                     <span class="badge" style="background:#f1f5f9; color:#334155; padding: 4px 8px; border-radius: 6px; font-size:12px;">{{ $inv['item_count'] }} Produk</span>
                                 </div>
@@ -99,10 +91,10 @@
                                     {{ $inv['produk_names'] }}
                                 </div>
                             </td>
-                            <td>
+                            <td data-label="Kategori">
                                 <span style="font-size: 13px; color: #475569;">{{ $inv['kategori_list'] ?: '-' }}</span>
                             </td>
-                            <td>
+                            <td data-label="Total Selisih">
                                 @if($inv['total_selisih'] > 0)
                                     <span style="color: #22c55e; font-weight: 600;">+{{ $inv['total_selisih'] }} pcs</span>
                                 @elseif($inv['total_selisih'] < 0)
@@ -111,8 +103,8 @@
                                     <span style="color: #64748b; font-weight: 600;">0 pcs</span>
                                 @endif
                             </td>
-                            <td>{{ $inv['catatan'] ?: '-' }}</td>
-                            <td class="text-center" style="position: relative;">
+                            <td data-label="Catatan">{{ $inv['catatan'] ?: '-' }}</td>
+                            <td data-label="" class="text-center" style="position: relative;">
                                 <div class="dropdown">
                                     <button class="btn btn-sm btn-light dropdown-toggle d-inline-flex align-items-center justify-content-center shadow-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px 12px; background: #ffffff; color: #334155; font-weight: 500; font-size: 13px; white-space: nowrap;">
                                         <i class="bi bi-three-dots me-1"></i> Opsi
@@ -125,7 +117,7 @@
                                         </li>
                                         <li><hr class="dropdown-divider my-1"></li>
                                         <li>
-                                            <form action="{{ route('inventory.laporan-opname.batalkan') }}" method="POST" onsubmit="return confirm('Yakin ingin membatalkan transaksi opname pada tanggal ini? Stok barang akan dikembalikan seperti semula.');">
+                                            <form action="{{ route('inventory.laporan-opname.batalkan') }}" method="POST" onsubmit="return window.confirmFormSubmit(event, 'Yakin ingin membatalkan transaksi opname pada tanggal ini? Stok barang akan dikembalikan seperti semula.', 'Batalkan Transaksi Opname');">
                                                 @csrf
                                                 @method('DELETE')
                                                 <input type="hidden" name="tanggal" value="{{ $inv['tanggal'] }}">
@@ -172,11 +164,11 @@
                                                         <tbody>
                                                             @foreach($inv['items'] as $item)
                                                             <tr>
-                                                                <td style="font-weight: 600; color: #1e293b;">{{ $item->inventory->nama_barang ?? '-' }}</td>
-                                                                <td>{{ ucfirst($item->inventory->kategori ?? '-') }}</td>
-                                                                <td>{{ $item->stok_sebelum }} pcs</td>
-                                                                <td>{{ $item->stok_sesudah }} pcs</td>
-                                                                <td>
+                                                                <td data-label="Nama Barang" style="font-weight: 600; color: #1e293b;">{{ $item->inventory->nama_barang ?? '-' }}</td>
+                                                                <td data-label="Kategori">{{ ucfirst($item->inventory->kategori ?? '-') }}</td>
+                                                                <td data-label="Stok Sebelum">{{ $item->stok_sebelum }} pcs</td>
+                                                                <td data-label="Stok Sesudah">{{ $item->stok_sesudah }} pcs</td>
+                                                                <td data-label="Selisih">
                                                                     @if($item->selisih > 0)
                                                                         <span style="color: #22c55e; font-weight: 600;">+{{ $item->selisih }}</span>
                                                                     @elseif($item->selisih < 0)
@@ -185,7 +177,7 @@
                                                                         <span>0</span>
                                                                     @endif
                                                                 </td>
-                                                                <td>{{ $item->catatan ?: '-' }}</td>
+                                                                <td data-label="Catatan">{{ $item->catatan ?: '-' }}</td>
                                                             </tr>
                                                             @endforeach
                                                         </tbody>

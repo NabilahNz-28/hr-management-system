@@ -73,7 +73,7 @@ class EmployeeController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => ['required', 'string', 'confirmed', Password::min(6)->letters()->mixedCase()->numbers()->symbols()],
             'phone' => 'required|string|max:20',
             'address' => 'required|string|max:255',
             'employee_id' => 'required|string|max:50|unique:employees',
@@ -84,6 +84,14 @@ class EmployeeController extends Controller
             'bank_name' => 'nullable|string|max:100',
             'bank_account' => 'nullable|string|max:50',
             'role_id' => 'required|exists:roles,id',
+        ], [
+            'password.required'  => 'Password wajib diisi.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
+            'password.min'       => 'Password minimal 6 karakter.',
+            'password.letters'   => 'Password wajib mengandung huruf.',
+            'password.mixed'     => 'Password wajib mengandung minimal 1 huruf kapital (besar) dan 1 huruf kecil.',
+            'password.numbers'   => 'Password wajib mengandung minimal 1 angka.',
+            'password.symbols'   => 'Password wajib mengandung minimal 1 simbol.',
         ]);
         
         DB::beginTransaction();

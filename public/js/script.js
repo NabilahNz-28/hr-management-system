@@ -94,9 +94,16 @@ document.addEventListener('click', function(event) {
         
         // Logout
         if (pageId === 'logout') {
-            if (confirm('Apakah Anda yakin ingin logout?')) {
+            if (typeof window.showFormalConfirm === 'function') {
+                window.showFormalConfirm('Apakah Anda yakin ingin keluar dari sistem?', 'Konfirmasi Logout', 'Ya, Keluar', 'Batal').then(confirmed => {
+                    if (confirmed) {
+                        if (typeof window.showFormalAlert === 'function') {
+                            window.showFormalAlert('Logout berhasil!', 'success', 'Berhasil');
+                        }
+                    }
+                });
+            } else if (confirm('Apakah Anda yakin ingin keluar dari sistem?')) {
                 alert('Logout berhasil!');
-                // window.location.href = '/login';
             }
             return;
         }
@@ -155,7 +162,6 @@ document.addEventListener('click', function(event) {
                 'rekap-bulanan': ['Rekap Absensi Bulanan', 'Statistik absensi bulan Desember 2025'],
                 'monitoring-live': ['Monitoring Live', 'Pantau absensi karyawan secara real-time'],
                 'laporan-absensi': ['Laporan Absensi', 'Laporan lengkap absensi karyawan'],
-                'laporan-keterlambatan': ['Laporan Keterlambatan', 'Laporan keterlambatan karyawan'],
                 'laporan-cuti': ['Laporan Cuti & Izin', 'Laporan cuti dan izin karyawan'],
                 'lokasi-kantor': ['Lokasi Kantor', 'Kelola lokasi kantor untuk validasi absensi'],
                 'jam-kerja': ['Jam Kerja', 'Atur jadwal jam kerja perusahaan'],
@@ -238,18 +244,26 @@ document.addEventListener('click', function(event) {
     // Konfirmasi sebelum submit (form izin/cuti tetap POST native ke server)
     const formIzin = document.getElementById('formIzin');
     if (formIzin) {
-        formIzin.addEventListener('submit', function(e) {
-            if (!confirm('Ajukan izin?')) {
-                e.preventDefault();
+        formIzin.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const confirmed = typeof window.showFormalConfirm === 'function' ?
+                await window.showFormalConfirm('Apakah Anda yakin ingin mengajukan izin ini?', 'Konfirmasi Pengajuan Izin', 'Ya, Ajukan', 'Batal') :
+                confirm('Apakah Anda yakin ingin mengajukan izin ini?');
+            if (confirmed) {
+                this.submit();
             }
         });
     }
 
     const formCuti = document.getElementById('formCuti');
     if (formCuti) {
-        formCuti.addEventListener('submit', function(e) {
-            if (!confirm('Ajukan cuti?')) {
-                e.preventDefault();
+        formCuti.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const confirmed = typeof window.showFormalConfirm === 'function' ?
+                await window.showFormalConfirm('Apakah Anda yakin ingin mengajukan cuti ini?', 'Konfirmasi Pengajuan Cuti', 'Ya, Ajukan', 'Batal') :
+                confirm('Apakah Anda yakin ingin mengajukan cuti ini?');
+            if (confirmed) {
+                this.submit();
             }
         });
     }
@@ -283,9 +297,17 @@ document.addEventListener('click', function(event) {
 
 function submitAttendance(type) {
     if (type === 'masuk') {
-        alert('Absensi masuk berhasil! Waktu: ' + new Date().toLocaleTimeString());
+        if (typeof window.showFormalAlert === 'function') {
+            window.showFormalAlert('Absensi masuk berhasil! Waktu: ' + new Date().toLocaleTimeString('id-ID'), 'success', 'Absensi Masuk Berhasil');
+        } else {
+            alert('Absensi masuk berhasil! Waktu: ' + new Date().toLocaleTimeString());
+        }
     } else if (type === 'pulang') {
-        alert('Absensi pulang berhasil! Waktu: ' + new Date().toLocaleTimeString());
+        if (typeof window.showFormalAlert === 'function') {
+            window.showFormalAlert('Absensi pulang berhasil! Waktu: ' + new Date().toLocaleTimeString('id-ID'), 'success', 'Absensi Pulang Berhasil');
+        } else {
+            alert('Absensi pulang berhasil! Waktu: ' + new Date().toLocaleTimeString());
+        }
     }
     
     // Simulate redirect to dashboard
@@ -304,7 +326,11 @@ function retakePhotoPulang() {
 }
 
 function showPhoto(name) {
-    alert(`Menampilkan foto absensi ${name}`);
+    if (typeof window.showFormalAlert === 'function') {
+        window.showFormalAlert(`Menampilkan foto absensi ${name}`, 'info', 'Foto Absensi');
+    } else {
+        alert(`Menampilkan foto absensi ${name}`);
+    }
 }
 
 // Simulate GPS data
@@ -347,3 +373,23 @@ setInterval(() => {
         }
     });
 }, 30000);
+
+// Global Password Toggle Helper (Hide/Unhide)
+window.togglePasswordVisibility = function(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const icon = btn.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        if (icon) {
+            icon.classList.remove('bi-eye');
+            icon.classList.add('bi-eye-slash');
+        }
+    } else {
+        input.type = 'password';
+        if (icon) {
+            icon.classList.remove('bi-eye-slash');
+            icon.classList.add('bi-eye');
+        }
+    }
+};

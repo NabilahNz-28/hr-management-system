@@ -17,3 +17,7 @@ use Illuminate\Support\Facades\Artisan;
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
+
+Artisan::command('absensi:clean-photos', function () {
+    $this->call('App\Console\Commands\CleanOldAttendancePhotos');
+})->purpose('Hapus (auto-delete) foto absen yang sudah berusia lebih dari 1 tahun');

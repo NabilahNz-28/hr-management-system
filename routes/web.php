@@ -81,6 +81,8 @@ Route::middleware('auth')->group(function () {
         ->name('superadmin.karyawan.update');
     Route::delete('/superadmin/karyawan/{id}', [SuperadminController::class, 'karyawanDestroy'])
         ->name('superadmin.karyawan.destroy');
+    Route::get('/superadmin/karyawan/{id}/attendance-data', [SuperadminController::class, 'karyawanAttendanceData'])
+        ->name('superadmin.karyawan.attendance-data');
 
     // Approval
     Route::get('/superadmin/approval', [SuperadminController::class, 'approvalIzinCuti'])
@@ -140,7 +142,6 @@ Route::middleware('auth')->group(function () {
     // LAPORAN ABSENSI
     Route::prefix('laporan')->name('laporan.')->group(function () {
         Route::get('/absensi', [AbsensiReportController::class, 'laporan'])->name('absensi');
-        Route::get('/terlambat', [AbsensiReportController::class, 'keterlambatan'])->name('terlambat');
         Route::get('/izin-cuti', [LaporanController::class, 'index'])->name('cuti');
     });
 

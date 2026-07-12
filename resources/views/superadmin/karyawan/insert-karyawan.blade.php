@@ -8,27 +8,6 @@
         <div class="content-title">Tambah Karyawan Baru</div>
         <p class="content-description">Superadmin mengisi data awal akun karyawan</p>
 
-        <!-- Alert Error -->
-        @if ($errors->any())
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <strong>❌ Gagal Menyimpan Data!</strong>
-            <ul class="mb-0" style="padding-left: 20px; margin-top: 8px;">
-                @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        @endif
-
-        <!-- Alert Success -->
-        @if (session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            ✅ {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        @endif
-
         <div class="form-card">
             <form method="POST" action="{{ route('superadmin.karyawan.store') }}">
                 @csrf
@@ -70,7 +49,12 @@
 
                         <div class="form-group">
                             <label>Password Awal <span class="required">*</span></label>
-                            <input type="password" class="form-control @error('password') is-invalid @enderror" name="password" required>
+                            <div class="password-input-group">
+                                <input type="password" id="insert_password" class="form-control @error('password') is-invalid @enderror" name="password" required>
+                                <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('insert_password', this)" title="Tampilkan/Sembunyikan Password">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
                             @error('password')
                             <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
@@ -79,7 +63,12 @@
 
                         <div class="form-group">
                             <label>Konfirmasi Password <span class="required">*</span></label>
-                            <input type="password" class="form-control @error('password_confirmation') is-invalid @enderror" name="password_confirmation" required>
+                            <div class="password-input-group">
+                                <input type="password" id="insert_password_confirmation" class="form-control @error('password_confirmation') is-invalid @enderror" name="password_confirmation" required>
+                                <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('insert_password_confirmation', this)" title="Tampilkan/Sembunyikan Password">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
                             @error('password_confirmation')
                             <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror

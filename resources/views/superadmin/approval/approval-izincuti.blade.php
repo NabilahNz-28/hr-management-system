@@ -8,13 +8,6 @@
         <div class="content-title">Approval Data Izin Cuti</div>
         <p class="content-description">Daftar pengajuan izin dan cuti yang menunggu persetujuan.</p>
 
-        @if(session('success'))
-            <div class="alert-box alert-success" style="margin-bottom: 20px;">
-                <span class="alert-icon">✓</span>
-                <span>{{ session('success') }}</span>
-            </div>
-        @endif
-
         <div class="table-responsive">
             <table class="data-table-laporan">
                 <thead>

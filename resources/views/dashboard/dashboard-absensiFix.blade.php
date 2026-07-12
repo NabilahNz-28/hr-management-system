@@ -33,20 +33,6 @@
 
             <div class="stat-card">
                 <div class="stat-header">
-                    <span class="stat-title">Keterlambatan</span>
-                    <div class="stat-icon icon-late">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"/>
-                            <polyline points="12 6 12 12 16 14"/>
-                        </svg>
-                    </div>
-                </div>
-                <div class="stat-value" id="total-terlambat">0</div>
-                <div class="stat-change warning" id="terlambat-change">Kali Terlambat</div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-header">
                     <span class="stat-title">Libur</span>
                     <div class="stat-icon icon-absent">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -152,7 +138,6 @@
         const sisaHari = data.total_hari_kerja - (data.hadir + data.libur + data.cuti + data.izin);
 
         document.getElementById('total-hadir').textContent = data.hadir;
-        document.getElementById('total-terlambat').textContent = data.terlambat;
         document.getElementById('total-libur').textContent = data.libur;
         document.getElementById('total-cuti').textContent = data.cuti;
         document.getElementById('total-izin').textContent = data.izin;
@@ -180,18 +165,6 @@
             statusBadge.textContent = 'Sedang Berjalan';
             statusBadge.style.background = '#d1fae5';
             statusBadge.style.color = '#065f46';
-        }
-
-        const terlambatEl = document.getElementById('terlambat-change');
-        if (data.terlambat === 0) {
-            terlambatEl.innerHTML = '✨ Disiplin! ✨';
-            terlambatEl.className = 'stat-change positive';
-        } else if (data.terlambat <= 2) {
-            terlambatEl.innerHTML = `${data.terlambat} Kali Terlambat (Perbaiki)`;
-            terlambatEl.className = 'stat-change warning';
-        } else {
-            terlambatEl.innerHTML = `${data.terlambat} Kali Terlambat (Perhatian!)`;
-            terlambatEl.className = 'stat-change negative';
         }
     }
 

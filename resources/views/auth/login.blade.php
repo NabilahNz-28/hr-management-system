@@ -30,13 +30,6 @@
                 <p class="text-muted mb-0">Silakan login ke akun Anda</p>
             </div>
 
-            @if(session('error'))
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="fas fa-exclamation-circle me-2"></i> {{ session('error') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
             <form method="POST" action="{{ route('login') }}">
                 @csrf
 
@@ -116,6 +109,33 @@
             eyeIcon.classList.add('fa-eye');
         }
     });
-</script>
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        @if(session('error'))
+          if (typeof Swal !== 'undefined') {
+            Swal.fire({
+              title: 'Gagal',
+              text: {!! json_encode(preg_replace('/[\x{1F600}-\x{1F64F}\x{1F300}-\x{1F5FF}\x{1F680}-\x{1F6FF}\x{1F700}-\x{1F77F}\x{1F780}-\x{1F7FF}\x{1F800}-\x{1F8FF}\x{1F900}-\x{1F9FF}\x{1FA00}-\x{1FA6F}\x{1FA70}-\x{1FAFF}\x{2600}-\x{26FF}\x{2700}-\x{27BF}]/u', '', session('error'))) !!},
+              icon: 'error',
+              confirmButtonText: 'Tutup',
+              confirmButtonColor: '#0f172a'
+            });
+          }
+        @endif
+        @if(session('success'))
+          if (typeof Swal !== 'undefined') {
+            Swal.fire({
+              title: 'Berhasil',
+              text: {!! json_encode(preg_replace('/[\x{1F600}-\x{1F64F}\x{1F300}-\x{1F5FF}\x{1F680}-\x{1F6FF}\x{1F700}-\x{1F77F}\x{1F780}-\x{1F7FF}\x{1F800}-\x{1F8FF}\x{1F900}-\x{1F9FF}\x{1FA00}-\x{1FA6F}\x{1FA70}-\x{1FAFF}\x{2600}-\x{26FF}\x{2700}-\x{27BF}]/u', '', session('success'))) !!},
+              icon: 'success',
+              confirmButtonText: 'Tutup',
+              confirmButtonColor: '#0f172a'
+            });
+          }
+        @endif
+      });
+    </script>
 </body>
 </html>

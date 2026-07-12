@@ -8,21 +8,6 @@
         <div class="content-title text-center">Profile Super Admin</div>
         <p class="content-description text-center">Kelola data diri dan keamanan akun Anda</p>
 
-        @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                ✅ {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        @endif
-        @if($errors->any())
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <ul class="mb-0" style="padding-left:18px;">
-                    @foreach($errors->all() as $err)<li>{{ $err }}</li>@endforeach
-                </ul>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        @endif
-
         <!-- Card Profile -->
         <div class="profile-card-superadmin">
             <!-- Form Data Diri -->
@@ -96,9 +81,24 @@
                 <form class="password-form-superadmin" method="POST" action="{{ route('superadmin.profile.password') }}">
                     @csrf
                     @method('PUT')
-                    <input type="password" name="current_password" class="form-control" placeholder="Password lama" required>
-                    <input type="password" name="password" class="form-control" placeholder="Password baru (min. 6 karakter)" required>
-                    <input type="password" name="password_confirmation" class="form-control" placeholder="Konfirmasi password baru" required>
+                    <div class="password-input-group">
+                        <input type="password" id="sa_current_password" name="current_password" class="form-control" placeholder="Password lama" required>
+                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('sa_current_password', this)" title="Tampilkan/Sembunyikan Password">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                    <div class="password-input-group">
+                        <input type="password" id="sa_password" name="password" class="form-control" placeholder="Password baru (min. 6 karakter)" required>
+                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('sa_password', this)" title="Tampilkan/Sembunyikan Password">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                    <div class="password-input-group">
+                        <input type="password" id="sa_password_confirmation" name="password_confirmation" class="form-control" placeholder="Konfirmasi password baru" required>
+                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('sa_password_confirmation', this)" title="Tampilkan/Sembunyikan Password">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
                     <button type="submit" class="btn btn-primary btn-small">Ubah Password</button>
                 </form>
             </div>
@@ -121,8 +121,8 @@
     function previewFoto(input) {
         const file = input.files[0];
         if (!file) return;
-        if (!file.type.match('image.*')) { alert('File harus gambar'); input.value = ''; return; }
-        if (file.size > 2 * 1024 * 1024) { alert('Maksimal 2MB'); input.value = ''; return; }
+        if (!file.type.match('image.*')) { window.showFormalAlert('Format file harus berupa gambar.', 'warning', 'Peringatan'); input.value = ''; return; }
+        if (file.size > 2 * 1024 * 1024) { window.showFormalAlert('Ukuran file maksimal adalah 2MB.', 'warning', 'Peringatan'); input.value = ''; return; }
         const reader = new FileReader();
         reader.onload = e => document.getElementById('foto-profile').src = e.target.result;
         reader.readAsDataURL(file);
