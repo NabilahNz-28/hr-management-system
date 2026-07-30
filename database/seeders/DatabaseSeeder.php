@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -12,26 +13,34 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Pastikan kita membuat user dummy jika belum ada
         if (User::count() === 0) {
+            // 2 Superadmin
+            for ($i = 1; $i <= 2; $i++) {
+                User::create([
+                    'name' => "Superadmin {$i}",
+                    'email' => "superadmin{$i}@test.com",
+                    'password' => Hash::make('password123'),
+                    'role' => 'superadmin'
+                ]);
+            }
+
+            // 1 PIC
             User::create([
-                'name' => 'Karyawan Test',
-                'email' => 'karyawan@test.com',
-                'password' => bcrypt('password'),
-                'role' => 'karyawan'
+                'name' => "PIC 1",
+                'email' => "pic1@test.com",
+                'password' => Hash::make('password123'),
+                'role' => 'pic' // Di aplikasi mungkin lowercase
             ]);
-            User::create([
-                'name' => 'PIC Test',
-                'email' => 'pic@test.com',
-                'password' => bcrypt('password'),
-                'role' => 'pic'
-            ]);
-            User::create([
-                'name' => 'Superadmin Test',
-                'email' => 'superadmin@test.com',
-                'password' => bcrypt('password'),
-                'role' => 'superadmin'
-            ]);
+
+            // 10 Karyawan
+            for ($i = 1; $i <= 10; $i++) {
+                User::create([
+                    'name' => "Karyawan {$i}",
+                    'email' => "karyawan{$i}@test.com",
+                    'password' => Hash::make('password123'),
+                    'role' => 'karyawan'
+                ]);
+            }
         }
 
         $this->call([

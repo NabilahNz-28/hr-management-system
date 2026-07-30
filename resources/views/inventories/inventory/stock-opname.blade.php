@@ -11,27 +11,43 @@
                     <p>Pilih kategori untuk melihat barang yang tersedia:</p>
                 </div>
                 
-                    <div class="category-filter">
+                <div class="category-filter" style="align-items: flex-start;">
 
                     <!-- Tombol kategori (kiri) -->
-                    <div class="category-buttons">
-                        <a href="{{ route('inventory.stock-opname', ['kategori' => 'all']) }}" class="category-btn {{ request('kategori', 'all') == 'all' ? 'active' : '' }}">Semua Kategori</a>
-                        <a href="{{ route('inventory.stock-opname', ['kategori' => 'eco']) }}" class="category-btn {{ request('kategori') == 'eco' ? 'active' : '' }}">Eco</a>
-                        <a href="{{ route('inventory.stock-opname', ['kategori' => 'fragile']) }}" class="category-btn {{ request('kategori') == 'fragile' ? 'active' : '' }}">Fragile</a>
-                        <a href="{{ route('inventory.stock-opname', ['kategori' => 'plastic']) }}" class="category-btn {{ request('kategori') == 'plastic' ? 'active' : '' }}">Plastic</a>
-                        <a href="{{ route('inventory.stock-opname', ['kategori' => 'thermal']) }}" class="category-btn {{ request('kategori') == 'thermal' ? 'active' : '' }}">Thermal</a>
-                        <a href="{{ route('inventory.stock-opname', ['kategori' => 'carton']) }}" class="category-btn {{ request('kategori') == 'carton' ? 'active' : '' }}">Carton</a>
-                        <a href="{{ route('inventory.stock-opname', ['kategori' => 'other']) }}" class="category-btn {{ request('kategori') == 'other' ? 'active' : '' }}">Other</a>
+                    <div class="category-buttons" style="margin-top: 5px;">
+                        <a href="{{ route('inventory.stock-opname', array_merge(request()->query(), ['kategori' => 'all'])) }}" class="category-btn {{ request('kategori', 'all') == 'all' ? 'active' : '' }}">Semua Kategori</a>
+                        <a href="{{ route('inventory.stock-opname', array_merge(request()->query(), ['kategori' => 'eco'])) }}" class="category-btn {{ request('kategori') == 'eco' ? 'active' : '' }}">Eco</a>
+                        <a href="{{ route('inventory.stock-opname', array_merge(request()->query(), ['kategori' => 'fragile'])) }}" class="category-btn {{ request('kategori') == 'fragile' ? 'active' : '' }}">Fragile</a>
+                        <a href="{{ route('inventory.stock-opname', array_merge(request()->query(), ['kategori' => 'plastic'])) }}" class="category-btn {{ request('kategori') == 'plastic' ? 'active' : '' }}">Plastic</a>
+                        <a href="{{ route('inventory.stock-opname', array_merge(request()->query(), ['kategori' => 'thermal'])) }}" class="category-btn {{ request('kategori') == 'thermal' ? 'active' : '' }}">Thermal</a>
+                        <a href="{{ route('inventory.stock-opname', array_merge(request()->query(), ['kategori' => 'carton'])) }}" class="category-btn {{ request('kategori') == 'carton' ? 'active' : '' }}">Carton</a>
+                        <a href="{{ route('inventory.stock-opname', array_merge(request()->query(), ['kategori' => 'other'])) }}" class="category-btn {{ request('kategori') == 'other' ? 'active' : '' }}">Other</a>
                     </div>
 
-                    <!-- Tombol aksi di kanan: Tambahkan Barang + Input Opname -->
-                    <div class="action-buttons">
-                        <a href="{{ route('inventory.tambah-barang') }}" class="btn btn-black">
-                            <i class="bi bi-plus-circle me-2"></i> Tambahkan Barang
-                        </a>
-                        <a href="{{ route('inventory.input-opname') }}" class="btn btn-black">
-                            <i class="bi bi-card-checklist me-2"></i> Input Opname
-                        </a>
+                    <!-- Kolom Kanan: Search Bar + Tombol Aksi -->
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 15px;">
+                        <form method="GET" action="{{ route('inventory.stock-opname') }}" style="display: flex; gap: 10px; width: 100%; min-width: 300px; justify-content: flex-end;">
+                            @if(request('kategori'))
+                                <input type="hidden" name="kategori" value="{{ request('kategori') }}">
+                            @endif
+                            <input type="text" name="search" placeholder="Cari nama barang..." value="{{ request('search') }}" style="flex: 1; padding: 10px 15px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; outline: none;">
+                            <button type="submit" class="btn btn-black" style="background-color: #0f172a; color: white; padding: 10px 15px; border-radius: 8px; border: none; font-weight: 500; cursor: pointer; transition: background 0.3s;">
+                                <i class="bi bi-search"></i>
+                            </button>
+                            @if(request('search'))
+                                <a href="{{ route('inventory.stock-opname', ['kategori' => request('kategori')]) }}" class="btn" style="background-color: #f1f5f9; color: #334155; padding: 10px 15px; border-radius: 8px; text-decoration: none;">Reset</a>
+                            @endif
+                        </form>
+
+                        <!-- Tombol aksi di kanan: Tambahkan Barang + Input Opname -->
+                        <div class="action-buttons">
+                            <a href="{{ route('inventory.tambah-barang') }}" class="btn btn-black">
+                                <i class="bi bi-plus-circle me-2"></i> Tambahkan Barang
+                            </a>
+                            <a href="{{ route('inventory.input-opname') }}" class="btn btn-black">
+                                <i class="bi bi-card-checklist me-2"></i> Input Opname
+                            </a>
+                        </div>
                     </div>
                 </div>
 

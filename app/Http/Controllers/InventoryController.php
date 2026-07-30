@@ -26,6 +26,11 @@ class InventoryController extends Controller
         $this->authorizeOnlyPic();
 
         $query = Inventory::orderBy('nama_barang');
+        
+        if ($request->filled('search')) {
+            $query->where('nama_barang', 'like', '%' . $request->search . '%');
+        }
+        
         if ($request->filled('kategori') && $request->kategori !== 'all') {
             $query->where('kategori', $request->kategori);
         }
