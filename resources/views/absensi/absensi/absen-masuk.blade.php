@@ -728,8 +728,9 @@ function errorGPS(err, tipe) {
 }
 
 function updateLokasiFallback(tipe) {
-    const fallbackLat = -6.2088 + (Math.random() * 0.1 - 0.05);
-    const fallbackLng = 106.8456 + (Math.random() * 0.1 - 0.05);
+    // Fallback ke koordinat kantor jika GPS gagal
+    const fallbackLat = KANTOR_LAT;
+    const fallbackLng = KANTOR_LNG;
 
     lokasiMasuk = { lat: fallbackLat, lng: fallbackLng, accuracy: 1000 };
     updatePetaMasuk(fallbackLat, fallbackLng);
