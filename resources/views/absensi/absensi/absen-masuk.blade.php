@@ -332,8 +332,15 @@
  * ===================== KONFIGURASI =====================
  */
 const TIMEOUT = 30; // detik
-const KANTOR_LAT = -6.058908; // Untuk referensi saja
+const KANTOR_LAT = -6.058908;
 const KANTOR_LNG = 106.653040;
+
+// GPS Accuracy Config
+const GPS_ACCURACY_THRESHOLD = 100;   // Meter - GPS ditolak jika akurasi > ini
+const GPS_READINGS_NEEDED = 8;        // Jumlah reading untuk averaging
+const GPS_READING_INTERVAL = 2000;    // Interval antar reading (ms)
+let gpsReadings = [];                 // Array posisi terkumpul
+let gpsReadingTimer = null;
 
 // Waktu Kerja
 
@@ -653,88 +660,166 @@ function initPetaMasuk() {
 
 /**
  * ===================== GPS & LOKASI =====================
- * (bagian ini sama seperti file kamu)
+ * Multi-reading averaging: ambil 8 posisi GPS, buang outlier, rata-rata
  */
 function updateGPS(tipe) {
     if (!navigator.geolocation) {
         updateGPSStatus(tipe, false, 'Browser tidak mendukung GPS');
-        updateLokasiFallback(tipe);
+        updateLokasiFallback(tipe, 'browser');
         return;
     }
 
-    updateGPSStatus(tipe, false, 'Mendeteksi lokasi...');
+    // Reset
+    gpsReadings = [];
+    if (gpsReadingTimer) clearInterval(gpsReadingTimer);
 
+    updateGPSStatus(tipe, false, `Mengambil ${GPS_READINGS_NEEDED} pembacaan GPS...`);
+
+    // Ambil reading pertama langsung
+    takeGPSReading(tipe);
+
+    // Ambil reading berikutnya setiap interval
+    gpsReadingTimer = setInterval(() => {
+        takeGPSReading(tipe);
+    }, GPS_READING_INTERVAL);
+}
+
+function takeGPSReading(tipe) {
     navigator.geolocation.getCurrentPosition(
-        (pos) => successGPS(pos, tipe),
-        (err) => errorGPS(err, tipe),
-        {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0
-        }
+        (pos) => {
+            gpsReadings.push({
+                lat: pos.coords.latitude,
+                lng: pos.coords.longitude,
+                accuracy: pos.coords.accuracy
+            });
+            console.log(`GPS reading ${gpsReadings.length}/${GPS_READINGS_NEEDED}:`, pos.coords.latitude, pos.coords.longitude, `±${Math.round(pos.coords.accuracy)}m`);
+
+            updateGPSStatus(tipe, false, `Mengambil pembacaan... (${gpsReadings.length}/${GPS_READINGS_NEEDED})`);
+
+            // Jika sudah cukup, proses
+            if (gpsReadings.length >= GPS_READINGS_NEEDED) {
+                clearInterval(gpsReadingTimer);
+                gpsReadingTimer = null;
+                processGPSReadings(tipe);
+            }
+        },
+        (err) => {
+            console.warn(`GPS reading error:`, err.message);
+            // Tetap lanjut ambil reading lain
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
+}
+
+/**
+ * Proses readings: buang outlier (di luar 2 std dev), rata-rata sisanya
+ */
+function processGPSReadings(tipe) {
+    if (gpsReadings.length === 0) {
+        updateGPSStatus(tipe, false, 'Tidak ada pembacaan GPS berhasil');
+        attemptIPGeolocation(tipe);
+        return;
+    }
+
+    // Jika hanya 1 reading, pakai langsung
+    if (gpsReadings.length === 1) {
+        applyGPSResult(gpsReadings[0].lat, gpsReadings[0].lng, gpsReadings[0].accuracy, tipe);
+        return;
+    }
+
+    // Hitung mean
+    const meanLat = gpsReadings.reduce((s, r) => s + r.lat, 0) / gpsReadings.length;
+    const meanLng = gpsReadings.reduce((s, r) => s + r.lng, 0) / gpsReadings.length;
+
+    // Hitung std dev
+    const stdDevLat = Math.sqrt(gpsReadings.reduce((s, r) => s + Math.pow(r.lat - meanLat, 2), 0) / gpsReadings.length);
+    const stdDevLng = Math.sqrt(gpsReadings.reduce((s, r) => s + Math.pow(r.lng - meanLng, 2), 0) / gpsReadings.length);
+
+    // Buang outlier (di luar 2 std dev)
+    const filtered = gpsReadings.filter(r => {
+        const dLat = Math.abs(r.lat - meanLat);
+        const dLng = Math.abs(r.lng - meanLng);
+        return dLat <= 2 * stdDevLat && dLng <= 2 * stdDevLng;
+    });
+
+    console.log(`Readings: ${gpsReadings.length} total, ${filtered.length} setelah filter outlier`);
+
+    if (filtered.length === 0) {
+        // Semua outlier? Pakai mean saja
+        const bestAccuracy = Math.min(...gpsReadings.map(r => r.accuracy));
+        applyGPSResult(meanLat, meanLng, bestAccuracy, tipe);
+        return;
+    }
+
+    // Weighted average: bobot = 1/accuracy (akurasi lebih baik = bobot lebih tinggi)
+    let weightedLat = 0, weightedLng = 0, totalWeight = 0;
+    filtered.forEach(r => {
+        const weight = 1 / Math.max(r.accuracy, 1); // hindari div by 0
+        weightedLat += r.lat * weight;
+        weightedLng += r.lng * weight;
+        totalWeight += weight;
+    });
+
+    const finalLat = weightedLat / totalWeight;
+    const finalLng = weightedLng / totalWeight;
+
+    // Estimasi akurasi final = rata-rata akurasi readings yang di-filter / sqrt(n)
+    // Statistical improvement: akurasi naik dengan sqrt(n)
+    const avgAccuracy = filtered.reduce((s, r) => s + r.accuracy, 0) / filtered.length;
+    const finalAccuracy = avgAccuracy / Math.sqrt(filtered.length);
+
+    console.log('GPS Final (averaged):', { lat: finalLat, lng: finalLng, accuracy: finalAccuracy, readings: filtered.length });
+
+    applyGPSResult(finalLat, finalLng, finalAccuracy, tipe);
+}
+
+function applyGPSResult(lat, lng, accuracy, tipe) {
+    lokasiMasuk = { lat, lng, accuracy, source: 'gps' };
+    updatePetaMasuk(lat, lng);
+    updateInfoLokasi(tipe, lat, lng);
+    updateGPSStatus(tipe, true, `Akurasi: ±${Math.round(accuracy)}m ✓ (${gpsReadings.length} pembacaan)`);
+    cekValidasiSubmit(tipe);
 }
 
 function refreshGPS(tipe) {
     const status = document.getElementById('gpsStatusMasuk');
-
     if (status) {
         status.innerHTML = `
-            <div>Memuat ulang GPS...</div>
+            <div>🔄</div>
             <div>
                 <div style="font-weight: 500;">Memuat ulang GPS...</div>
-                <div style="font-size: 12px;">Harap tunggu</div>
+                <div style="font-size: 12px;">Mengambil ${GPS_READINGS_NEEDED} pembacaan baru</div>
             </div>
         `;
         status.style.background = '#fef3c7';
     }
-
     updateGPS(tipe);
 }
 
-function successGPS(pos, tipe) {
-    const lat = pos.coords.latitude;
-    const lng = pos.coords.longitude;
-    const accuracy = pos.coords.accuracy;
-
-    console.log('GPS Success:', { lat, lng, accuracy });
-
-    lokasiMasuk = { lat, lng, accuracy };
-    updatePetaMasuk(lat, lng);
-    updateInfoLokasi(tipe, lat, lng);
-    updateGPSStatus(tipe, true, `Akurasi: ±${Math.round(accuracy)}m`);
-
-    cekValidasiSubmit(tipe);
+function attemptIPGeolocation(tipe) {
+    fetch('https://ipapi.co/json/')
+        .then(res => res.json())
+        .then(data => {
+            if (data.latitude && data.longitude) {
+                console.log('IP Geolocation:', data.latitude, data.longitude, data.city);
+                lokasiMasuk = { lat: data.latitude, lng: data.longitude, accuracy: 5000, source: 'ip' };
+                updatePetaMasuk(data.latitude, data.longitude);
+                updateInfoLokasi(tipe, data.latitude, data.longitude);
+                updateGPSStatus(tipe, true, `Lokasi via IP: ${data.city || 'Unknown'} (±5km)`);
+                cekValidasiSubmit(tipe);
+            } else {
+                updateLokasiFallback(tipe, 'ip');
+            }
+        })
+        .catch(() => updateLokasiFallback(tipe, 'ip'));
 }
 
-function errorGPS(err, tipe) {
-    console.error('GPS Error:', err.code, err.message);
-
-    let errorMessage = 'Gagal mendapatkan lokasi';
-    switch(err.code) {
-        case err.PERMISSION_DENIED:
-            errorMessage = 'Izin lokasi ditolak';
-            break;
-        case err.POSITION_UNAVAILABLE:
-            errorMessage = 'Informasi lokasi tidak tersedia';
-            break;
-        case err.TIMEOUT:
-            errorMessage = 'Timeout mendapatkan lokasi';
-            break;
-    }
-
-    updateGPSStatus(tipe, false, errorMessage);
-    updateLokasiFallback(tipe);
-}
-
-function updateLokasiFallback(tipe) {
-    // Fallback ke koordinat kantor jika GPS gagal
-    const fallbackLat = KANTOR_LAT;
-    const fallbackLng = KANTOR_LNG;
-
-    lokasiMasuk = { lat: fallbackLat, lng: fallbackLng, accuracy: 1000 };
-    updatePetaMasuk(fallbackLat, fallbackLng);
-    updateInfoLokasi(tipe, fallbackLat, fallbackLng);
+function updateLokasiFallback(tipe, source) {
+    lokasiMasuk = { lat: KANTOR_LAT, lng: KANTOR_LNG, accuracy: 1000, source: 'kantor' };
+    updatePetaMasuk(KANTOR_LAT, KANTOR_LNG);
+    updateInfoLokasi(tipe, KANTOR_LAT, KANTOR_LNG);
+    const label = source === 'ip' ? 'IP juga gagal, ' : '';
+    updateGPSStatus(tipe, false, `${label}Menggunakan lokasi kantor (mode fallback)`);
     cekValidasiSubmit(tipe);
 }
 

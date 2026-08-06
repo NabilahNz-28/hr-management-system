@@ -322,6 +322,13 @@ const TIMEOUT = 30;
 const KANTOR_LAT = -6.058908;
 const KANTOR_LNG = 106.653040;
 
+// GPS Accuracy Config
+const GPS_ACCURACY_THRESHOLD = 100;
+const GPS_READINGS_NEEDED = 8;
+const GPS_READING_INTERVAL = 2000;
+let gpsReadings = [];
+let gpsReadingTimer = null;
+
 let kameraPulang = null;
 let lokasiPulang = null;
 let petaPulang = null;
@@ -533,31 +540,94 @@ function initPetaPulang() {
 function updateGPS(tipe) {
   if (!navigator.geolocation) {
     updateGPSStatus(tipe, false, 'Browser tidak mendukung GPS');
+    updateLokasiFallback(tipe, 'browser');
     return;
   }
+  gpsReadings = [];
+  if (gpsReadingTimer) clearInterval(gpsReadingTimer);
+  updateGPSStatus(tipe, false, `Mengambil ${GPS_READINGS_NEEDED} pembacaan GPS...`);
+  takeGPSReading(tipe);
+  gpsReadingTimer = setInterval(() => takeGPSReading(tipe), GPS_READING_INTERVAL);
+}
+
+function takeGPSReading(tipe) {
   navigator.geolocation.getCurrentPosition(
-    (pos) => successGPS(pos, tipe),
-    (err) => errorGPS(err, tipe),
-    { enableHighAccuracy: true, timeout: 10000 }
+    (pos) => {
+      gpsReadings.push({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
+      updateGPSStatus(tipe, false, `Mengambil pembacaan... (${gpsReadings.length}/${GPS_READINGS_NEEDED})`);
+      if (gpsReadings.length >= GPS_READINGS_NEEDED) {
+        clearInterval(gpsReadingTimer);
+        gpsReadingTimer = null;
+        processGPSReadings(tipe);
+      }
+    },
+    () => {},
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
   );
 }
 
-function refreshGPS(tipe) {
-  updateGPS(tipe);
+function processGPSReadings(tipe) {
+  if (gpsReadings.length === 0) {
+    updateGPSStatus(tipe, false, 'Tidak ada pembacaan GPS berhasil');
+    attemptIPGeolocation(tipe);
+    return;
+  }
+  if (gpsReadings.length === 1) {
+    applyGPSResult(gpsReadings[0].lat, gpsReadings[0].lng, gpsReadings[0].accuracy, tipe);
+    return;
+  }
+  const meanLat = gpsReadings.reduce((s, r) => s + r.lat, 0) / gpsReadings.length;
+  const meanLng = gpsReadings.reduce((s, r) => s + r.lng, 0) / gpsReadings.length;
+  const stdDevLat = Math.sqrt(gpsReadings.reduce((s, r) => s + Math.pow(r.lat - meanLat, 2), 0) / gpsReadings.length);
+  const stdDevLng = Math.sqrt(gpsReadings.reduce((s, r) => s + Math.pow(r.lng - meanLng, 2), 0) / gpsReadings.length);
+  const filtered = gpsReadings.filter(r => Math.abs(r.lat - meanLat) <= 2 * stdDevLat && Math.abs(r.lng - meanLng) <= 2 * stdDevLng);
+  if (filtered.length === 0) {
+    applyGPSResult(meanLat, meanLng, Math.min(...gpsReadings.map(r => r.accuracy)), tipe);
+    return;
+  }
+  let wLat = 0, wLng = 0, tw = 0;
+  filtered.forEach(r => { const w = 1 / Math.max(r.accuracy, 1); wLat += r.lat * w; wLng += r.lng * w; tw += w; });
+  const finalLat = wLat / tw, finalLng = wLng / tw;
+  const avgAcc = filtered.reduce((s, r) => s + r.accuracy, 0) / filtered.length;
+  const finalAcc = avgAcc / Math.sqrt(filtered.length);
+  applyGPSResult(finalLat, finalLng, finalAcc, tipe);
 }
 
-function successGPS(pos, tipe) {
-  const lat = pos.coords.latitude;
-  const lng = pos.coords.longitude;
-  lokasiPulang = { lat, lng };
+function applyGPSResult(lat, lng, accuracy, tipe) {
+  lokasiPulang = { lat, lng, accuracy, source: 'gps' };
   updatePetaPulang(lat, lng);
   updateInfoLokasi(tipe, lat, lng);
-  updateGPSStatus(tipe, true, `Akurasi: ±${Math.round(pos.coords.accuracy)}m`);
+  updateGPSStatus(tipe, true, `Akurasi: ±${Math.round(accuracy)}m ✓ (${gpsReadings.length} pembacaan)`);
   cekValidasiSubmit(tipe);
 }
 
-function errorGPS(err, tipe) {
-  updateGPSStatus(tipe, false, 'Gagal mendapatkan lokasi');
+function refreshGPS(tipe) { updateGPS(tipe); }
+
+function attemptIPGeolocation(tipe) {
+  fetch('https://ipapi.co/json/')
+    .then(res => res.json())
+    .then(data => {
+      if (data.latitude && data.longitude) {
+        lokasiPulang = { lat: data.latitude, lng: data.longitude, accuracy: 5000, source: 'ip' };
+        updatePetaPulang(data.latitude, data.longitude);
+        updateInfoLokasi(tipe, data.latitude, data.longitude);
+        updateGPSStatus(tipe, true, `Lokasi via IP: ${data.city || 'Unknown'} (±5km)`);
+        cekValidasiSubmit(tipe);
+      } else {
+        updateLokasiFallback(tipe, 'ip');
+      }
+    })
+    .catch(() => updateLokasiFallback(tipe, 'ip'));
+}
+
+function updateLokasiFallback(tipe, source) {
+  if (gpsWatchId !== null) { navigator.geolocation.clearWatch(gpsWatchId); gpsWatchId = null; }
+  lokasiPulang = { lat: KANTOR_LAT, lng: KANTOR_LNG, accuracy: 1000, source: 'kantor' };
+  updatePetaPulang(KANTOR_LAT, KANTOR_LNG);
+  updateInfoLokasi(tipe, KANTOR_LAT, KANTOR_LNG);
+  const sourceLabel = source === 'ip' ? 'IP juga gagal, ' : '';
+  updateGPSStatus(tipe, false, `${sourceLabel}Menggunakan lokasi kantor (mode fallback)`);
+  cekValidasiSubmit(tipe);
 }
 
 function updatePetaPulang(lat, lng) {
@@ -585,7 +655,16 @@ function getAddressFromCoordinates(lat, lng) {
 
 function updateGPSStatus(tipe, sukses, pesan) {
   const status = document.getElementById('gpsStatusPulang');
-  if (status) status.innerHTML = `<div>${pesan}</div>`;
+  if (!status) return;
+  if (sukses) {
+    status.innerHTML = `<div>✅</div><div><div style="font-weight:500;">GPS Aktif</div><div style="font-size:12px;">${pesan}</div></div>`;
+    status.style.background = '#f0fdf4';
+    status.style.borderColor = '#bbf7d0';
+  } else {
+    status.innerHTML = `<div>⚠️</div><div><div style="font-weight:500;">Mode Simulasi</div><div style="font-size:12px;">${pesan}</div></div>`;
+    status.style.background = '#fef3c7';
+    status.style.borderColor = '#fde68a';
+  }
 }
 
 async function ambilFoto(tipe) {
