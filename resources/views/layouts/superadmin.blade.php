@@ -17,9 +17,6 @@
   <!-- Mobile Menu Button -->
   <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
 
-  <!-- Sidebar Overlay -->
-  <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
   @include('layouts.sidebar-superadmin')
   <div id="main-content" class="main-content">
     @include('layouts.topbar-absen')
@@ -211,59 +208,6 @@
           });
         }
       @endif
-    });
-  </script>
-  <script>
-    // Mobile sidebar toggle — matches PIC layout behavior
-    document.addEventListener('DOMContentLoaded', function() {
-        var sidebar = document.getElementById('sidebar');
-        var mainContent = document.getElementById('main-content');
-        var toggleBtn = document.getElementById('sidebarToggle') || document.getElementById('toggle-sidebar');
-        var mobileMenuBtn = document.getElementById('mobileMenuBtn');
-        var sidebarOverlay = document.getElementById('sidebarOverlay');
-
-        function toggleMobile() {
-            if (sidebar) sidebar.classList.toggle('mobile-open');
-            if (sidebarOverlay) sidebarOverlay.classList.toggle('active');
-        }
-
-        if (toggleBtn) {
-            toggleBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                if (window.innerWidth <= 768) {
-                    toggleMobile();
-                } else {
-                    if (sidebar) sidebar.classList.toggle('collapsed');
-                    if (mainContent) mainContent.classList.toggle('expanded');
-                }
-            });
-        }
-
-        if (mobileMenuBtn) {
-            mobileMenuBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                toggleMobile();
-            });
-        }
-
-        if (sidebarOverlay) {
-            sidebarOverlay.addEventListener('click', function() {
-                if (sidebar) sidebar.classList.remove('mobile-open');
-                sidebarOverlay.classList.remove('active');
-            });
-        }
-
-        if (sidebar) {
-            var links = sidebar.querySelectorAll('a');
-            links.forEach(function(link) {
-                link.addEventListener('click', function() {
-                    if (window.innerWidth <= 768) {
-                        sidebar.classList.remove('mobile-open');
-                        if (sidebarOverlay) sidebarOverlay.classList.remove('active');
-                    }
-                });
-            });
-        }
     });
   </script>
   @yield('scripts')
