@@ -56,7 +56,7 @@
             <h6 class="m-0 font-weight-bold" style="color: #1e293b; font-size: 15px;">Riwayat Invoice Transfer Stock</h6>
         </div>
         <div class="card-body p-0">
-            <div class="table-responsive" style="overflow-visible;">
+            <div class="table-responsive">
                 <table class="data-table table table-hover mb-0" width="100%" cellspacing="0" style="font-size: 13.5px;">
                     <thead style="background: #f8fafc; color: #475569; border-bottom: 1px solid #e2e8f0;">
                         <tr>
@@ -158,19 +158,19 @@
                                                         <tbody>
                                                             @foreach($inv['items'] as $item)
                                                             <tr>
-                                                                <td style="font-weight: 600; color: #1e293b;">{{ $item->barang->nama_barang ?? '-' }}</td>
-                                                                <td>Gudang Utama</td>
-                                                                <td>{{ $item->ke_gudang }}</td>
-                                                                <td style="font-weight: 600;">{{ $item->jumlah }} pcs</td>
-                                                                <td style="text-transform: capitalize;">{{ $item->satuan }}</td>
-                                                                <td>
+                                                                <td data-label="Nama Barang" style="font-weight: 600; color: #1e293b;">{{ $item->barang->nama_barang ?? '-' }}</td>
+                                                                <td data-label="Gudang Asal">Gudang Utama</td>
+                                                                <td data-label="Ke Gudang">{{ $item->ke_gudang }}</td>
+                                                                <td data-label="Jumlah" style="font-weight: 600;">{{ $item->jumlah }} pcs</td>
+                                                                <td data-label="Satuan" style="text-transform: capitalize;">{{ $item->satuan }}</td>
+                                                                <td data-label="Status">
                                                                     @if($item->status === 'Dibatalkan')
                                                                         <span style="color: #ef4444; font-weight: 600;">Dibatalkan</span>
                                                                     @else
                                                                         <span style="color: #16a34a; font-weight: 600;">Selesai</span>
                                                                     @endif
                                                                 </td>
-                                                                <td>{{ $item->catatan ?: '-' }}</td>
+                                                                <td data-label="Catatan">{{ $item->catatan ?: '-' }}</td>
                                                             </tr>
                                                             @endforeach
                                                         </tbody>
