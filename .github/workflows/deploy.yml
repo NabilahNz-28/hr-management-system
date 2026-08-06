@@ -1,16 +1,13 @@
 name: Deploy to cPanel
-
 on:
   push:
     branches: [main]
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -18,9 +15,11 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
+          script_stop: true
           script: |
             cd ${{ secrets.DEPLOY_PATH }}
-            git pull origin main
+            git fetch origin main
+            git reset --hard origin/main
             composer install --no-dev --optimize-autoloader
             php artisan optimize:clear
             php artisan migrate --force
@@ -28,3 +27,6 @@ jobs:
             php artisan route:cache
             php artisan view:cache
             php artisan queue:restart
+            cp -r ${{ secrets.DEPLOY_PATH }}/public/css/. ~/public_html/css/
+            cp -r ${{ secrets.DEPLOY_PATH }}/public/js/. ~/public_html/js/
+            cp ${{ secrets.DEPLOY_PATH }}/public/favicon.ico ~/public_html/favicon.ico
