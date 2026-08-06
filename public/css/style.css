@@ -738,7 +738,7 @@ body {
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
-    z-index: 999;
+    z-index: 1045;
 }
 
 .sidebar-overlay.active {
@@ -755,26 +755,34 @@ body {
 @media (max-width: 768px) {
     /* Mobile menu button */
     .mobile-menu-btn {
-        display: block !important;
+        display: flex !important;
         position: fixed !important;
-        top: 15px !important;
-        left: 15px !important;
-        z-index: 10001 !important;
-        background: #3b82f6 !important;
-        color: white !important;
-        border: none !important;
-        width: 44px !important;
-        height: 44px !important;
+        top: 14px !important;
+        left: 14px !important;
+        z-index: 1051 !important;
+        background: #ffffff !important;
+        color: #334155 !important;
+        border: 1px solid #e2e8f0 !important;
+        width: 40px !important;
+        height: 40px !important;
         border-radius: 8px !important;
-        font-size: 20px !important;
-        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3) !important;
+        font-size: 18px !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08) !important;
         cursor: pointer !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transition: opacity 0.3s ease, transform 0.3s ease !important;
     }
 
 
     /* SIDEBAR TERBUKA - KELUAR DARI KIRI */
     #sidebar.mobile-open {
         left: 0 !important;
+    }
+
+    /* Sembunyikan hamburger saat sidebar terbuka */
+    body.sidebar-open .mobile-menu-btn {
+        display: none !important;
     }
 
     /* TUTUP SIDEBAR - PENTING: JANGAN PAKAI .collapsed DI MOBILE */
@@ -968,6 +976,11 @@ body {
         gap: 8px;
     }
 
+    /* Filter buttons: center on mobile */
+    .row.g-3.align-items-end > div.d-flex {
+        justify-content: center !important;
+    }
+
     /* IMPORTANT: Pastikan overlay muncul saat sidebar terbuka */
     body.sidebar-open .sidebar-overlay {
         display: block !important;
@@ -979,25 +992,7 @@ body {
     padding: 0 10px !important;
   }
   #sidebarToggle {
-    display: flex !important;
-  }
-}
-
-@media (max-width: 768px) {
-  #sidebar {
-    z-index: 10002 !important;
-    left: -280px !important;
-    width: 280px !important;
-  }
-
-  #sidebar.mobile-open {
-    left: 0 !important;
-  }
-
-  .sidebar-overlay {
-    z-index: 10001 !important;
-    left: 280px !important;
-    width: calc(100vw - 280px) !important;
+    display: none !important;
   }
 }
 
