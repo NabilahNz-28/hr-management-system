@@ -10,7 +10,7 @@
         --header-height: 70px;
         --card-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
         --sidebar-shadow: 2px 0 8px rgba(0, 0, 0, 0.08);
-        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     * {

@@ -15,7 +15,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const overlay = document.createElement('div');
     overlay.className = 'sidebar-overlay';
     overlay.style.cssText = `
-        display: none;
         position: fixed;
         top: 0;
         left: 0;
@@ -24,20 +23,25 @@ document.addEventListener('DOMContentLoaded', function() {
         background: rgba(0,0,0,0.5);
         z-index: 999;
         backdrop-filter: blur(2px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
     `;
     document.body.appendChild(overlay);
-    
+
     function openMobileSidebar() {
         if (window.innerWidth > 768) return;
         if (sidebar) sidebar.classList.add('mobile-open');
         document.body.classList.add('sidebar-open');
-        overlay.style.display = 'block';
+        overlay.style.opacity = '1';
+        overlay.style.pointerEvents = 'auto';
     }
 
     function closeMobileSidebar() {
         if (sidebar) sidebar.classList.remove('mobile-open');
         document.body.classList.remove('sidebar-open');
-        overlay.style.display = 'none';
+        overlay.style.opacity = '0';
+        overlay.style.pointerEvents = 'none';
     }
 
     function toggleMobileSidebar(e) {
