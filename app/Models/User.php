@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use App\Notifications\ResetPasswordNotification;
 
 class User extends Authenticatable
 {
@@ -138,5 +139,15 @@ class User extends Authenticatable
             $end = $item->end_date ? \Carbon\Carbon::parse($item->end_date)->min($akhir) : $start;
             return max(1, $start->diffInDays($end) + 1);
         });
+    }
+
+    /**
+     * Override notifikasi reset password bawaan Laravel.
+     * Kirim email dengan template custom kita (emails/reset-password.blade.php).
+     * Token di-generate otomatis oleh Laravel — UNIK & BERBEDA setiap request.
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ResetPasswordNotification($token));
     }
 }
