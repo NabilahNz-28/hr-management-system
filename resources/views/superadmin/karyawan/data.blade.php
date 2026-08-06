@@ -39,8 +39,8 @@
                 <tbody>
                     @forelse($karyawan ?? [] as $index => $item)
                     <tr>
-                        <td class="text-center">{{ ($karyawan->firstItem() ?? 1) + $index }}</td>
-                        <td>
+                        <td class="text-center" data-label="No">{{ ($karyawan->firstItem() ?? 1) + $index }}</td>
+                        <td data-label="Nama Lengkap">
                             <button type="button"
                                     class="link-detail btn-detail-karyawan"
                                     data-id="{{ $item->id }}"
@@ -54,11 +54,11 @@
                                 {{ $item->name }}
                             </button>
                         </td>
-                        <td>{{ $item->nik ?? '-' }}</td>
-                        <td>{{ $item->email }}</td>
-                        <td>{{ $item->departemen ?? '-' }}</td>
-                        <td>{{ $item->jabatan ?? '-' }}</td>
-                        <td>
+                        <td data-label="NIK">{{ $item->nik ?? '-' }}</td>
+                        <td data-label="Email">{{ $item->email }}</td>
+                        <td data-label="Departemen">{{ $item->departemen ?? '-' }}</td>
+                        <td data-label="Jabatan">{{ $item->jabatan ?? '-' }}</td>
+                        <td data-label="Role">
                             @php
                                 $roleClass = '';
                                 $roleText = '';
@@ -86,14 +86,14 @@
                             @endphp
                             <span class="role-badge {{ $roleClass }}">{{ $roleText }}</span>
                         </td>
-                        <td>
+                        <td data-label="Status">
                             @php
                                 $statusClass = $item->status === 'aktif' ? 'status-active' : 'status-inactive';
                                 $statusText = $item->status === 'aktif' ? 'Aktif' : 'Nonaktif';
                             @endphp
                             <span class="status-badge {{ $statusClass }}">{{ $statusText }}</span>
                         </td>
-                        <td class="action-buttons">
+                        <td class="action-buttons" data-label="Aksi">
                             <button type="button"
                                     class="btn-action btn-view btn-detail-karyawan"
                                     title="Detail"

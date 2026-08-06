@@ -58,8 +58,8 @@
             <h6 class="m-0 font-weight-bold" style="color: #1e293b; font-size: 15px;">Riwayat Invoice Stock Opname</h6>
         </div>
         <div class="card-body p-0">
-            <div class="table-responsive" style="overflow-visible;">
-                <table class="table table-hover mb-0" width="100%" cellspacing="0" style="font-size: 13.5px;">
+            <div class="table-responsive">
+                <table class="data-table table table-hover mb-0" width="100%" cellspacing="0" style="font-size: 13.5px;">
                     <thead style="background: #f8fafc; color: #475569; border-bottom: 1px solid #e2e8f0;">
                         <tr>
                             <th class="py-3 px-3">No</th>
@@ -76,17 +76,17 @@
                     <tbody>
                         @forelse($laporan ?? [] as $index => $inv)
                         <tr style="border-bottom: 1px solid #f1f5f9; vertical-align: middle;">
-                            <td class="px-3">{{ ($laporan instanceof \Illuminate\Pagination\LengthAwarePaginator ? $laporan->firstItem() + $index : $index + 1) }}</td>
-                            <td class="px-3">
+                            <td class="px-3" data-label="No">{{ ($laporan instanceof \Illuminate\Pagination\LengthAwarePaginator ? $laporan->firstItem() + $index : $index + 1) }}</td>
+                            <td class="px-3" data-label="No. Invoice">
                                 <span style="font-weight: 600; color: #1e293b;">{{ $inv['invoice_no'] }}</span>
                             </td>
-                            <td class="px-3">{{ \Carbon\Carbon::parse($inv['tanggal'])->format('d M Y') }}</td>
-                            <td class="px-3">
+                            <td class="px-3" data-label="Tanggal">{{ \Carbon\Carbon::parse($inv['tanggal'])->format('d M Y') }}</td>
+                            <td class="px-3" data-label="Petugas (PIC)">
                                 <span class="badge" style="background: #e0f2fe; color: #0369a1; padding: 5px 10px; border-radius: 6px; font-weight: 600; font-size: 12px;">
                                     <i class="bi bi-person me-1"></i> {{ $inv['petugas_name'] }}
                                 </span>
                             </td>
-                            <td class="px-3">
+                            <td class="px-3" data-label="Produk">
                                 <div style="font-weight: 600; color: #1e293b;">
                                     <span class="badge" style="background:#f1f5f9; color:#334155; padding: 4px 8px; border-radius: 6px; font-size:12px;">{{ $inv['item_count'] }} Produk</span>
                                 </div>
@@ -94,10 +94,10 @@
                                     {{ $inv['produk_names'] }}
                                 </div>
                             </td>
-                            <td class="px-3">
+                            <td class="px-3" data-label="Kategori">
                                 <span style="font-size: 13px; color: #475569;">{{ $inv['kategori_list'] ?: '-' }}</span>
                             </td>
-                            <td class="px-3">
+                            <td class="px-3" data-label="Total Selisih">
                                 @if($inv['total_selisih'] > 0)
                                     <span style="color: #22c55e; font-weight: 600;">+{{ $inv['total_selisih'] }} pcs</span>
                                 @elseif($inv['total_selisih'] < 0)
@@ -106,8 +106,8 @@
                                     <span style="color: #64748b; font-weight: 600;">0 pcs</span>
                                 @endif
                             </td>
-                            <td class="px-3">{{ $inv['catatan'] ?: '-' }}</td>
-                            <td class="px-3 text-center">
+                            <td class="px-3" data-label="Catatan">{{ $inv['catatan'] ?: '-' }}</td>
+                            <td class="px-3 text-center" data-label="Aksi">
                                 <button type="button" class="btn btn-sm btn-light d-inline-flex align-items-center justify-content-center shadow-sm" data-bs-toggle="modal" data-bs-target="#modalOpnameDetail{{ $index }}" style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px 14px; background: #ffffff; color: #1e293b; font-weight: 600; font-size: 13px; white-space: nowrap;">
                                     <i class="bi bi-eye text-primary me-1"></i> Lihat
                                 </button>
@@ -149,11 +149,11 @@
                                                         <tbody>
                                                             @foreach($inv['items'] as $item)
                                                             <tr>
-                                                                <td style="font-weight: 600; color: #1e293b;">{{ $item->inventory->nama_barang ?? '-' }}</td>
-                                                                <td>{{ ucfirst($item->inventory->kategori ?? '-') }}</td>
-                                                                <td>{{ $item->stok_sebelum }} pcs</td>
-                                                                <td>{{ $item->stok_sesudah }} pcs</td>
-                                                                <td>
+                                                                <td data-label="Nama Barang" style="font-weight: 600; color: #1e293b;">{{ $item->inventory->nama_barang ?? '-' }}</td>
+                                                                <td data-label="Kategori">{{ ucfirst($item->inventory->kategori ?? '-') }}</td>
+                                                                <td data-label="Stok Sebelum">{{ $item->stok_sebelum }} pcs</td>
+                                                                <td data-label="Stok Sesudah">{{ $item->stok_sesudah }} pcs</td>
+                                                                <td data-label="Selisih">
                                                                     @if($item->selisih > 0)
                                                                         <span style="color: #22c55e; font-weight: 600;">+{{ $item->selisih }}</span>
                                                                     @elseif($item->selisih < 0)
@@ -162,7 +162,7 @@
                                                                         <span>0</span>
                                                                     @endif
                                                                 </td>
-                                                                <td>{{ $item->catatan ?: '-' }}</td>
+                                                                <td data-label="Catatan">{{ $item->catatan ?: '-' }}</td>
                                                             </tr>
                                                             @endforeach
                                                         </tbody>
