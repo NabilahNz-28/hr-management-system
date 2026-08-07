@@ -197,10 +197,10 @@
         <div class="alert-box alert-info">
             <i class="bi bi-geo-alt-fill text-primary" style="font-size: 24px;"></i>
             <div>
-                <div style="font-weight: 500;">Mode Uji Coba Aktif</div>
-                <div style="font-size: 13px;">Untuk tahap pengembangan, absensi dapat dilakukan dari lokasi mana pun.</div>
+                <div style="font-weight: 500;">Verifikasi Lokasi GPS</div>
+                <div style="font-size: 13px;">Pastikan Anda berada di dalam radius 100m dari lokasi kantor untuk dapat melakukan absensi.</div>
                 <div style="font-size: 13px; margin-top: 4px; color: #6b7280;">
-                    Catatan: Dalam mode produksi, radius maksimal 100m dari lokasi kantor.
+                    GPS akan mengambil beberapa pembacaan untuk akurasi lebih baik.
                 </div>
             </div>
         </div>
@@ -287,7 +287,7 @@
                     <div style="font-size: 14px;">
                         <div>Lokasi: <span id="locationAddressMasuk">Mendeteksi alamat...</span></div>
                         <div style="margin-top: 8px;">Koordinat: <span id="locationCoordsMasuk">-</span></div>
-                        <div style="margin-top: 8px;">Status: <span id="locationDistanceMasuk" style="color: #10b981;">Mode Uji Coba</span></div>
+                        <div style="margin-top: 8px;">Status: <span id="locationDistanceMasuk" style="color: #6b7280;">Menghitung jarak...</span></div>
                     </div>
                     <button onclick="refreshGPS('masuk')" style="margin-top: 15px; padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; width: 100%; transition: background 0.2s;">
                         Refresh Lokasi GPS
@@ -413,7 +413,7 @@ let faceDetectorReady = false;
  * ===================== INISIALISASI =====================
  */
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('Sistem Absensi Masuk dimulai...');
+    // Sistem Absensi Masuk dimulai
 
     // Setup kamera
     startKamera('masuk');
@@ -460,7 +460,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
         }
     } catch (e) {
-        console.warn('Gagal cek status absensi hari ini:', e);
+        // Gagal cek status absensi hari ini
     }
 });
 
@@ -615,7 +615,7 @@ async function startKamera(tipe) {
  */
 function initPetaMasuk() {
     if (typeof L === 'undefined') {
-        console.log('Leaflet belum dimuat, menunggu...');
+        // Leaflet belum dimuat, menunggu
         setTimeout(initPetaMasuk, 500);
         return;
     }
@@ -640,7 +640,7 @@ function initPetaMasuk() {
             radius: 100
         }).addTo(petaMasuk);
 
-        console.log('Peta berhasil diinisialisasi');
+        // Peta berhasil diinisialisasi
         setTimeout(() => updateGPS('masuk'), 1000);
 
     } catch (error) {
@@ -692,7 +692,7 @@ function takeGPSReading(tipe) {
                 lng: pos.coords.longitude,
                 accuracy: pos.coords.accuracy
             });
-            console.log(`GPS reading ${gpsReadings.length}/${GPS_READINGS_NEEDED}:`, pos.coords.latitude, pos.coords.longitude, `±${Math.round(pos.coords.accuracy)}m`);
+            // GPS reading logged for debugging
 
             updateGPSStatus(tipe, false, `Mengambil pembacaan... (${gpsReadings.length}/${GPS_READINGS_NEEDED})`);
 
@@ -704,7 +704,7 @@ function takeGPSReading(tipe) {
             }
         },
         (err) => {
-            console.warn(`GPS reading error:`, err.message);
+            // GPS reading error - lanjut ambil reading lain
             // Tetap lanjut ambil reading lain
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -742,7 +742,7 @@ function processGPSReadings(tipe) {
         return dLat <= 2 * stdDevLat && dLng <= 2 * stdDevLng;
     });
 
-    console.log(`Readings: ${gpsReadings.length} total, ${filtered.length} setelah filter outlier`);
+    // Readings filtered
 
     if (filtered.length === 0) {
         // Semua outlier? Pakai mean saja
@@ -768,7 +768,7 @@ function processGPSReadings(tipe) {
     const avgAccuracy = filtered.reduce((s, r) => s + r.accuracy, 0) / filtered.length;
     const finalAccuracy = avgAccuracy / Math.sqrt(filtered.length);
 
-    console.log('GPS Final (averaged):', { lat: finalLat, lng: finalLng, accuracy: finalAccuracy, readings: filtered.length });
+    // GPS Final processed
 
     applyGPSResult(finalLat, finalLng, finalAccuracy, tipe);
 }
@@ -801,7 +801,7 @@ function attemptIPGeolocation(tipe) {
         .then(res => res.json())
         .then(data => {
             if (data.latitude && data.longitude) {
-                console.log('IP Geolocation:', data.latitude, data.longitude, data.city);
+                // IP Geolocation received
                 lokasiMasuk = { lat: data.latitude, lng: data.longitude, accuracy: 5000, source: 'ip' };
                 updatePetaMasuk(data.latitude, data.longitude);
                 updateInfoLokasi(tipe, data.latitude, data.longitude);
@@ -859,8 +859,25 @@ function updatePetaMasuk(lat, lng) {
 
 function updateInfoLokasi(tipe, lat, lng) {
     document.getElementById('locationCoordsMasuk').textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-    document.getElementById('locationDistanceMasuk').innerHTML = `<span style="color:#10b981;">Mode Uji Coba - Bisa absen di mana saja</span>`;
+    // Hitung jarak dari kantor (Haversine formula)
+    const distance = haversineDistance(lat, lng, KANTOR_LAT, KANTOR_LNG);
+    const distanceEl = document.getElementById('locationDistanceMasuk');
+    if (distance <= 100) {
+        distanceEl.innerHTML = `<span style="color:#10b981;">✅ Dalam radius kantor (±${Math.round(distance)}m)</span>`;
+    } else {
+        distanceEl.innerHTML = `<span style="color:#ef4444;">⚠️ Di luar radius kantor (±${Math.round(distance)}m) - Maks 100m</span>`;
+    }
     getAddressFromCoordinates(lat, lng);
+}
+
+function haversineDistance(lat1, lng1, lat2, lng2) {
+    const R = 6371000; // meter
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 function getAddressFromCoordinates(lat, lng) {
@@ -1038,6 +1055,19 @@ async function submitAbsensi(tipe) {
         return;
     }
 
+    // Validasi jarak dari kantor (maks 100m)
+    if (lokasiMasuk) {
+        const distance = haversineDistance(lokasiMasuk.lat, lokasiMasuk.lng, KANTOR_LAT, KANTOR_LNG);
+        if (distance > 100) {
+            window.showFormalAlert(
+                `Anda berada ${Math.round(distance)}m dari kantor. Radius maksimal 100m.\n\nSilakan menuju lokasi kantor untuk melakukan absensi.`,
+                'error',
+                'Di Luar Radius'
+            );
+            return;
+        }
+    }
+
     try {
         const photoBase64 = document.getElementById('capturedPhoto').src;
         const coordinates = lokasiMasuk ?
@@ -1047,9 +1077,10 @@ async function submitAbsensi(tipe) {
         const address = document.getElementById('locationAddressMasuk').textContent;
         const waktu = new Date().toLocaleTimeString('id-ID');
         const tanggal = new Date().toLocaleDateString('id-ID');
+        const distance = lokasiMasuk ? haversineDistance(lokasiMasuk.lat, lokasiMasuk.lng, KANTOR_LAT, KANTOR_LNG) : 0;
 
         const konfirmasi = await window.showFormalConfirm(
-            `Tanggal: ${tanggal}\nWaktu: ${waktu}\nLokasi: ${coordinates}\nAlamat: ${address}\n\nMode: Uji Coba`,
+            `Tanggal: ${tanggal}\nWaktu: ${waktu}\nLokasi: ${coordinates}\nAlamat: ${address}\nJarak dari kantor: ±${Math.round(distance)}m`,
             'Konfirmasi Absensi Masuk',
             'Ya, Simpan Absensi',
             'Batal'
@@ -1120,7 +1151,7 @@ async function simpanKeDatabase(tipe, data) {
         throw new Error(result.message || 'Gagal menyimpan absensi ke server.');
     }
 
-    console.log('Data absensi tersimpan ke DB:', result.data);
+    // Data absensi tersimpan
 
     // Simpan jejak ke session untuk kebutuhan halaman pulang (perhitungan jam kerja)
     sessionStorage.setItem('last_attendance', JSON.stringify({ type: tipe, ...result.data, ...data }));

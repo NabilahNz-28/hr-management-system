@@ -208,11 +208,11 @@
         </div>
 
         <!-- Alert Box -->
-        <div class="alert-box alert-success">
-            <i class="bi bi-check-circle-fill text-success" style="font-size: 24px;"></i>
+        <div class="alert-box alert-info">
+            <i class="bi bi-geo-alt-fill text-primary" style="font-size: 24px;"></i>
             <div>
-                <div style="font-weight: 500;">Mode Uji Coba Aktif</div>
-                <div style="font-size: 13px;">Anda dapat melakukan absensi pulang dari lokasi mana pun.</div>
+                <div style="font-weight: 500;">Verifikasi Lokasi GPS</div>
+                <div style="font-size: 13px;">Pastikan Anda berada di dalam radius 100m dari lokasi kantor untuk dapat melakukan absensi.</div>
             </div>
         </div>
 
@@ -286,7 +286,7 @@
                     <div style="font-weight: 600; margin-bottom: 4px;">Informasi Lokasi:</div>
                     <div>Lokasi: <span id="locationAddressPulang">Mendeteksi alamat...</span></div>
                     <div style="margin-top: 8px;">Koordinat: <span id="locationCoordsPulang">-</span></div>
-                    <div style="margin-top: 8px;">Status: <span id="locationDistancePulang" style="color: #10b981;">Mode Uji Coba</span></div>
+                    <div style="margin-top: 8px;">Status: <span id="locationDistancePulang" style="color: #6b7280;">Menghitung jarak...</span></div>
                     <button onclick="refreshGPS('pulang')" style="margin-top: 15px; padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; width: 100%; transition: background 0.2s;">
                         Refresh Lokasi GPS
                     </button>
@@ -639,10 +639,26 @@ function updatePetaPulang(lat, lng) {
 
 function updateInfoLokasi(tipe, lat, lng) {
   document.getElementById('locationCoordsPulang').textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-  document.getElementById('locationDistancePulang').innerHTML = `Mode Uji Coba - Bisa absen di mana saja`;
+  const distance = haversineDistance(lat, lng, KANTOR_LAT, KANTOR_LNG);
+  const distanceEl = document.getElementById('locationDistancePulang');
+  if (distance <= 100) {
+    distanceEl.innerHTML = `<span style="color:#10b981;">✅ Dalam radius kantor (±${Math.round(distance)}m)</span>`;
+  } else {
+    distanceEl.innerHTML = `<span style="color:#ef4444;">⚠️ Di luar radius kantor (±${Math.round(distance)}m) - Maks 100m</span>`;
+  }
   document.getElementById('gpsSuccessInfoPulang').style.display = 'block';
   document.getElementById('gpsStatusPulang').style.display = 'none';
   getAddressFromCoordinates(lat, lng);
+}
+
+function haversineDistance(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 function getAddressFromCoordinates(lat, lng) {
@@ -728,6 +744,19 @@ async function submitAbsensi(tipe) {
     return;
   }
 
+  // Validasi jarak dari kantor (maks 100m)
+  if (lokasiPulang) {
+    const distance = haversineDistance(lokasiPulang.lat, lokasiPulang.lng, KANTOR_LAT, KANTOR_LNG);
+    if (distance > 100) {
+      window.showFormalAlert(
+        `Anda berada ${Math.round(distance)}m dari kantor. Radius maksimal 100m.\n\nSilakan menuju lokasi kantor untuk melakukan absensi.`,
+        'error',
+        'Di Luar Radius'
+      );
+      return;
+    }
+  }
+
   // Tidak boleh absen pulang sebelum absen masuk hari ini (verifikasi ke server)
   try {
     const cekResp = await fetch("{{ route('absensi.cek') }}?attendance_type=masuk", {
@@ -744,20 +773,14 @@ async function submitAbsensi(tipe) {
     return;
   }
 
-  // Optional: enforce rule 16:30 (kalau mau benar-benar dikunci)
-  const now = new Date();
-  const bisaAbsenPulang = (now.getHours() > 16) || (now.getHours() === 16 && now.getMinutes() >= 30);
-  // Kalau mau strict:
-  // if (!bisaAbsenPulang) { alert('Belum bisa absen pulang. Tunggu sampai 16:30.'); return; }
-
   try {
     const photoBase64 = document.getElementById('capturedPhotoPulang').src;
     const coordinates = lokasiPulang ? `${lokasiPulang.lat.toFixed(6)}, ${lokasiPulang.lng.toFixed(6)}` : 'Tidak terdeteksi';
     const address = document.getElementById('locationAddressPulang').textContent;
     const waktu = new Date().toLocaleTimeString('id-ID');
     const tanggal = new Date().toLocaleDateString('id-ID');
+    const distance = lokasiPulang ? haversineDistance(lokasiPulang.lat, lokasiPulang.lng, KANTOR_LAT, KANTOR_LNG) : 0;
 
-    // waktu masuk & lama kerja (pakai ISO integrasi)
     let waktuMasuk = 'Tidak tercatat';
     let lamaKerja = '-';
     if (absensiMasukHariIni) {
@@ -767,7 +790,7 @@ async function submitAbsensi(tipe) {
     }
 
     const konfirmasi = await window.showFormalConfirm(
-      `Tanggal: ${tanggal}\nWaktu: ${waktu}\nLokasi: ${coordinates}\nAlamat: ${address}\nWaktu Masuk: ${waktuMasuk}\nLama Bekerja: ${lamaKerja}\n\nMode: Uji Coba`,
+      `Tanggal: ${tanggal}\nWaktu: ${waktu}\nLokasi: ${coordinates}\nAlamat: ${address}\nWaktu Masuk: ${waktuMasuk}\nLama Bekerja: ${lamaKerja}\nJarak dari kantor: ±${Math.round(distance)}m`,
       'Konfirmasi Absensi Pulang',
       'Ya, Simpan Absensi',
       'Batal'
@@ -839,7 +862,7 @@ async function simpanKeDatabase(tipe, data) {
     throw new Error(result.message || 'Gagal menyimpan absensi ke server.');
   }
 
-  console.log('Data absensi pulang tersimpan ke DB:', result.data);
+  // Data absensi pulang tersimpan
   sessionStorage.setItem('last_attendance_pulang', JSON.stringify({ type: tipe, ...result.data, ...data }));
 
   return result.data;
