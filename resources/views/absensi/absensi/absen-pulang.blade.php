@@ -208,11 +208,11 @@
         </div>
 
         <!-- Alert Box -->
-        <div class="alert-box alert-success">
-            <i class="bi bi-check-circle-fill text-success" style="font-size: 24px;"></i>
+        <div class="alert-box alert-info">
+            <i class="bi bi-geo-alt-fill text-primary" style="font-size: 24px;"></i>
             <div>
-                <div style="font-weight: 500;">Mode Uji Coba Aktif</div>
-                <div style="font-size: 13px;">Anda dapat melakukan absensi pulang dari lokasi mana pun.</div>
+                <div style="font-weight: 500;">Verifikasi Lokasi GPS</div>
+                <div style="font-size: 13px;">Pastikan Anda berada di dalam radius 100m dari lokasi kantor untuk dapat melakukan absensi.</div>
             </div>
         </div>
 
@@ -286,7 +286,7 @@
                     <div style="font-weight: 600; margin-bottom: 4px;">Informasi Lokasi:</div>
                     <div>Lokasi: <span id="locationAddressPulang">Mendeteksi alamat...</span></div>
                     <div style="margin-top: 8px;">Koordinat: <span id="locationCoordsPulang">-</span></div>
-                    <div style="margin-top: 8px;">Status: <span id="locationDistancePulang" style="color: #10b981;">Mode Uji Coba</span></div>
+                    <div style="margin-top: 8px;">Status: <span id="locationDistancePulang" style="color: #6b7280;">Menghitung jarak...</span></div>
                     <button onclick="refreshGPS('pulang')" style="margin-top: 15px; padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; width: 100%; transition: background 0.2s;">
                         Refresh Lokasi GPS
                     </button>
@@ -321,6 +321,13 @@
 const TIMEOUT = 30;
 const KANTOR_LAT = -6.058908;
 const KANTOR_LNG = 106.653040;
+
+// GPS Accuracy Config
+const GPS_ACCURACY_THRESHOLD = 100;
+const GPS_READINGS_NEEDED = 8;
+const GPS_READING_INTERVAL = 2000;
+let gpsReadings = [];
+let gpsReadingTimer = null;
 
 let kameraPulang = null;
 let lokasiPulang = null;
@@ -533,31 +540,94 @@ function initPetaPulang() {
 function updateGPS(tipe) {
   if (!navigator.geolocation) {
     updateGPSStatus(tipe, false, 'Browser tidak mendukung GPS');
+    updateLokasiFallback(tipe, 'browser');
     return;
   }
+  gpsReadings = [];
+  if (gpsReadingTimer) clearInterval(gpsReadingTimer);
+  updateGPSStatus(tipe, false, `Mengambil ${GPS_READINGS_NEEDED} pembacaan GPS...`);
+  takeGPSReading(tipe);
+  gpsReadingTimer = setInterval(() => takeGPSReading(tipe), GPS_READING_INTERVAL);
+}
+
+function takeGPSReading(tipe) {
   navigator.geolocation.getCurrentPosition(
-    (pos) => successGPS(pos, tipe),
-    (err) => errorGPS(err, tipe),
-    { enableHighAccuracy: true, timeout: 10000 }
+    (pos) => {
+      gpsReadings.push({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
+      updateGPSStatus(tipe, false, `Mengambil pembacaan... (${gpsReadings.length}/${GPS_READINGS_NEEDED})`);
+      if (gpsReadings.length >= GPS_READINGS_NEEDED) {
+        clearInterval(gpsReadingTimer);
+        gpsReadingTimer = null;
+        processGPSReadings(tipe);
+      }
+    },
+    () => {},
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
   );
 }
 
-function refreshGPS(tipe) {
-  updateGPS(tipe);
+function processGPSReadings(tipe) {
+  if (gpsReadings.length === 0) {
+    updateGPSStatus(tipe, false, 'Tidak ada pembacaan GPS berhasil');
+    attemptIPGeolocation(tipe);
+    return;
+  }
+  if (gpsReadings.length === 1) {
+    applyGPSResult(gpsReadings[0].lat, gpsReadings[0].lng, gpsReadings[0].accuracy, tipe);
+    return;
+  }
+  const meanLat = gpsReadings.reduce((s, r) => s + r.lat, 0) / gpsReadings.length;
+  const meanLng = gpsReadings.reduce((s, r) => s + r.lng, 0) / gpsReadings.length;
+  const stdDevLat = Math.sqrt(gpsReadings.reduce((s, r) => s + Math.pow(r.lat - meanLat, 2), 0) / gpsReadings.length);
+  const stdDevLng = Math.sqrt(gpsReadings.reduce((s, r) => s + Math.pow(r.lng - meanLng, 2), 0) / gpsReadings.length);
+  const filtered = gpsReadings.filter(r => Math.abs(r.lat - meanLat) <= 2 * stdDevLat && Math.abs(r.lng - meanLng) <= 2 * stdDevLng);
+  if (filtered.length === 0) {
+    applyGPSResult(meanLat, meanLng, Math.min(...gpsReadings.map(r => r.accuracy)), tipe);
+    return;
+  }
+  let wLat = 0, wLng = 0, tw = 0;
+  filtered.forEach(r => { const w = 1 / Math.max(r.accuracy, 1); wLat += r.lat * w; wLng += r.lng * w; tw += w; });
+  const finalLat = wLat / tw, finalLng = wLng / tw;
+  const avgAcc = filtered.reduce((s, r) => s + r.accuracy, 0) / filtered.length;
+  const finalAcc = avgAcc / Math.sqrt(filtered.length);
+  applyGPSResult(finalLat, finalLng, finalAcc, tipe);
 }
 
-function successGPS(pos, tipe) {
-  const lat = pos.coords.latitude;
-  const lng = pos.coords.longitude;
-  lokasiPulang = { lat, lng };
+function applyGPSResult(lat, lng, accuracy, tipe) {
+  lokasiPulang = { lat, lng, accuracy, source: 'gps' };
   updatePetaPulang(lat, lng);
   updateInfoLokasi(tipe, lat, lng);
-  updateGPSStatus(tipe, true, `Akurasi: ±${Math.round(pos.coords.accuracy)}m`);
+  updateGPSStatus(tipe, true, `Akurasi: ±${Math.round(accuracy)}m ✓ (${gpsReadings.length} pembacaan)`);
   cekValidasiSubmit(tipe);
 }
 
-function errorGPS(err, tipe) {
-  updateGPSStatus(tipe, false, 'Gagal mendapatkan lokasi');
+function refreshGPS(tipe) { updateGPS(tipe); }
+
+function attemptIPGeolocation(tipe) {
+  fetch('https://ipapi.co/json/')
+    .then(res => res.json())
+    .then(data => {
+      if (data.latitude && data.longitude) {
+        lokasiPulang = { lat: data.latitude, lng: data.longitude, accuracy: 5000, source: 'ip' };
+        updatePetaPulang(data.latitude, data.longitude);
+        updateInfoLokasi(tipe, data.latitude, data.longitude);
+        updateGPSStatus(tipe, true, `Lokasi via IP: ${data.city || 'Unknown'} (±5km)`);
+        cekValidasiSubmit(tipe);
+      } else {
+        updateLokasiFallback(tipe, 'ip');
+      }
+    })
+    .catch(() => updateLokasiFallback(tipe, 'ip'));
+}
+
+function updateLokasiFallback(tipe, source) {
+  if (gpsWatchId !== null) { navigator.geolocation.clearWatch(gpsWatchId); gpsWatchId = null; }
+  lokasiPulang = { lat: KANTOR_LAT, lng: KANTOR_LNG, accuracy: 1000, source: 'kantor' };
+  updatePetaPulang(KANTOR_LAT, KANTOR_LNG);
+  updateInfoLokasi(tipe, KANTOR_LAT, KANTOR_LNG);
+  const sourceLabel = source === 'ip' ? 'IP juga gagal, ' : '';
+  updateGPSStatus(tipe, false, `${sourceLabel}Menggunakan lokasi kantor (mode fallback)`);
+  cekValidasiSubmit(tipe);
 }
 
 function updatePetaPulang(lat, lng) {
@@ -569,10 +639,26 @@ function updatePetaPulang(lat, lng) {
 
 function updateInfoLokasi(tipe, lat, lng) {
   document.getElementById('locationCoordsPulang').textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-  document.getElementById('locationDistancePulang').innerHTML = `Mode Uji Coba - Bisa absen di mana saja`;
+  const distance = haversineDistance(lat, lng, KANTOR_LAT, KANTOR_LNG);
+  const distanceEl = document.getElementById('locationDistancePulang');
+  if (distance <= 100) {
+    distanceEl.innerHTML = `<span style="color:#10b981;">✅ Dalam radius kantor (±${Math.round(distance)}m)</span>`;
+  } else {
+    distanceEl.innerHTML = `<span style="color:#ef4444;">⚠️ Di luar radius kantor (±${Math.round(distance)}m) - Maks 100m</span>`;
+  }
   document.getElementById('gpsSuccessInfoPulang').style.display = 'block';
   document.getElementById('gpsStatusPulang').style.display = 'none';
   getAddressFromCoordinates(lat, lng);
+}
+
+function haversineDistance(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 function getAddressFromCoordinates(lat, lng) {
@@ -585,7 +671,16 @@ function getAddressFromCoordinates(lat, lng) {
 
 function updateGPSStatus(tipe, sukses, pesan) {
   const status = document.getElementById('gpsStatusPulang');
-  if (status) status.innerHTML = `<div>${pesan}</div>`;
+  if (!status) return;
+  if (sukses) {
+    status.innerHTML = `<div>✅</div><div><div style="font-weight:500;">GPS Aktif</div><div style="font-size:12px;">${pesan}</div></div>`;
+    status.style.background = '#f0fdf4';
+    status.style.borderColor = '#bbf7d0';
+  } else {
+    status.innerHTML = `<div>⚠️</div><div><div style="font-weight:500;">Mode Simulasi</div><div style="font-size:12px;">${pesan}</div></div>`;
+    status.style.background = '#fef3c7';
+    status.style.borderColor = '#fde68a';
+  }
 }
 
 async function ambilFoto(tipe) {
@@ -649,6 +744,19 @@ async function submitAbsensi(tipe) {
     return;
   }
 
+  // Validasi jarak dari kantor (maks 100m)
+  if (lokasiPulang) {
+    const distance = haversineDistance(lokasiPulang.lat, lokasiPulang.lng, KANTOR_LAT, KANTOR_LNG);
+    if (distance > 100) {
+      window.showFormalAlert(
+        `Anda berada ${Math.round(distance)}m dari kantor. Radius maksimal 100m.\n\nSilakan menuju lokasi kantor untuk melakukan absensi.`,
+        'error',
+        'Di Luar Radius'
+      );
+      return;
+    }
+  }
+
   // Tidak boleh absen pulang sebelum absen masuk hari ini (verifikasi ke server)
   try {
     const cekResp = await fetch("{{ route('absensi.cek') }}?attendance_type=masuk", {
@@ -665,20 +773,14 @@ async function submitAbsensi(tipe) {
     return;
   }
 
-  // Optional: enforce rule 16:30 (kalau mau benar-benar dikunci)
-  const now = new Date();
-  const bisaAbsenPulang = (now.getHours() > 16) || (now.getHours() === 16 && now.getMinutes() >= 30);
-  // Kalau mau strict:
-  // if (!bisaAbsenPulang) { alert('Belum bisa absen pulang. Tunggu sampai 16:30.'); return; }
-
   try {
     const photoBase64 = document.getElementById('capturedPhotoPulang').src;
     const coordinates = lokasiPulang ? `${lokasiPulang.lat.toFixed(6)}, ${lokasiPulang.lng.toFixed(6)}` : 'Tidak terdeteksi';
     const address = document.getElementById('locationAddressPulang').textContent;
     const waktu = new Date().toLocaleTimeString('id-ID');
     const tanggal = new Date().toLocaleDateString('id-ID');
+    const distance = lokasiPulang ? haversineDistance(lokasiPulang.lat, lokasiPulang.lng, KANTOR_LAT, KANTOR_LNG) : 0;
 
-    // waktu masuk & lama kerja (pakai ISO integrasi)
     let waktuMasuk = 'Tidak tercatat';
     let lamaKerja = '-';
     if (absensiMasukHariIni) {
@@ -688,7 +790,7 @@ async function submitAbsensi(tipe) {
     }
 
     const konfirmasi = await window.showFormalConfirm(
-      `Tanggal: ${tanggal}\nWaktu: ${waktu}\nLokasi: ${coordinates}\nAlamat: ${address}\nWaktu Masuk: ${waktuMasuk}\nLama Bekerja: ${lamaKerja}\n\nMode: Uji Coba`,
+      `Tanggal: ${tanggal}\nWaktu: ${waktu}\nLokasi: ${coordinates}\nAlamat: ${address}\nWaktu Masuk: ${waktuMasuk}\nLama Bekerja: ${lamaKerja}\nJarak dari kantor: ±${Math.round(distance)}m`,
       'Konfirmasi Absensi Pulang',
       'Ya, Simpan Absensi',
       'Batal'
@@ -760,7 +862,7 @@ async function simpanKeDatabase(tipe, data) {
     throw new Error(result.message || 'Gagal menyimpan absensi ke server.');
   }
 
-  console.log('Data absensi pulang tersimpan ke DB:', result.data);
+  // Data absensi pulang tersimpan
   sessionStorage.setItem('last_attendance_pulang', JSON.stringify({ type: tipe, ...result.data, ...data }));
 
   return result.data;

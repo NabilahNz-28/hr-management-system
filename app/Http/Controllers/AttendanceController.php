@@ -35,6 +35,23 @@ class AttendanceController extends Controller
                 'address'         => 'nullable|string',
             ]);
 
+            // Validasi radius dari kantor (maks 100m)
+            if ($request->latitude && $request->longitude) {
+                $kantorLat = -6.058908;
+                $kantorLng = 106.653040;
+                $radius = $this->haversineDistance(
+                    $request->latitude, $request->longitude,
+                    $kantorLat, $kantorLng
+                );
+
+                if ($radius > 100) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Anda berada ' . round($radius) . 'm dari kantor. Radius maksimal 100m.',
+                    ], 422);
+                }
+            }
+
             $user = Auth::user();
 
             // 1. Cek apakah ada absen masuk aktif dalam 36 jam terakhir yang BELUM dipulangkan (sesi kerja terbuka)
@@ -283,5 +300,25 @@ class AttendanceController extends Controller
         } catch (\Exception $e) {
             // Abaikan jika error cache/artisan saat background check
         }
+    }
+
+    /**
+     * Hitung jarak antara 2 titik koordinat menggunakan Haversine formula
+     * @return float Jarak dalam meter
+     */
+    private function haversineDistance($lat1, $lng1, $lat2, $lng2)
+    {
+        $earthRadius = 6371000; // meter
+
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLng = deg2rad($lng2 - $lng1);
+
+        $a = sin($dLat / 2) * sin($dLat / 2) +
+             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+             sin($dLng / 2) * sin($dLng / 2);
+
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+        return $earthRadius * $c;
     }
 }
