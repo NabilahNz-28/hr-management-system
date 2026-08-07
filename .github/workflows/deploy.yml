@@ -27,6 +27,7 @@ jobs:
             php artisan route:cache
             php artisan view:cache
             php artisan queue:restart
+            ln -sfn ${{ secrets.DEPLOY_PATH }}/storage/app/public ~/public_html/storage
             cp -r ${{ secrets.DEPLOY_PATH }}/public/css/. ~/public_html/css/
             cp -r ${{ secrets.DEPLOY_PATH }}/public/js/. ~/public_html/js/
             cp ${{ secrets.DEPLOY_PATH }}/public/favicon.ico ~/public_html/favicon.ico
