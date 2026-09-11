@@ -917,6 +917,7 @@ function updateUIAfterSubmit() {
  */
 function retakePhoto(tipe) {
   fotoDiambilPulang = false;
+  faceVerified = false; // reset verifikasi wajah agar tidak bisa bypass
 
   if (timerPulang) {
     clearInterval(timerPulang);
@@ -939,10 +940,10 @@ function retakePhoto(tipe) {
     submitBtn.innerHTML = 'Submit Absensi Pulang';
   }
 
-  if (faceDetectorReady) {
-    setFaceStatus('✅ Face detector siap. Ambil foto dengan wajah terlihat jelas.', true);
+  if (faceApiReady) {
+    setFaceStatus('✅ Sistem siap. Ambil foto — wajah Anda akan diverifikasi otomatis.', true);
   } else {
-    setFaceStatus('⚠️ Face detector belum siap.', false);
+    setFaceStatus('⚠️ Sistem pengenalan wajah belum siap.', false);
   }
 }
 
