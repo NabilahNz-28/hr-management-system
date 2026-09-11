@@ -34,6 +34,7 @@ class User extends Authenticatable
         'alamat',
         'tgl_bergabung',
         'foto_profile',
+        'face_descriptor',   // 128-dim face descriptor JSON (face-api.js)
     ];
 
     /**
@@ -51,6 +52,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password'          => 'hashed',
         'tgl_bergabung'     => 'date',
+        'face_descriptor'   => 'array',  // auto decode JSON → PHP array
     ];
 
     protected $appends = [

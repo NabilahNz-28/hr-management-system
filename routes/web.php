@@ -13,6 +13,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\FaceEnrollmentController;
 
 // HOME REDIRECT
 Route::get('/', function () {
@@ -131,6 +132,15 @@ Route::middleware('auth')->group(function () {
         Route::post('/simpan', [AttendanceController::class, 'simpanAbsensi'])->name('simpan');
         Route::get('/riwayat', [AttendanceController::class, 'getRiwayat'])->name('riwayat');
         Route::get('/cek-hari-ini', [AttendanceController::class, 'checkTodayAttendance'])->name('cek');
+
+        // Face enrollment (superadmin only)
+        Route::get('/face-enrollment', [FaceEnrollmentController::class, 'index'])->name('face-enrollment.index');
+        Route::post('/face-enrollment/{id}', [FaceEnrollmentController::class, 'store'])->name('face-enrollment.store');
+        Route::delete('/face-enrollment/{id}', [FaceEnrollmentController::class, 'destroy'])->name('face-enrollment.destroy');
+
+        // API: dipakai halaman absen untuk pencocokan wajah
+        Route::get('/face-descriptors', [FaceEnrollmentController::class, 'descriptors'])->name('face-descriptors');
+        Route::get('/face-check-own', [FaceEnrollmentController::class, 'checkOwn'])->name('face-check-own');
     });
 
     // MONITORING ABSENSI

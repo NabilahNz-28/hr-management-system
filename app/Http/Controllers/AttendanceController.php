@@ -35,22 +35,23 @@ class AttendanceController extends Controller
                 'address'         => 'nullable|string',
             ]);
 
-            // Validasi radius dari kantor (maks 100m)
-            if ($request->latitude && $request->longitude) {
-                $kantorLat = -6.058908;
-                $kantorLng = 106.653040;
-                $radius = $this->haversineDistance(
-                    $request->latitude, $request->longitude,
-                    $kantorLat, $kantorLng
-                );
-
-                if ($radius > 100) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Anda berada ' . round($radius) . 'm dari kantor. Radius maksimal 100m.',
-                    ], 422);
-                }
-            }
+            // [CATATAN] Validasi radius dari kantor dinonaktifkan — absen bisa dari mana saja.
+            // Koordinat GPS tetap direkam ke database sebagai catatan lokasi.
+            // Kode asli (jika ingin diaktifkan kembali):
+            // if ($request->latitude && $request->longitude) {
+            //     $kantorLat = -6.058908;
+            //     $kantorLng = 106.653040;
+            //     $radius = $this->haversineDistance(
+            //         $request->latitude, $request->longitude,
+            //         $kantorLat, $kantorLng
+            //     );
+            //     if ($radius > 100) {
+            //         return response()->json([
+            //             'success' => false,
+            //             'message' => 'Anda berada ' . round($radius) . 'm dari kantor. Radius maksimal 100m.',
+            //         ], 422);
+            //     }
+            // }
 
             $user = Auth::user();
 

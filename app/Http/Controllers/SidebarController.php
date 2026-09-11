@@ -211,6 +211,17 @@ class SidebarController extends Controller
                         ],
                     ],
                 ],
+                [
+                    'label' => 'KONFIGURASI ABSENSI',
+                    'items' => [
+                        [
+                            'text'    => 'Daftarkan Wajah Karyawan',
+                            'route'   => 'absensi.face-enrollment.index',
+                            'routeIs' => 'absensi.face-enrollment.*',
+                            'icon'    => 'person-bounding-box',
+                        ],
+                    ],
+                ],
             ],
         ];
 

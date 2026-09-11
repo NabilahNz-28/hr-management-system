@@ -306,8 +306,8 @@
 @endsection
 
 @section('scripts')
-<!-- MediaPipe Face Detection (CDN) -->
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js"></script>
+<!-- face-api.js (lokal dari public/js/) -->
+<script src="{{ asset('js/face-api.min.js') }}"></script>
 
 <script>
 /**
@@ -405,9 +405,12 @@ let hitungDetikMasuk = 0;
 let fotoDiambilMasuk = false;
 let markerMasuk = null;
 
-// Face detection
-let faceDetector = null;
-let faceDetectorReady = false;
+// Face recognition
+let faceApiReady = false;
+let faceDescriptorsMatcher = null; // FaceMatcher setelah load descriptor dari server
+let faceVerified = false;          // true jika wajah sudah cocok di sesi ini
+const MODEL_URL_MASUK = "{{ asset('models') }}";
+const FACE_THRESHOLD  = 0.5;       // Euclidean distance threshold
 
 /**
  * ===================== INISIALISASI =====================
@@ -421,9 +424,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Setup peta
     initPetaMasuk();
 
-    // Setup face detector
-    await initFaceDetector();
-
+    // Load face-api models + cek enrollment + load descriptor
+    initFaceRecognition();
 
     // Auto refresh GPS setiap 30 detik
     setInterval(() => {
@@ -489,72 +491,69 @@ function setFaceStatus(text, ok = null) {
     }
 }
 
-async function initFaceDetector() {
-    try {
-        setFaceStatus('Menyiapkan face detector...', null);
+async function initFaceRecognition() {
+    setFaceStatus('⏳ Memuat model pengenalan wajah...', null);
 
-        // Pastikan library termuat
-        if (typeof FaceDetection === 'undefined') {
-            setFaceStatus('Library FaceDetection tidak termuat (cek koneksi/CDN).', false);
-            faceDetectorReady = false;
+    // 1. Cek apakah user sudah enroll
+    try {
+        const resCheck = await fetch("{{ route('absensi.face-check-own') }}", {
+            headers: { 'Accept': 'application/json' }
+        });
+        const checkData = await resCheck.json();
+
+        if (!checkData.enrolled) {
+            setFaceStatus('❌ Wajah Anda belum terdaftar. Hubungi admin untuk mendaftarkan wajah Anda sebelum absen.', false);
+            // Blokir tombol foto
+            const captureBtn = document.getElementById('captureBtn');
+            if (captureBtn) captureBtn.style.display = 'none';
+            const submitBtn = document.getElementById('submitBtnMasuk');
+            if (submitBtn) { submitBtn.disabled = true; submitBtn.title = 'Wajah belum terdaftar'; }
+            return; // Tidak perlu load model
+        }
+    } catch (e) {
+        // Jika endpoint gagal, tetap lanjutkan (jangan blokir absen karena error jaringan)
+        console.warn('Gagal cek enrollment:', e);
+    }
+
+    // 2. Load 3 model face-api.js
+    try {
+        await Promise.all([
+            faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL_MASUK),
+            faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL_MASUK),
+            faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL_MASUK),
+        ]);
+    } catch (e) {
+        setFaceStatus('❌ Gagal memuat model AI. Periksa koneksi internet.', false);
+        return;
+    }
+
+    // 3. Ambil semua descriptor karyawan dari server
+    try {
+        const resDesc = await fetch("{{ route('absensi.face-descriptors') }}", {
+            headers: { 'Accept': 'application/json' }
+        });
+        const descriptors = await resDesc.json();
+
+        if (!descriptors || descriptors.length === 0) {
+            setFaceStatus('⚠️ Belum ada data wajah terdaftar di server.', false);
             return;
         }
 
-        faceDetector = new FaceDetection({
-            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`,
+        // Buat LabeledFaceDescriptors untuk FaceMatcher
+        const labeled = descriptors.map(d => {
+            const floatArr = new Float32Array(d.descriptor);
+            return new faceapi.LabeledFaceDescriptors(
+                `${d.id}|${d.name}`,
+                [floatArr]
+            );
         });
 
-        // model: "short" lebih cepat, "full" lebih akurat
-        faceDetector.setOptions({
-            model: 'short',
-            minDetectionConfidence: 0.6,
-        });
-
-        // handler hasil (kita juga bungkus jadi Promise saat capture)
-        faceDetector.onResults(() => { /* no-op */ });
-
-        faceDetectorReady = true;
-        setFaceStatus('Face detector siap. Ambil foto dengan wajah terlihat jelas.', true);
+        faceDescriptorsMatcher = new faceapi.FaceMatcher(labeled, FACE_THRESHOLD);
+        faceApiReady = true;
+        setFaceStatus('✅ Sistem siap. Ambil foto — wajah Anda akan diverifikasi otomatis.', true);
     } catch (e) {
-        console.error('initFaceDetector error:', e);
-        faceDetectorReady = false;
-        setFaceStatus('Gagal inisialisasi face detector.', false);
+        setFaceStatus('❌ Gagal mengambil data wajah dari server.', false);
     }
-}
-
-function detectFaceFromCanvas(canvas) {
-    return new Promise(async (resolve) => {
-        if (!faceDetectorReady || !faceDetector) {
-            setFaceStatus('Face detector belum siap. Coba refresh halaman.', false);
-            return resolve(false);
-        }
-
-        // override onResults sementara supaya kita bisa await hasilnya
-        const previousOnResults = faceDetector.onResults;
-        faceDetector.onResults((results) => {
-            const hasFace = !!(results && results.detections && results.detections.length > 0);
-
-            if (hasFace) {
-                setFaceStatus('Wajah terdeteksi.', true);
-            } else {
-                setFaceStatus('Wajah tidak terdeteksi. Dekatkan wajah & perbaiki pencahayaan.', false);
-            }
-
-            // restore handler (biar aman)
-            faceDetector.onResults = previousOnResults;
-            resolve(hasFace);
-        });
-
-        try {
-            await faceDetector.send({ image: canvas });
-        } catch (e) {
-            console.error('detectFaceFromCanvas error:', e);
-            setFaceStatus('Error saat deteksi wajah.', false);
-            // restore handler
-            faceDetector.onResults = previousOnResults;
-            resolve(false);
-        }
-    });
 }
 
 /**
@@ -942,9 +941,9 @@ async function ambilFoto(tipe) {
         return;
     }
 
-    // Pastikan detector siap
-    if (!faceDetectorReady) {
-        window.showFormalAlert('Pendeteksi wajah belum siap. Tunggu sebentar atau refresh halaman.', 'warning', 'Peringatan');
+    // Pastikan face recognition siap
+    if (!faceApiReady) {
+        window.showFormalAlert('Sistem pengenalan wajah belum siap. Tunggu sebentar atau refresh halaman.', 'warning', 'Belum Siap');
         return;
     }
 
@@ -959,14 +958,33 @@ async function ambilFoto(tipe) {
     ctx.scale(-1, 1);
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    // Deteksi wajah (beneran)
-    setFaceStatus('Mengecek wajah...', null);
-    const wajahTerdeteksi = await detectFaceFromCanvas(canvas);
+    // Deteksi & kenali wajah dengan face-api.js
+    setFaceStatus('🔍 Memverifikasi identitas wajah...', null);
 
-    if (!wajahTerdeteksi) {
+    const detection = await faceapi
+        .detectSingleFace(canvas, new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.5 }))
+        .withFaceLandmarks()
+        .withFaceDescriptor();
+
+    if (!detection) {
+        setFaceStatus('❌ Wajah tidak terdeteksi. Dekatkan wajah & pastikan pencahayaan cukup.', false);
         window.showFormalAlert('Wajah tidak terdeteksi. Pastikan wajah terlihat jelas, dekatkan kamera, dan pencahayaan cukup.', 'warning', 'Wajah Tidak Terdeteksi');
         return;
     }
+
+    // Cocokkan descriptor dengan data server
+    const match = faceDescriptorsMatcher.findBestMatch(detection.descriptor);
+    const currentUserId = '{{ auth()->id() }}';
+    const matchedUserId = match.label !== 'unknown' ? match.label.split('|')[0] : null;
+
+    if (match.label === 'unknown' || matchedUserId !== currentUserId) {
+        setFaceStatus(`❌ Wajah tidak dikenali. Silakan coba lagi dengan pencahayaan yang lebih baik.`, false);
+        window.showFormalAlert('Wajah tidak dikenali. Pastikan wajah Anda terdaftar dan terlihat jelas, lalu coba lagi.', 'error', 'Verifikasi Gagal');
+        return;
+    }
+
+    setFaceStatus(`✅ Wajah terverifikasi!`, true);
+    faceVerified = true;
 
     // Set flag foto diambil
     fotoDiambilMasuk = true;
@@ -1040,32 +1058,19 @@ function cekValidasiSubmit(tipe) {
     const submitBtn = document.getElementById('submitBtnMasuk');
     if (!submitBtn) return;
 
-    if (fotoDiambilMasuk) {
+    if (fotoDiambilMasuk && faceVerified) {
         submitBtn.disabled = false;
         submitBtn.title = 'Klik untuk submit absensi masuk';
     } else {
         submitBtn.disabled = true;
-        submitBtn.title = 'Belum mengambil foto';
+        submitBtn.title = fotoDiambilMasuk ? 'Wajah belum terverifikasi' : 'Belum mengambil foto';
     }
 }
 
 async function submitAbsensi(tipe) {
-    if (!fotoDiambilMasuk) {
-        window.showFormalAlert('Silakan ambil foto terlebih dahulu sebelum submit absensi.', 'warning', 'Foto Belum Ada');
+    if (!fotoDiambilMasuk || !faceVerified) {
+        window.showFormalAlert('Silakan ambil foto dan pastikan wajah terverifikasi terlebih dahulu.', 'warning', 'Verifikasi Belum Selesai');
         return;
-    }
-
-    // Validasi jarak dari kantor (maks 100m)
-    if (lokasiMasuk) {
-        const distance = haversineDistance(lokasiMasuk.lat, lokasiMasuk.lng, KANTOR_LAT, KANTOR_LNG);
-        if (distance > 100) {
-            window.showFormalAlert(
-                `Anda berada ${Math.round(distance)}m dari kantor. Radius maksimal 100m.\n\nSilakan menuju lokasi kantor untuk melakukan absensi.`,
-                'error',
-                'Di Luar Radius'
-            );
-            return;
-        }
     }
 
     try {
@@ -1174,6 +1179,7 @@ function updateUIAfterSubmit() {
  */
 function retakePhoto(tipe) {
     fotoDiambilMasuk = false;
+    faceVerified = false; // reset verifikasi wajah
 
     if (timerMasuk) {
         clearInterval(timerMasuk);
